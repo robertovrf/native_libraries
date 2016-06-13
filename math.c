@@ -126,18 +126,6 @@ static void printBinary(unsigned char *b, size_t s)
 
 INSTRUCTION_DEF op_sqrt_int(INSTRUCTION_PARAM_LIST)
 	{
-	/*
-	//version using the native implementation of sqrt
-	size_t val = 0;
-	copyHostInteger((unsigned char*) &val, getVariableContent(cframe, 0), sizeof(size_t));
-	
-	//printf("val: %u\n", val);
-	
-	size_t res = sqrt(val);
-	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
-	copyHostInteger((unsigned char*) result, (unsigned char*) &res, sizeof(size_t));
-	*/
-	
 	//TODO: allow this to work on 1024-bit integers, but make it fast so that it ignores any empty bytes from the left
 	// - also figure out what size of integer it can return
 	
@@ -154,7 +142,7 @@ INSTRUCTION_DEF op_sqrt_int(INSTRUCTION_PARAM_LIST)
 	*/
 	
 	unsigned char *val = getVariableContent(cframe, 0);
-	//char *str;
+	char *str;
 	
 	unsigned char t1[INT_WIDTH];
 	memset(t1, '\0', INT_WIDTH);
@@ -334,13 +322,39 @@ static char* dec_toString(unsigned char *val, size_t len)
 
 #define DEC_WIDTH (sizeof(size_t)*2)
 
-//NOTE: the below function isn't complete and should not be used
+#define IV
+//NOTE: the below function isn't complete and should not be used in "DV" mode
 //NOTE: the Nth root and Nth power functions are in some way the inverse of each other
 // - raising something to the power of 0.5 is the same as applying the square root
 // - so we either need an Nth root function, or an Nth power function (that works on fractional powers), and then we have both
 INSTRUCTION_DEF op_sqrt_dec(INSTRUCTION_PARAM_LIST)
 	{
+	#ifdef IV
+	// -- temporary solution: reuse int version, with scaling
 	unsigned char *val = getVariableContent(cframe, 0);
+	
+	ScalingFactor *sf = &scalingFactors[sizeof(size_t)-1];
+	hw_div(val, DEC_WIDTH, (uint8*) sf -> factor, sf -> byteWidth);
+	
+	hw_lshift(val, DEC_WIDTH, sizeof(size_t) * 8);
+	
+	op_sqrt_int(cframe);
+	
+	unsigned char *result = &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
+	hw_rshift(result, DEC_WIDTH, sizeof(size_t) * 8);
+	hw_mul(result, DEC_WIDTH, (uint8*) sf -> factor, sf -> byteWidth);
+	
+	return RETURN_DIRECT;
+	#endif
+	
+	#ifdef DV
+	ScalingFactor *sf = &scalingFactors[sizeof(size_t)-1];
+	
+	unsigned char *val = getVariableContent(cframe, 0);
+	
+	// - what this function currently does is accurately calculate the square root of the input value as a plain integer
+	//  - i.e. the square root of "4.0", i.e. 40000000000000000000, actually is 6324555320, so the answer gained here is actually correct
+	//  - but how do we adjust this calculation to match the scaling factor?
 	
 	//"val" is an array of bytes, the length of which is (sizeof(size_t) * 2)
 	// - it's an integer in network big endian format
@@ -384,8 +398,14 @@ INSTRUCTION_DEF op_sqrt_dec(INSTRUCTION_PARAM_LIST)
 	
 	//x = 2 ^ q
 	x[DEC_WIDTH-1] = 2;
-	
 	hw_pow(x, DEC_WIDTH, nb, DEC_WIDTH);
+	
+	//
+	//memset(&x[(DEC_WIDTH/2)], 255, DEC_WIDTH/2);
+	//hw_div(t1, DEC_WIDTH, &two, 1);
+	//ScalingFactor *sf = &scalingFactors[3];
+	//hw_mul(x, DEC_WIDTH, (uint8*) sf -> factor, sf -> byteWidth);
+	//
 	
 	str = int_toString(x, DEC_WIDTH);
 	printf("Int pw: %s\n", str);
@@ -421,8 +441,7 @@ INSTRUCTION_DEF op_sqrt_dec(INSTRUCTION_PARAM_LIST)
 		memcpy(x, y, DEC_WIDTH);
 		}
 	
-	//ScalingFactor *sf = &scalingFactors[3];
-	//hw_div(x, DEC_WIDTH, (uint8*) sf -> factor, sf -> byteWidth);
+	//hw_mul(x, DEC_WIDTH, (uint8*) sf -> factor, sf -> byteWidth);
 	
 	str = int_toString(x, DEC_WIDTH);
 	printf("Int R: %s\n", str);
@@ -449,6 +468,8 @@ INSTRUCTION_DEF op_sqrt_dec(INSTRUCTION_PARAM_LIST)
 	*/
 	
 	return RETURN_DIRECT;
+	
+	#endif
 	}
 
 Interface* load(CoreAPI *capi)
