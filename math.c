@@ -33,7 +33,6 @@ typedef struct __sf{
 	} ScalingFactor;
 
 //we index into this array by (totalByteWidth/2)-1:
-//TODO: fill this with literal unsigned char arrays representing the Dana-endian scaling factors for decimals 16 bits an upwards (100, 10000, 1000000000, ...)
 static ScalingFactor scalingFactors[] = {
 										{1, (unsigned char[]){100}, 2}, //100 (16 bit numbers)
 										{2, (unsigned char[]){39, 16}, 4}, //10000 (32 bit numbers)
@@ -107,8 +106,6 @@ static void assignDecimal(unsigned char *a, size_t esizeA, unsigned char *b, siz
 		{
 		size_t copySize = esizeB;
 		
-		//printf("scaling up [%u:%u -- %u]...\n", esizeA, esizeB, copySize);
-		
 		//we're scaling up into a
 		memset(a, '\0', esizeA);
 		be_memcpy(a + esizeA, b + esizeB, copySize);
@@ -125,8 +122,6 @@ static void assignDecimal(unsigned char *a, size_t esizeA, unsigned char *b, siz
 		else if (esizeB > esizeA)
 		{
 		size_t copySize = esizeA;
-		
-		//printf("scaling down [%u:%u -- %u]...\n", esizeA, esizeB, copySize);
 		
 		//we're scaling down into a
 		ScalingFactor *factorA = &scalingFactors[(esizeA/2)-1];
@@ -145,15 +140,15 @@ static void assignDecimal(unsigned char *a, size_t esizeA, unsigned char *b, siz
 		be_memcpy(a + esizeA, tmp + esizeB, copySize);
 		
 		free(tmp);
-		
-		//TODO: rounding...?
 		}
 	}
 
+static uint8 xr[sizeof(size_t)*4];
 static void hw_dec_mul(uint8 *x, size_t xs, uint8 *y, size_t ys)
 	{
 	size_t xrs = xs * 2;
-	uint8 *xr = malloc(xrs);
+	//generic version (for any size input) would allocate xs*2; we avoid this for efficiency, instead using the static xr declared above
+	//uint8 *xr = malloc(xrs);
 	
 	assignDecimal(xr, xrs, x, xs);
 	
@@ -164,7 +159,7 @@ static void hw_dec_mul(uint8 *x, size_t xs, uint8 *y, size_t ys)
 	
 	assignDecimal(x, xs, xr, xrs);
 	
-	free(xr);
+	//free(xr);
 	}
 
 static void hw_dec_div(uint8 *x, size_t xs, uint8 *y, size_t ys)
@@ -460,7 +455,7 @@ INSTRUCTION_DEF op_sqrt_dec(INSTRUCTION_PARAM_LIST)
 	
 	//this is a *SLOW* way to do this: first we get the square root of the integer part (which is fast), reusing op_sqrt_int for this
 	// - then we get the square root of the integer+fraction part (slowly!!!) by homing in on the correct fraction using an up/down search
-	// - the performance of the fraction part needs to be massively improved!! [TODO]
+	// - the fraction part is just brute force and its performance needs to be massively improved!! [TODO]
 	
 	unsigned char *val = getVariableContent(cframe, 0);
 	
@@ -500,22 +495,21 @@ INSTRUCTION_DEF op_sqrt_dec(INSTRUCTION_PARAM_LIST)
 	unsigned char z[DEC_WIDTH];
 	memset(z, '\0', DEC_WIDTH);
 	
-	unsigned char zc[DEC_WIDTH];
-	memset(zc, '\0', DEC_WIDTH);
-	
 	x[DEC_WIDTH-1] = 1;
 	hw_mul(x, DEC_WIDTH, sf -> factor, sf -> byteWidth);
 	hw_div(x, DEC_WIDTH, &ten, 1);
 	
-	// - grab the fractional part by subtracting the integer part (after truncating it by scaling down then up)
+	memcpy(y, result, DEC_WIDTH);
+	
+	/*
+	// - grab the fractional part in "vc" by subtracting the integer part (after truncating it by scaling down then up)
 	hw_div(vb, DEC_WIDTH, (uint8*) sf -> factor, sf -> byteWidth);
 	hw_mul(vb, DEC_WIDTH, (uint8*) sf -> factor, sf -> byteWidth);
 	hw_sub(vc, DEC_WIDTH, vb, DEC_WIDTH);
+	*/
 	
-	// - now find the square root of this fractional part
-	
-	// - add the integer part for the comparison
-	hw_add(z, DEC_WIDTH, result, DEC_WIDTH);
+	// - now find the square root of this fractional part, starting from the integer root with no fraction
+	memcpy(z, result, DEC_WIDTH);
 	
 	bool up = true;
 	while (memcmp(z, va, DEC_WIDTH) != 0)
@@ -527,10 +521,7 @@ INSTRUCTION_DEF op_sqrt_dec(INSTRUCTION_PARAM_LIST)
 		
 		// - multiply the two together to see if this gives us the original input value
 		memcpy(z, y, DEC_WIDTH);
-		hw_add(z, DEC_WIDTH, result, DEC_WIDTH);
-		memcpy(zc, z, DEC_WIDTH);
-		
-		hw_dec_mul(z, DEC_WIDTH, zc, DEC_WIDTH);
+		hw_dec_mul(z, DEC_WIDTH, y, DEC_WIDTH);
 		
 		//if we've gone "past" the answer in the direction of travel, start adding/subtracting a 10th of the previous fraction value, and reverse the direction of travel
 		if (up)
@@ -557,8 +548,8 @@ INSTRUCTION_DEF op_sqrt_dec(INSTRUCTION_PARAM_LIST)
 			}
 		}
 	
-	// - copy the fractional part into the full result
-	hw_add(result, DEC_WIDTH, y, DEC_WIDTH);
+	// - update the result with the full integer+fraction
+	memcpy(result, y, DEC_WIDTH);
 	
 	return RETURN_DIRECT;
 	}
