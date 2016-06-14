@@ -83,6 +83,107 @@ static bool isZero(unsigned char *b, size_t s)
 	return true;
 	}
 
+static void be_memcpy(unsigned char *to, unsigned char *from, size_t len)
+	{
+	to --;
+	from --;
+	for (; len > 0; len --)
+		{
+		*to = *from;
+		to --;
+		from --;
+		}
+	}
+
+static void assignDecimal(unsigned char *a, size_t esizeA, unsigned char *b, size_t esizeB)
+	{
+	if (esizeA == esizeB)
+		{
+		size_t copySize = esizeA;
+		memset(a, '\0', esizeA);
+		be_memcpy(a + esizeA, b + esizeB, copySize);
+		}
+		else if (esizeA > esizeB)
+		{
+		size_t copySize = esizeB;
+		
+		//printf("scaling up [%u:%u -- %u]...\n", esizeA, esizeB, copySize);
+		
+		//we're scaling up into a
+		memset(a, '\0', esizeA);
+		be_memcpy(a + esizeA, b + esizeB, copySize);
+		
+		ScalingFactor *factorA = &scalingFactors[(esizeA/2)-1];
+		ScalingFactor *factorB = &scalingFactors[(esizeB/2)-1];
+		
+		unsigned char *dfactor = malloc(factorA -> byteWidth);
+		memcpy(dfactor, factorA -> factor, factorA -> byteWidth);
+		hw_div(dfactor, factorA -> byteWidth, factorB -> factor, factorB -> byteWidth);
+		hw_mul(a, esizeA, dfactor, factorA -> byteWidth);
+		free(dfactor);
+		}
+		else if (esizeB > esizeA)
+		{
+		size_t copySize = esizeA;
+		
+		//printf("scaling down [%u:%u -- %u]...\n", esizeA, esizeB, copySize);
+		
+		//we're scaling down into a
+		ScalingFactor *factorA = &scalingFactors[(esizeA/2)-1];
+		ScalingFactor *factorB = &scalingFactors[(esizeB/2)-1];
+		
+		unsigned char *tmp = malloc(esizeB);
+		memcpy(tmp, b, esizeB);
+		
+		unsigned char *dfactor = malloc(factorB -> byteWidth);
+		memcpy(dfactor, factorB -> factor, factorB -> byteWidth);
+		hw_div(dfactor, factorB -> byteWidth, factorA -> factor, factorA -> byteWidth);
+		hw_div(tmp, esizeB, dfactor, factorB -> byteWidth);
+		free(dfactor);
+		
+		memset(a, '\0', esizeA);
+		be_memcpy(a + esizeA, tmp + esizeB, copySize);
+		
+		free(tmp);
+		
+		//TODO: rounding...?
+		}
+	}
+
+static void hw_dec_mul(uint8 *x, size_t xs, uint8 *y, size_t ys)
+	{
+	size_t xrs = xs * 2;
+	uint8 *xr = malloc(xrs);
+	
+	assignDecimal(xr, xrs, x, xs);
+	
+	ScalingFactor *sf = &scalingFactors[(ys/2)-1];
+	hw_div(xr, xrs, (uint8*) sf -> factor, sf -> byteWidth);
+	
+	hw_mul(xr, xrs, y, ys);
+	
+	assignDecimal(x, xs, xr, xrs);
+	
+	free(xr);
+	}
+
+static void hw_dec_div(uint8 *x, size_t xs, uint8 *y, size_t ys)
+	{
+	size_t xrs = xs * 2;
+	uint8 *xr = malloc(xrs);
+	
+	assignDecimal(xr, xrs, x, xs);
+	
+	hw_div(xr, xrs, y, ys);
+	
+	ScalingFactor *sf = &scalingFactors[(ys/2)-1];
+	hw_mul(xr, xrs, (uint8*) sf -> factor, sf -> byteWidth);
+	
+	assignDecimal(x, xs, xr, xrs);
+	
+	free(xr);
+	}
+
 static void hw_pow(uint8 *x, size_t xs, uint8 *y, size_t ys)
 	{
 	unsigned char one = 1;
@@ -95,6 +196,21 @@ static void hw_pow(uint8 *x, size_t xs, uint8 *y, size_t ys)
 		hw_sub(y, ys, &one, 1);
 		}
 	free(tx);
+	}
+
+static bool hw_gt(uint8 *x, size_t xs, uint8 *y, size_t ys)
+	{
+	size_t i = 0;
+	
+	for (i = 0; i < xs; i++)
+		{
+		if (x[i] > y[i])
+			return true;
+			else if (y[i] > x[i])
+			return false;
+		}
+	
+	return false;
 	}
 
 static bool hw_gr_eq(uint8 *x, size_t xs, uint8 *y, size_t ys)
@@ -142,7 +258,7 @@ INSTRUCTION_DEF op_sqrt_int(INSTRUCTION_PARAM_LIST)
 	*/
 	
 	unsigned char *val = getVariableContent(cframe, 0);
-	char *str;
+	//char *str;
 	
 	unsigned char t1[INT_WIDTH];
 	memset(t1, '\0', INT_WIDTH);
@@ -268,12 +384,19 @@ static char* dec_toString(unsigned char *val, size_t len)
 		int remainingDigits = reslen;
 		if (remainingDigits <= scalingFactor)
 			{
-			char *tr = malloc(reslen + 2);
+			int diff = scalingFactor - reslen;
+			char *tr = malloc(reslen + diff);
 			tr[0] = '0';
 			tr[1] = '.';
 			
 			int i = 2;
 			int j = 0;
+			for (j = 0; j < diff; j++)
+				{
+				tr[i] = '0';
+				i ++;
+				}
+			
 			for (j = 0; j < reslen; j++)
 				{
 				tr[i] = res[j];
@@ -281,7 +404,8 @@ static char* dec_toString(unsigned char *val, size_t len)
 				}
 			
 			free(res);
-			reslen += 2;
+			reslen += diff;
+			res = tr;;
 			res = tr;
 			}
 			else
@@ -311,27 +435,47 @@ static char* dec_toString(unsigned char *val, size_t len)
 		
 		//clean up trailing zeros
 		while (res[reslen - 1] == '0' && res[reslen - 2] != '.')
+			{
+			//res[reslen - 1] = '\0';
 			reslen --;
+			}
 		
 		free(val);
 		free(cpy);
 		}
+	
+	//res[reslen] = '\0';
 	
 	return res;
 	}
 
 #define DEC_WIDTH (sizeof(size_t)*2)
 
-#define IV
-//NOTE: the below function isn't complete and should not be used in "DV" mode
 //NOTE: the Nth root and Nth power functions are in some way the inverse of each other
 // - raising something to the power of 0.5 is the same as applying the square root
 // - so we either need an Nth root function, or an Nth power function (that works on fractional powers), and then we have both
 INSTRUCTION_DEF op_sqrt_dec(INSTRUCTION_PARAM_LIST)
 	{
-	#ifdef IV
-	// -- temporary solution: reuse int version, with scaling
+	//char *str;
+	
+	//this is a *SLOW* way to do this: first we get the square root of the integer part (which is fast), reusing op_sqrt_int for this
+	// - then we get the square root of the integer+fraction part (slowly!!!) by homing in on the correct fraction using an up/down search
+	// - the performance of the fraction part needs to be massively improved!! [TODO]
+	
 	unsigned char *val = getVariableContent(cframe, 0);
+	
+	unsigned char va[DEC_WIDTH];
+	memset(va, '\0', DEC_WIDTH);
+	
+	unsigned char vb[DEC_WIDTH];
+	memset(vb, '\0', DEC_WIDTH);
+	
+	unsigned char vc[DEC_WIDTH];
+	memset(vc, '\0', DEC_WIDTH);
+	
+	memcpy(va, val, DEC_WIDTH);
+	memcpy(vb, val, DEC_WIDTH);
+	memcpy(vc, val, DEC_WIDTH);
 	
 	ScalingFactor *sf = &scalingFactors[sizeof(size_t)-1];
 	hw_div(val, DEC_WIDTH, (uint8*) sf -> factor, sf -> byteWidth);
@@ -344,38 +488,8 @@ INSTRUCTION_DEF op_sqrt_dec(INSTRUCTION_PARAM_LIST)
 	hw_rshift(result, DEC_WIDTH, sizeof(size_t) * 8);
 	hw_mul(result, DEC_WIDTH, (uint8*) sf -> factor, sf -> byteWidth);
 	
-	return RETURN_DIRECT;
-	#endif
-	
-	#ifdef DV
-	ScalingFactor *sf = &scalingFactors[sizeof(size_t)-1];
-	
-	unsigned char *val = getVariableContent(cframe, 0);
-	
-	// - what this function currently does is accurately calculate the square root of the input value as a plain integer
-	//  - i.e. the square root of "4.0", i.e. 40000000000000000000, actually is 6324555320, so the answer gained here is actually correct
-	//  - but how do we adjust this calculation to match the scaling factor?
-	
-	//"val" is an array of bytes, the length of which is (sizeof(size_t) * 2)
-	// - it's an integer in network big endian format
-	
-	/*
-	//http://stackoverflow.com/questions/1623375/writing-your-own-square-root-function
-	//NOTE: in the below pseudocode, "floor" just means use integer division
-	x = 2^ceil(numbits(N)/2)
-	loop:
-		y = floor((x + floor(N/x))/2)
-		if y >= x
-			return x
-		x = y
-	*/
-	
-	char *str;
-
-	str = int_toString(val, DEC_WIDTH); printf("Int A: %s\n", str);
-	
-	unsigned char t1[DEC_WIDTH];
-	memset(t1, '\0', DEC_WIDTH);
+	//now square root the fractional part (really slowly!!! - TODO, increase performance!)
+	unsigned char ten = 10;
 	
 	unsigned char x[DEC_WIDTH];
 	memset(x, '\0', DEC_WIDTH);
@@ -383,93 +497,70 @@ INSTRUCTION_DEF op_sqrt_dec(INSTRUCTION_PARAM_LIST)
 	unsigned char y[DEC_WIDTH];
 	memset(y, '\0', DEC_WIDTH);
 	
-	//NOTE: these first three steps are always the same, so should be precomputed!
-	//numbits(N)
-	unsigned char nb[DEC_WIDTH];
-	memset(nb, '\0', DEC_WIDTH);
-	nb[DEC_WIDTH-1] = DEC_WIDTH * 8;
+	unsigned char z[DEC_WIDTH];
+	memset(z, '\0', DEC_WIDTH);
 	
-	//q = numbits(N)/2
-	unsigned char two = 2;
-	hw_div(nb, DEC_WIDTH, &two, 1);
+	unsigned char zc[DEC_WIDTH];
+	memset(zc, '\0', DEC_WIDTH);
 	
-	str = int_toString(nb, DEC_WIDTH);
-	printf("Int dv: %s\n", str);
+	x[DEC_WIDTH-1] = 1;
+	hw_mul(x, DEC_WIDTH, sf -> factor, sf -> byteWidth);
+	hw_div(x, DEC_WIDTH, &ten, 1);
 	
-	//x = 2 ^ q
-	x[DEC_WIDTH-1] = 2;
-	hw_pow(x, DEC_WIDTH, nb, DEC_WIDTH);
+	// - grab the fractional part by subtracting the integer part (after truncating it by scaling down then up)
+	hw_div(vb, DEC_WIDTH, (uint8*) sf -> factor, sf -> byteWidth);
+	hw_mul(vb, DEC_WIDTH, (uint8*) sf -> factor, sf -> byteWidth);
+	hw_sub(vc, DEC_WIDTH, vb, DEC_WIDTH);
 	
-	//
-	//memset(&x[(DEC_WIDTH/2)], 255, DEC_WIDTH/2);
-	//hw_div(t1, DEC_WIDTH, &two, 1);
-	//ScalingFactor *sf = &scalingFactors[3];
-	//hw_mul(x, DEC_WIDTH, (uint8*) sf -> factor, sf -> byteWidth);
-	//
+	// - now find the square root of this fractional part
 	
-	str = int_toString(x, DEC_WIDTH);
-	printf("Int pw: %s\n", str);
+	// - add the integer part for the comparison
+	hw_add(z, DEC_WIDTH, result, DEC_WIDTH);
 	
-	printf("2^q: "); printBinary(x, DEC_WIDTH); printf("\n");
-	
-	//TODO: try start value for x as instead being (DEC_WIDTH/2), filled with 1's, divided by 2 (then upscaled?)
-	
-	while (true)
+	bool up = true;
+	while (memcmp(z, va, DEC_WIDTH) != 0)
 		{
-		//y = floor((x + floor(N/x))/2)
+		if (up)
+			hw_add(y, DEC_WIDTH, x, DEC_WIDTH);
+			else
+			hw_sub(y, DEC_WIDTH, x, DEC_WIDTH);
 		
-		memcpy(t1, val, DEC_WIDTH);
-		hw_div(t1, DEC_WIDTH, x, DEC_WIDTH);
-		hw_add(t1, DEC_WIDTH, x, DEC_WIDTH);
-		hw_div(t1, DEC_WIDTH, &two, 1);
+		// - multiply the two together to see if this gives us the original input value
+		memcpy(z, y, DEC_WIDTH);
+		hw_add(z, DEC_WIDTH, result, DEC_WIDTH);
+		memcpy(zc, z, DEC_WIDTH);
 		
-		memcpy(y, t1, DEC_WIDTH);
+		hw_dec_mul(z, DEC_WIDTH, zc, DEC_WIDTH);
 		
-		printf(" -- y: "); printBinary(y, DEC_WIDTH); printf("\n");
-		str = int_toString(y, DEC_WIDTH); printf(" -- |  %s\n", str);
-		printf(" -- x: "); printBinary(x, DEC_WIDTH); printf("\n");
-		str = int_toString(x, DEC_WIDTH); printf(" -- |  %s\n", str);
-		
-		//if y >= x
-		if (hw_gr_eq(y, DEC_WIDTH, x, DEC_WIDTH))
+		//if we've gone "past" the answer in the direction of travel, start adding/subtracting a 10th of the previous fraction value, and reverse the direction of travel
+		if (up)
 			{
-			printf(" -- done\n");
-			break;
+			if (hw_gt(z, DEC_WIDTH, va, DEC_WIDTH))
+				{
+				up = false;
+				hw_div(x, DEC_WIDTH, &ten, 1);
+				
+				if (isZero(x, DEC_WIDTH))
+					break;
+				}
 			}
-		
-		//x = y
-		memcpy(x, y, DEC_WIDTH);
+			else
+			{
+			if (hw_gt(va, DEC_WIDTH, z, DEC_WIDTH))
+				{
+				up = true;
+				hw_div(x, DEC_WIDTH, &ten, 1);
+				
+				if (isZero(x, DEC_WIDTH))
+					break;
+				}
+			}
 		}
 	
-	//hw_mul(x, DEC_WIDTH, (uint8*) sf -> factor, sf -> byteWidth);
-	
-	str = int_toString(x, DEC_WIDTH);
-	printf("Int R: %s\n", str);
-	
-	str = dec_toString(x, DEC_WIDTH);
-	printf("Dec R: %s\n", str);
-	
-	unsigned char *result = &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
-	memcpy(result, x, DEC_WIDTH);
-	
-	printf(" -- r: "); printBinary(result, DEC_WIDTH); printf("\n");
-	
-	/*
-	size_t val = 0;
-	copyHostInteger((unsigned char*) &val, getVariableContent(cframe, 0), sizeof(size_t));
-	
-	printf("val: %u\n", val);
-	
-	size_t res = sqrt(val);
-	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
-	copyHostInteger((unsigned char*) result, (unsigned char*) &res, sizeof(size_t));
-	
-	printf("res: %u\n", res);
-	*/
+	// - copy the fractional part into the full result
+	hw_add(result, DEC_WIDTH, y, DEC_WIDTH);
 	
 	return RETURN_DIRECT;
-	
-	#endif
 	}
 
 Interface* load(CoreAPI *capi)
