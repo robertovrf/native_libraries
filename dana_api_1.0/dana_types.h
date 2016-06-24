@@ -160,6 +160,16 @@ typedef struct{
 	size_t length;
 	} LiveArray;
 
+typedef struct _s_danaType{
+	uint8 typeClass;
+	uint8 container;
+	uint8 flags;
+	size_t esize;
+	size_t length;
+	size_t offset;
+	VVarLivePTR definition;
+	} DanaType;
+
 typedef struct thrhdr{
 	size_t frameSize;
 	size_t registerCount;
@@ -204,6 +214,7 @@ typedef struct vthread{
 	void *pas;
 	void *df;
 	void *dtl;
+	DanaType dxtl;
 	void *pe;
 	unsigned char pec;
 	size_t ln;
@@ -282,16 +293,6 @@ typedef struct{
 	LiveCntVL structure;
 	size_t size;
 	} StructuredFunctionType;
-
-typedef struct _s_danaType{
-	uint8 typeClass;
-	uint8 container;
-	uint8 flags;
-	size_t esize;
-	size_t length;
-	size_t offset;
-	VVarLivePTR definition;
-	} DanaType;
 
 typedef struct intfdet{
 	size_t interfaceDefinitionAddr;

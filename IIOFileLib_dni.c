@@ -130,6 +130,11 @@ static const DanaType function_IIOFileLib_delete_def[] = {
 {TYPE_LITERAL, X_FLAT, 0, 1, 1, 0},
 {TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}}};
 static const StructuredType function_IIOFileLib_delete_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_IIOFileLib_delete_def, NULL, 0, sizeof(function_IIOFileLib_delete_def)}, 0};
+static const DanaType function_IIOFileLib_move_def[] = {
+{TYPE_LITERAL, X_FLAT, 0, 1, 1, 0},
+{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}},
+{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}}};
+static const StructuredType function_IIOFileLib_move_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_IIOFileLib_move_def, NULL, 0, sizeof(function_IIOFileLib_move_def)}, 0};
 static const DanaType function_IIOFileLib_createDirectory_def[] = {
 {TYPE_LITERAL, X_FLAT, 0, 1, 1, 0},
 {TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}}};
@@ -153,6 +158,7 @@ static const StructuredFunctionType intf_fnc[] = {
 {{NULL, NULL, 0, 0}, {(unsigned char*) function_IIOFileLib_getInfo_def, NULL, 0, sizeof(function_IIOFileLib_getInfo_def)}, 0},
 {{NULL, NULL, 0, 0}, {(unsigned char*) function_IIOFileLib_exists_def, NULL, 0, sizeof(function_IIOFileLib_exists_def)}, 0},
 {{NULL, NULL, 0, 0}, {(unsigned char*) function_IIOFileLib_delete_def, NULL, 0, sizeof(function_IIOFileLib_delete_def)}, 0},
+{{NULL, NULL, 0, 0}, {(unsigned char*) function_IIOFileLib_move_def, NULL, 0, sizeof(function_IIOFileLib_move_def)}, 0},
 {{NULL, NULL, 0, 0}, {(unsigned char*) function_IIOFileLib_createDirectory_def, NULL, 0, sizeof(function_IIOFileLib_createDirectory_def)}, 0},
 {{NULL, NULL, 0, 0}, {(unsigned char*) function_IIOFileLib_deleteDirectory_def, NULL, 0, sizeof(function_IIOFileLib_deleteDirectory_def)}, 0}};
 static const DanaType intf_def[] = {
@@ -171,7 +177,8 @@ static const DanaType intf_def[] = {
 {TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &intf_fnc[12]}},
 {TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &intf_fnc[13]}},
 {TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &intf_fnc[14]}},
-{TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &intf_fnc[15]}}};
+{TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &intf_fnc[15]}},
+{TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &intf_fnc[16]}}};
 static StructuredInterfaceType ILib = {{(unsigned char*) "IIOFileLib", NULL, 0, 10}, {(unsigned char*) intf_def, NULL, 0, sizeof(intf_def)}, 0};
 static DanaType cloneLocalsSpec[] = {
 {TYPE_LITERAL, X_FLAT, 0, 1, 1, 0},
@@ -235,6 +242,11 @@ static DanaType deleteLocalsSpec[] = {
 {TYPE_LITERAL, X_FLAT, 0, 1, 1, 0},
 {TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}}};
 static StructuredType deleteLocalsDef = {{}, {(unsigned char*) deleteLocalsSpec, NULL, 0, sizeof(deleteLocalsSpec)}, 0};
+static DanaType moveLocalsSpec[] = {
+{TYPE_LITERAL, X_FLAT, 0, 1, 1, 0},
+{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}},
+{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}}};
+static StructuredType moveLocalsDef = {{}, {(unsigned char*) moveLocalsSpec, NULL, 0, sizeof(moveLocalsSpec)}, 0};
 static DanaType createDirectoryLocalsSpec[] = {
 {TYPE_LITERAL, X_FLAT, 0, 1, 1, 0},
 {TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}}};
@@ -257,6 +269,7 @@ static unsigned char op_getDirectoryContents_thread_spec[sizeof(VFrameHeader)+si
 static unsigned char op_getInfo_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
 static unsigned char op_exists_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
 static unsigned char op_delete_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
+static unsigned char op_move_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
 static unsigned char op_createDirectory_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
 static unsigned char op_deleteDirectory_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
 static SourceHeader header;
@@ -276,6 +289,7 @@ static size_t interfaceFunctions[] = {
 (size_t) op_getInfo_thread_spec,
 (size_t) op_exists_thread_spec,
 (size_t) op_delete_thread_spec,
+(size_t) op_move_thread_spec,
 (size_t) op_createDirectory_thread_spec,
 (size_t) op_deleteDirectory_thread_spec};
 static DanaType libType = {TYPE_OBJECT, 0, 0, 0, 0, 0, {(unsigned char*) &ILib}};
@@ -307,6 +321,7 @@ populateOffsets(getDirectoryContentsLocalsSpec, sizeof(getDirectoryContentsLocal
 populateOffsets(getInfoLocalsSpec, sizeof(getInfoLocalsSpec) / sizeof(DanaType), &getInfoLocalsDef);
 populateOffsets(existsLocalsSpec, sizeof(existsLocalsSpec) / sizeof(DanaType), &existsLocalsDef);
 populateOffsets(deleteLocalsSpec, sizeof(deleteLocalsSpec) / sizeof(DanaType), &deleteLocalsDef);
+populateOffsets(moveLocalsSpec, sizeof(moveLocalsSpec) / sizeof(DanaType), &moveLocalsDef);
 populateOffsets(createDirectoryLocalsSpec, sizeof(createDirectoryLocalsSpec) / sizeof(DanaType), &createDirectoryLocalsDef);
 populateOffsets(deleteDirectoryLocalsSpec, sizeof(deleteDirectoryLocalsSpec) / sizeof(DanaType), &deleteDirectoryLocalsDef);
 ((VFrameHeader*) op_clone_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + cloneLocalsDef.size;
@@ -365,6 +380,10 @@ populateOffsets(deleteDirectoryLocalsSpec, sizeof(deleteDirectoryLocalsSpec) / s
 ((VFrameHeader*) op_delete_thread_spec) -> formalParamsCount = (deleteLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
 ((size_t*) &((VFrameHeader*) op_delete_thread_spec)[1])[0] = (size_t) &deleteLocalsDef;
 ((VFrameHeader*) op_delete_thread_spec) -> functionName = "delete";
+((VFrameHeader*) op_move_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + moveLocalsDef.size;
+((VFrameHeader*) op_move_thread_spec) -> formalParamsCount = (moveLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
+((size_t*) &((VFrameHeader*) op_move_thread_spec)[1])[0] = (size_t) &moveLocalsDef;
+((VFrameHeader*) op_move_thread_spec) -> functionName = "move";
 ((VFrameHeader*) op_createDirectory_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + createDirectoryLocalsDef.size;
 ((VFrameHeader*) op_createDirectory_thread_spec) -> formalParamsCount = (createDirectoryLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
 ((size_t*) &((VFrameHeader*) op_createDirectory_thread_spec)[1])[0] = (size_t) &createDirectoryLocalsDef;
@@ -399,6 +418,7 @@ static Fable interfaceMappings[] = {
 {"getInfo", (VFrameHeader*) op_getInfo_thread_spec},
 {"exists", (VFrameHeader*) op_exists_thread_spec},
 {"delete", (VFrameHeader*) op_delete_thread_spec},
+{"move", (VFrameHeader*) op_move_thread_spec},
 {"createDirectory", (VFrameHeader*) op_createDirectory_thread_spec},
 {"deleteDirectory", (VFrameHeader*) op_deleteDirectory_thread_spec}};
 void setInterfaceFunction(char *name, void *ptr){

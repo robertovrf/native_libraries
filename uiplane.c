@@ -321,8 +321,6 @@ static FontDirectory fontDirectories[] = {{""}, {""}};
 static FontDirectory fontDirectories[] = {{""}, {""}};
 #endif
 
-static TTF_Font *defaultFont = NULL;
-
 bool findFontByAlias(const char *fontAlias, const char *dir, char *result, unsigned int resultLen)
 	{
 	//scan dir for all font files (.ttf) and see if any have the given typeface alias
@@ -1450,16 +1448,6 @@ static void* render_thread(void *ptr)
 		//logSDLError(std::cout, "TTF_Init");
 		}
 
-	//Open the font
-	char fontPath[2048];
-	memset(fontPath, '\0', 2048);
-
-	defaultFont = TTF_OpenFont(fontPath, 12);
-	if (defaultFont == NULL)
-		{
-		printf("open font error: %s\n", SDL_GetError());
-		}
-
 	DX_NEW_WINDOW_EVENT = SDL_RegisterEvents(1);
 	DX_SWAP_BUFFERS_EVENT = SDL_RegisterEvents(1);
 	DX_SET_WINDOW_POSITION = SDL_RegisterEvents(1);
@@ -1918,8 +1906,6 @@ static void* render_thread(void *ptr)
 
 		newFrame = false;
 		}
-
-	TTF_CloseFont(defaultFont);
 
 	//destroy all remaining windows...
 	ListItem *lw = instances;
@@ -2556,7 +2542,7 @@ INSTRUCTION_DEF op_add_text(INSTRUCTION_PARAM_LIST)
 				instance -> backBufferEnd = uio;
 				}
 
-			poly -> font = defaultFont;
+			//poly -> font = defaultFont;
 
 			uio -> type = UI_TYPE_TEXT;
 			uio -> object = poly;

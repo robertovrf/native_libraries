@@ -316,6 +316,61 @@ INSTRUCTION_DEF op_file_delete(INSTRUCTION_PARAM_LIST)
 	return RETURN_DIRECT;
 	}
 
+INSTRUCTION_DEF op_file_move(INSTRUCTION_PARAM_LIST)
+	{
+	LiveArray *array = (LiveArray*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content;
+	
+	char *path = NULL;
+	
+	if (array != NULL)
+		{
+		path = malloc(array -> length + 1);
+		memset(path, '\0', array -> length + 1);
+		memcpy(path, array -> data, array -> length);
+		}
+		else
+		{
+		path = strdup("");
+		}
+	
+	while (strchr(path, '\\') != NULL) memset(strchr(path, '\\'), '/', 1);
+	
+	array = (LiveArray*) ((VVarLivePTR*) getVariableContent(cframe, 1)) -> content;
+	
+	char *newPath = NULL;
+	
+	if (array != NULL)
+		{
+		newPath = malloc(array -> length + 1);
+		memset(newPath, '\0', array -> length + 1);
+		memcpy(newPath, array -> data, array -> length);
+		}
+		else
+		{
+		newPath = strdup("");
+		}
+	
+	while (strchr(newPath, '\\') != NULL) memset(strchr(newPath, '\\'), '/', 1);
+	
+	#ifdef WINDOWS
+	MoveFile(path, newPath);
+	#endif
+	
+	#ifdef LINUX
+	rename(path, newPath);
+	#endif
+	
+	unsigned char ok = 1;
+	
+	//the return value is written to local variable 0
+	unsigned char *result = (unsigned char*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
+	memcpy(result, &ok, sizeof(unsigned char));
+	
+	free(path);
+	
+	return RETURN_DIRECT;
+	}
+
 typedef struct _fii{
 	LiveData *data;
 	struct _fii *next;
@@ -744,6 +799,7 @@ Interface* load(CoreAPI *capi)
 	setInterfaceFunction("getInfo", op_get_info);
 	setInterfaceFunction("exists", op_file_exists);
 	setInterfaceFunction("delete", op_file_delete);
+	setInterfaceFunction("move", op_file_move);
 	setInterfaceFunction("createDirectory", op_make_dir);
 	setInterfaceFunction("deleteDirectory", op_delete_dir);
 	
