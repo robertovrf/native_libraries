@@ -26,49 +26,6 @@
 
 #include "int_util.h"
 
-typedef struct __sf{
-	unsigned int byteWidth; //this is how many bytes the scaling factor number is (i.e. the below array length)
-	unsigned char *factor;
-	unsigned int zeroCount;
-	} ScalingFactor;
-
-//we index into this array by (totalByteWidth/2)-1:
-static ScalingFactor scalingFactors[] = {
-										{1, (unsigned char[]){100}, 2}, //100 (16 bit numbers)
-										{2, (unsigned char[]){39, 16}, 4}, //10000 (32 bit numbers)
-										{0, 0, 0},
-										{4, (unsigned char[]){59, 154, 202, 0}, 9}, //10000000000 (64 bit numbers)
-										{0, 0, 0},
-										{0, 0, 0},
-										{0, 0, 0},
-										{8, (unsigned char[]){138, 199, 35, 4, 137, 232, 0, 0}, 19}, //10000000000 (128 bit numbers)
-										{0, 0, 0},
-										{0, 0, 0},
-										{0, 0, 0},
-										{0, 0, 0},
-										{0, 0, 0},
-										{0, 0, 0},
-										{0, 0, 0},
-										{16, (unsigned char[]){75, 59, 76, 168, 90, 134, 196, 122, 9, 138, 34, 64, 0, 0, 0, 0}, 38}, //10000000000 (256 bit numbers)
-										{0, 0, 0},
-										{0, 0, 0},
-										{0, 0, 0},
-										{0, 0, 0},
-										{0, 0, 0},
-										{0, 0, 0},
-										{0, 0, 0},
-										{0, 0, 0},
-										{0, 0, 0},
-										{0, 0, 0},
-										{0, 0, 0},
-										{0, 0, 0},
-										{0, 0, 0},
-										{0, 0, 0},
-										{0, 0, 0},
-										{32, (unsigned char[]){221, 21, 254, 134, 175, 250, 217, 18, 73, 239, 14, 183, 19, 243, 158, 190, 170, 152, 123, 110, 111, 210, 160, 0, 0, 0, 0, 0, 0, 0, 0,0}, 77}, //10000000000 (512 bit numbers)
-										{64, (unsigned char[]){190, 238, 251, 88, 74, 255, 134, 3, 170, 251, 85, 15, 250, 207, 216, 250, 92, 164, 126, 79, 136, 212, 83, 113, 39, 203, 210, 254, 98, 20, 95, 8, 69, 68, 182, 83, 53, 81, 85, 182, 175, 153, 212, 10, 228, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 154} //10000000000 (1024 bit numbers)
-										};
-
 static CoreAPI *api;
 
 static bool isZero(unsigned char *b, size_t s)
@@ -110,13 +67,13 @@ static void assignDecimal(unsigned char *a, size_t esizeA, unsigned char *b, siz
 		memset(a, '\0', esizeA);
 		be_memcpy(a + esizeA, b + esizeB, copySize);
 		
-		ScalingFactor *factorA = &scalingFactors[(esizeA/2)-1];
-		ScalingFactor *factorB = &scalingFactors[(esizeB/2)-1];
+		unsigned char *factorA = api -> getDecimalScalingFactor(esizeA);
+		unsigned char *factorB = api -> getDecimalScalingFactor(esizeB);
 		
-		unsigned char *dfactor = malloc(factorA -> byteWidth);
-		memcpy(dfactor, factorA -> factor, factorA -> byteWidth);
-		hw_div(dfactor, factorA -> byteWidth, factorB -> factor, factorB -> byteWidth);
-		hw_mul(a, esizeA, dfactor, factorA -> byteWidth);
+		unsigned char *dfactor = malloc(esizeA);
+		memcpy(dfactor, factorA, esizeA);
+		hw_div(dfactor, esizeA, factorB, esizeB);
+		hw_mul(a, esizeA, dfactor, esizeA);
 		free(dfactor);
 		}
 		else if (esizeB > esizeA)
@@ -124,16 +81,16 @@ static void assignDecimal(unsigned char *a, size_t esizeA, unsigned char *b, siz
 		size_t copySize = esizeA;
 		
 		//we're scaling down into a
-		ScalingFactor *factorA = &scalingFactors[(esizeA/2)-1];
-		ScalingFactor *factorB = &scalingFactors[(esizeB/2)-1];
+		unsigned char *factorA = api -> getDecimalScalingFactor(esizeA);
+		unsigned char *factorB = api -> getDecimalScalingFactor(esizeB);
 		
 		unsigned char *tmp = malloc(esizeB);
 		memcpy(tmp, b, esizeB);
 		
-		unsigned char *dfactor = malloc(factorB -> byteWidth);
-		memcpy(dfactor, factorB -> factor, factorB -> byteWidth);
-		hw_div(dfactor, factorB -> byteWidth, factorA -> factor, factorA -> byteWidth);
-		hw_div(tmp, esizeB, dfactor, factorB -> byteWidth);
+		unsigned char *dfactor = malloc(esizeB);
+		memcpy(dfactor, factorB, esizeB);
+		hw_div(dfactor, esizeB, factorA, esizeA);
+		hw_div(tmp, esizeB, dfactor, esizeB);
 		free(dfactor);
 		
 		memset(a, '\0', esizeA);
@@ -152,8 +109,8 @@ static void hw_dec_mul(uint8 *x, size_t xs, uint8 *y, size_t ys)
 	
 	assignDecimal(xr, xrs, x, xs);
 	
-	ScalingFactor *sf = &scalingFactors[(ys/2)-1];
-	hw_div(xr, xrs, (uint8*) sf -> factor, sf -> byteWidth);
+	unsigned char *sf = api -> getDecimalScalingFactor(ys);
+	hw_div(xr, xrs, (uint8*) sf, ys);
 	
 	hw_mul(xr, xrs, y, ys);
 	
@@ -171,8 +128,8 @@ static void hw_dec_div(uint8 *x, size_t xs, uint8 *y, size_t ys)
 	
 	hw_div(xr, xrs, y, ys);
 	
-	ScalingFactor *sf = &scalingFactors[(ys/2)-1];
-	hw_mul(xr, xrs, (uint8*) sf -> factor, sf -> byteWidth);
+	unsigned char *sf = api -> getDecimalScalingFactor(ys);
+	hw_mul(xr, xrs, (uint8*) sf, ys);
 	
 	assignDecimal(x, xs, xr, xrs);
 	
@@ -323,127 +280,6 @@ INSTRUCTION_DEF op_sqrt_int(INSTRUCTION_PARAM_LIST)
 	return RETURN_DIRECT;
 	}
 
-static char* dec_toString(unsigned char *val, size_t len)
-	{
-	char *res = NULL;
-	size_t reslen = 0;
-	
-	unsigned char *value = val;
-	unsigned int esize = len;
-	
-	unsigned int scalingFactor = scalingFactors[(esize/2)-1].zeroCount;
-	
-	if (isZero(value, esize))
-		{
-		res = malloc(sizeof(char) * 3);
-		memcpy(res, "0.0", 3);
-		reslen = 3;
-		}
-		else
-		{
-		// - integer part -
-		unsigned char *val = malloc(esize);
-		unsigned char *cpy = malloc(esize);
-		
-		memcpy(val, value, esize);
-		
-		uint8 divisor = 10;
-		
-		while (!isZero(val, esize))
-			{
-			memcpy(cpy, val, esize);
-			
-			hw_div(val, esize, &divisor, 1);
-			hw_mod(cpy, esize, &divisor, 1);
-			
-			//"cpy" must be <= 9; get the last byte
-			uint8 rk = cpy[esize - 1];
-			
-			char s = "0123456789"[rk];
-			
-			reslen ++;
-			res = realloc(res, reslen);
-			
-			//copy up
-			size_t j = 0;
-			for (j = reslen-1; j > 0; j--)
-				{
-				res[j] = res[j-1];
-				}
-			
-			res[0] = s;
-			}
-		
-		//insert a decimal point
-		
-		int remainingDigits = reslen;
-		if (remainingDigits <= scalingFactor)
-			{
-			int diff = scalingFactor - reslen;
-			char *tr = malloc(reslen + diff);
-			tr[0] = '0';
-			tr[1] = '.';
-			
-			int i = 2;
-			int j = 0;
-			for (j = 0; j < diff; j++)
-				{
-				tr[i] = '0';
-				i ++;
-				}
-			
-			for (j = 0; j < reslen; j++)
-				{
-				tr[i] = res[j];
-				i ++;
-				}
-			
-			free(res);
-			reslen += diff;
-			res = tr;;
-			res = tr;
-			}
-			else
-			{
-			int i = 0;
-			int j = 0;
-			char *tr = malloc(reslen + 1);
-			
-			for (j = 0; j < reslen; j++)
-				{
-				if (remainingDigits == scalingFactor)
-					{
-					tr[i] = '.';
-					i ++;
-					}
-				
-				tr[i] = res[j];
-				
-				remainingDigits --;
-				i ++;
-				}
-			
-			free(res);
-			reslen ++;
-			res = tr;
-			}
-		
-		//clean up trailing zeros
-		while (res[reslen - 1] == '0' && res[reslen - 2] != '.')
-			{
-			//res[reslen - 1] = '\0';
-			reslen --;
-			}
-		
-		free(val);
-		free(cpy);
-		}
-	
-	//res[reslen] = '\0';
-	
-	return res;
-	}
-
 #define DEC_WIDTH (sizeof(size_t)*2)
 
 //NOTE: the Nth root and Nth power functions are in some way the inverse of each other
@@ -472,8 +308,8 @@ INSTRUCTION_DEF op_sqrt_dec(INSTRUCTION_PARAM_LIST)
 	memcpy(vb, val, DEC_WIDTH);
 	memcpy(vc, val, DEC_WIDTH);
 	
-	ScalingFactor *sf = &scalingFactors[sizeof(size_t)-1];
-	hw_div(val, DEC_WIDTH, (uint8*) sf -> factor, sf -> byteWidth);
+	unsigned char *sf = api -> getDecimalScalingFactor(DEC_WIDTH);
+	hw_div(val, DEC_WIDTH, (uint8*) sf, DEC_WIDTH);
 	
 	hw_lshift(val, DEC_WIDTH, sizeof(size_t) * 8);
 	
@@ -481,7 +317,7 @@ INSTRUCTION_DEF op_sqrt_dec(INSTRUCTION_PARAM_LIST)
 	
 	unsigned char *result = &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
 	hw_rshift(result, DEC_WIDTH, sizeof(size_t) * 8);
-	hw_mul(result, DEC_WIDTH, (uint8*) sf -> factor, sf -> byteWidth);
+	hw_mul(result, DEC_WIDTH, (uint8*) sf, DEC_WIDTH);
 	
 	//now square root the fractional part (really slowly!!! - TODO, increase performance!)
 	unsigned char ten = 10;
@@ -496,7 +332,7 @@ INSTRUCTION_DEF op_sqrt_dec(INSTRUCTION_PARAM_LIST)
 	memset(z, '\0', DEC_WIDTH);
 	
 	x[DEC_WIDTH-1] = 1;
-	hw_mul(x, DEC_WIDTH, sf -> factor, sf -> byteWidth);
+	hw_mul(x, DEC_WIDTH, sf, DEC_WIDTH);
 	hw_div(x, DEC_WIDTH, &ten, 1);
 	
 	memcpy(y, result, DEC_WIDTH);

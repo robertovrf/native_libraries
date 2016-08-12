@@ -22,6 +22,7 @@ typedef struct _CoreAPI{
 	void (*decrementGTRefCount)(GlobalTypeLink *d);
 	size_t (*getStat)(int type);
 	void (*incrementGTRefCount)(GlobalTypeLink *d);
+	unsigned char* (*getDecimalScalingFactor)(size_t byteWidth);
 	} CoreAPI;
 
 typedef Interface* (*dlLoad)(CoreAPI *capi);
