@@ -367,6 +367,84 @@ INSTRUCTION_DEF op_file_move(INSTRUCTION_PARAM_LIST)
 	memcpy(result, &ok, sizeof(unsigned char));
 	
 	free(path);
+	free(newPath);
+	
+	return RETURN_DIRECT;
+	}
+
+bool copyfile(char *from, char *to)
+	{
+	FILE *ifd = fopen(from, "rb");
+	FILE *ofd = fopen(to, "wb");
+	
+	char buffer[32768];
+	size_t n = 0;
+	
+	while ((n = fread(buffer, sizeof(char), sizeof(buffer), ifd)) > 0)
+		{
+		if (fwrite(buffer, sizeof(char), n, ofd) != n)
+			{
+			fclose(ifd);
+			fclose(ofd);
+			remove(to);
+			return false;
+			}
+		}
+	
+	fclose(ifd);
+	fclose(ofd);
+	
+	return true;
+	}
+
+INSTRUCTION_DEF op_file_copy(INSTRUCTION_PARAM_LIST)
+	{
+	LiveArray *array = (LiveArray*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content;
+	
+	char *path = NULL;
+	
+	if (array != NULL)
+		{
+		path = malloc(array -> length + 1);
+		memset(path, '\0', array -> length + 1);
+		memcpy(path, array -> data, array -> length);
+		}
+		else
+		{
+		path = strdup("");
+		}
+	
+	while (strchr(path, '\\') != NULL) memset(strchr(path, '\\'), '/', 1);
+	
+	array = (LiveArray*) ((VVarLivePTR*) getVariableContent(cframe, 1)) -> content;
+	
+	char *newPath = NULL;
+	
+	if (array != NULL)
+		{
+		newPath = malloc(array -> length + 1);
+		memset(newPath, '\0', array -> length + 1);
+		memcpy(newPath, array -> data, array -> length);
+		}
+		else
+		{
+		newPath = strdup("");
+		}
+	
+	while (strchr(newPath, '\\') != NULL) memset(strchr(newPath, '\\'), '/', 1);
+	
+	//uint8 recursive = getVariableContent(cframe, 2)[0];
+	
+	unsigned char ok = 1;
+	
+	copyfile(path, newPath);
+	
+	//the return value is written to local variable 0
+	unsigned char *result = (unsigned char*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
+	memcpy(result, &ok, sizeof(unsigned char));
+	
+	free(path);
+	free(newPath);
 	
 	return RETURN_DIRECT;
 	}
@@ -800,6 +878,7 @@ Interface* load(CoreAPI *capi)
 	setInterfaceFunction("exists", op_file_exists);
 	setInterfaceFunction("delete", op_file_delete);
 	setInterfaceFunction("move", op_file_move);
+	setInterfaceFunction("copy", op_file_copy);
 	setInterfaceFunction("createDirectory", op_make_dir);
 	setInterfaceFunction("deleteDirectory", op_delete_dir);
 	
