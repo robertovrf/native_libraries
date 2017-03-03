@@ -19,7 +19,4 @@ void copyToDanaInteger(unsigned char *dst, unsigned char *src, size_t srcsz);
 unsigned char* getVariableContent(VFrame *t, unsigned int index);
 void getVariableContentIn(VFrame *t, unsigned int index, VVarR *reg);
 
-void attachPointer(VVarLivePTR *p, VVar *v);
-void detachPointer(VVarLivePTR *p);
-
 #endif

@@ -285,18 +285,8 @@ INSTRUCTION_DEF op_udp_unbind(INSTRUCTION_PARAM_LIST)
 
 #define BUF_LEN 4096
 
-#ifdef WINDOWS
-DWORD WINAPI recv_thread( LPVOID ptr ) 
-#else
-static void * recv_thread(void *ptr)
-#endif
+INSTRUCTION_DEF op_udp_recv(INSTRUCTION_PARAM_LIST)
 	{
-	#ifdef LINUX
-	pthread_detach(pthread_self());
-	#endif
-	
-	VFrame *cframe = (VFrame*) ptr;
-	
 	size_t xs = 0;
 	memcpy((unsigned char*) &xs, getVariableContent(cframe, 0), sizeof(size_t));
 	
@@ -375,7 +365,6 @@ static void * recv_thread(void *ptr)
 	VVarLivePTR *ptrh = (VVarLivePTR*) ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 1)) -> content) -> data;
 	
 	ptrh -> content = (unsigned char*) newArray;
-	attachPointer(ptrh, &newArray -> scope.scopePointers);
 	newArray -> refCount ++;
 	ptrh -> typeLink = newArray -> gtLink -> typeLink;
 	
@@ -402,7 +391,6 @@ static void * recv_thread(void *ptr)
 	ptrh = (VVarLivePTR*) (((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 1)) -> content) -> data + sizeof(VVarLivePTR) + sizeof(size_t));
 	
 	ptrh -> content = (unsigned char*) newContentArray;
-	attachPointer(ptrh, &newContentArray -> scope.scopePointers);
 	newContentArray -> refCount ++;
 	ptrh -> typeLink = newContentArray -> gtLink -> typeLink;
 	
@@ -411,52 +399,11 @@ static void * recv_thread(void *ptr)
 	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
 	copyHostInteger((unsigned char*) result, (unsigned char*) &ok, sizeof(ok));
 	
-	api -> deferredReturn(cframe);
-	
-	#ifdef WINDOWS
-	return 0;
-	#else
-	return NULL;
-	#endif
+	return RETURN_DIRECT;
 	}
 
-INSTRUCTION_DEF op_udp_recv(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_udp_send(INSTRUCTION_PARAM_LIST)
 	{
-	#ifdef WINDOWS
-	HANDLE th = CreateThread( 
-            NULL,                   // default security attributes
-            0,                      // use default stack size  
-            recv_thread,  		     // thread function name
-            cframe,          // argument to thread function 
-            0,                      // use default creation flags 
-            NULL);   // returns the thread identifier
-	
-	CloseHandle(th);
-	#else
-	int err = 0;
-	pthread_t th;
-	memset(&th, '\0', sizeof(pthread_t));
-	
-	if ((err = pthread_create(&th, NULL, recv_thread, cframe)) != 0)
-		{
-		}
-	#endif
-	
-	return RETURN_DEFERRED;
-	}
-
-#ifdef WINDOWS
-DWORD WINAPI send_thread( LPVOID ptr ) 
-#else
-static void * send_thread(void *ptr)
-#endif
-	{
-	#ifdef LINUX
-	pthread_detach(pthread_self());
-	#endif
-	
-	VFrame *cframe = (VFrame*) ptr;
-	
 	unsigned char ok = 0;
 	
 	LiveArray *array = (LiveArray*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content;
@@ -529,48 +476,15 @@ static void * send_thread(void *ptr)
 	close(client);
 	#endif
 	
+	//printf("OK: %u\n", ok);
+	
 	//the return value is written to local variable 0
 	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
 	copyHostInteger((unsigned char*) result, (unsigned char*) &ok, sizeof(ok));
 	
 	free(addr);
 	
-	api -> deferredReturn(cframe);
-	
-	#ifdef WINDOWS
-	return 0;
-	#else
-	return NULL;
-	#endif
-	}
-
-INSTRUCTION_DEF op_udp_send(INSTRUCTION_PARAM_LIST)
-	{
-	#ifdef WINDOWS
-	HANDLE th = CreateThread( 
-            NULL,                   // default security attributes
-            0,                      // use default stack size  
-            send_thread,  		     // thread function name
-            cframe,          // argument to thread function 
-            0,                      // use default creation flags 
-            NULL);   // returns the thread identifier
-	
-	CloseHandle(th);
-	#else
-	int err = 0;
-	pthread_t th;
-	memset(&th, '\0', sizeof(pthread_t));
-	
-	if ((err = pthread_create(&th, NULL, send_thread, cframe)) != 0)
-		{
-		/*
-		api -> debugOutput(callingThread, "TCPlib::Starting accept thread failed [%s]", strerror(errno));
-		return NULL;
-		*/
-		}
-	#endif
-	
-	return RETURN_DEFERRED;
+	return RETURN_DIRECT;
 	}
 
 Interface* load(CoreAPI *capi)

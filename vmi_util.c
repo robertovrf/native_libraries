@@ -124,19 +124,3 @@ void getVariableContentIn(VFrame *t, unsigned int index, VVarR *reg)
 		reg -> PR.content = data;
 		}
 	}
-
-void attachPointer(VVarLivePTR *p, VVar *v)
-	{
-	p -> next = v -> ptrs;
-	if (v -> ptrs != NULL) ((VVarLivePTR*) v -> ptrs) -> prev = (VVar*) p;
-	v -> ptrs = (VVar*) p;
-	p -> prev = v;
-	}
-
-void detachPointer(VVarLivePTR *p)
-	{
-	((VVarLivePTR*) p -> prev) -> next = p -> next;
-	if (p -> next != NULL) ((VVarLivePTR*) p -> next) -> prev = p -> prev;
-	p -> next = NULL;
-	p -> prev = NULL;
-	}

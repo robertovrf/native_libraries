@@ -21,18 +21,8 @@ static GlobalTypeLink *charArrayGT = NULL;
 
 #define MAX_BUF 32
 
-#ifdef WINDOWS
-DWORD WINAPI gl_thread( LPVOID ptr ) 
-#else
-static void * gl_thread(void *ptr)
-#endif
+INSTRUCTION_DEF op_get_line(INSTRUCTION_PARAM_LIST)
 	{
-	#ifdef LINUX
-	pthread_detach(pthread_self());
-	#endif
-	
-	VFrame *cframe = (VFrame*) ptr;
-	
 	char buf[MAX_BUF];
 	memset(buf, '\0', MAX_BUF);
 	
@@ -72,48 +62,12 @@ static void * gl_thread(void *ptr)
 			VVarLivePTR *ptrh = (VVarLivePTR*) ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content) -> data;
 			
 			ptrh -> content = (unsigned char*) newArray;
-			attachPointer(ptrh, &newArray -> scope.scopePointers);
 			newArray -> refCount ++;
 			ptrh -> typeLink = newArray -> gtLink -> typeLink;
 			}
 		}
 	
-	api -> deferredReturn(cframe);
-	
-	#ifdef WINDOWS
-	return 0;
-	#else
-	return NULL;
-	#endif
-	}
-
-INSTRUCTION_DEF op_get_line(INSTRUCTION_PARAM_LIST)
-	{
-	#ifdef WINDOWS
-	HANDLE th = CreateThread( 
-            NULL,                   // default security attributes
-            0,                      // use default stack size  
-            gl_thread,  		     // thread function name
-            cframe,          // argument to thread function 
-            0,                      // use default creation flags 
-            NULL);   // returns the thread identifier
-	
-	CloseHandle(th);
-	#else
-	int err = 0;
-	pthread_t th;
-	memset(&th, '\0', sizeof(pthread_t));
-	
-	if ((err = pthread_create(&th, NULL, gl_thread, cframe)) != 0)
-		{
-		/*
-		api -> debugOutput(callingThread, "TCPlib::Starting accept thread failed [%s]", strerror(errno));
-		return NULL;
-		*/
-		}
-	#endif
-	
-	return RETURN_DEFERRED;
+	return RETURN_DIRECT;
 	}
 
 Interface* load(CoreAPI *capi)

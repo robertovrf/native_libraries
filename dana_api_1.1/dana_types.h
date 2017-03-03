@@ -107,6 +107,7 @@ struct _s_danaType;
 
 typedef struct rvv{
 	RPTR PR;
+	//unsigned char *content;
 	unsigned char type; unsigned char xtype;
 	size_t etype;
 	struct _s_danaType *typeLink;
@@ -117,6 +118,7 @@ typedef struct oi{
 	VVarLivePTR bindpoint;
 	struct lo *home;
 	struct oi *next;
+	size_t knr;
 	} ObjectIdentity;
 
 typedef struct lo{
@@ -146,6 +148,20 @@ typedef struct _live_data{
 	void *gce;
 	struct component *owner;
 	LiveScope scope;
+	
+	size_t csa;
+	size_t csb;
+	size_t csc;
+	size_t csd;
+	size_t cse;
+#ifdef MACHINE_32
+	#ifdef LINUX
+	size_t csf;
+	#endif
+	#ifdef WINDOWS
+	size_t csf;
+	#endif
+#endif
 	} LiveData;
 
 typedef struct{
@@ -263,7 +279,7 @@ typedef struct component{
 	SourceHeader *header;
 	LiveVL instanceList;
 	VVarLivePTR createdItems;
-	VVarLivePTR hostedObjects;
+	void *ho;
 	ObjectSpec *objects;
 	void *bs;
 	size_t *globalTypeMappings;
@@ -273,6 +289,8 @@ typedef struct component{
 	void *a;
 	void *d;
 	void *cs;
+	size_t rc;
+	unsigned char fg;
 	} Component;
 
 typedef struct{

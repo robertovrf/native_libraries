@@ -147,7 +147,6 @@ INSTRUCTION_DEF op_file_read(INSTRUCTION_PARAM_LIST)
 		VVarLivePTR *ptrh = (VVarLivePTR*) ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 2)) -> content) -> data;
 		
 		ptrh -> content = (unsigned char*) newArray;
-		attachPointer(ptrh, &newArray -> scope.scopePointers);
 		newArray -> refCount ++;
 		ptrh -> typeLink = newArray -> gtLink -> typeLink;
 		}
@@ -525,7 +524,6 @@ INSTRUCTION_DEF op_get_dir_content(INSTRUCTION_PARAM_LIST)
 					
 					ptrh -> content = (unsigned char*) itemArray;
 					ptrh -> typeLink = itemArray -> gtLink -> typeLink;
-					attachPointer(ptrh, &itemArray -> scope.scopePointers);
 					itemArray -> refCount ++;
 					
 					if (itemList == NULL)
@@ -585,7 +583,6 @@ INSTRUCTION_DEF op_get_dir_content(INSTRUCTION_PARAM_LIST)
 				
 				ptrh -> content = (unsigned char*) itemArray;
 				ptrh -> typeLink = itemArray -> gtLink -> typeLink;
-				attachPointer(ptrh, &itemArray -> scope.scopePointers);
 				itemArray -> refCount ++;
 				
 				if (itemList == NULL)
@@ -618,7 +615,6 @@ INSTRUCTION_DEF op_get_dir_content(INSTRUCTION_PARAM_LIST)
 			VVarLivePTR *ptrh = (VVarLivePTR*) (&newArray -> data[sizeof(VVarLivePTR) * i]);
 			ptrh -> content = (unsigned char*) fw -> data;
 			ptrh -> typeLink = fw -> data -> gtLink -> typeLink;
-			attachPointer(ptrh, &fw -> data -> scope.scopePointers);
 			fw -> data -> refCount ++;
 			
 			FileInfoItem *td = fw;
@@ -629,7 +625,6 @@ INSTRUCTION_DEF op_get_dir_content(INSTRUCTION_PARAM_LIST)
 		VVarLivePTR *ptrh = (VVarLivePTR*) data -> data;
 		ptrh -> content = (unsigned char*) newArray;
 		ptrh -> typeLink = newArray -> gtLink -> typeLink;
-		attachPointer(ptrh, &newArray -> scope.scopePointers);
 		newArray -> refCount ++;
 		}
 	

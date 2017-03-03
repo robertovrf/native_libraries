@@ -833,28 +833,25 @@ long long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, 
         	{
 	        if (myInstance -> mouseListenerObject != NULL)
 	        	{
-	            if (myInstance -> mouseEventExitStatus.status == 0)
-	            	{
-					//unsigned int x = GET_X_LPARAM(lp);
-					//unsigned int y = GET_Y_LPARAM(lp);
+				//unsigned int x = GET_X_LPARAM(lp);
+				//unsigned int y = GET_Y_LPARAM(lp);
 
-					POINT point;
-					GetCursorPos(&point);
+				POINT point;
+				GetCursorPos(&point);
 
-					size_t screenX = point.x;
-					size_t screenY = point.y;
-					size_t button = 1;
+				size_t screenX = point.x;
+				size_t screenY = point.y;
+				size_t button = 1;
 
-					copyHostInteger((unsigned char*) &myInstance -> mouseDownX, (unsigned char*) &screenX, sizeof(size_t));
-					copyHostInteger((unsigned char*) &myInstance -> mouseDownY, (unsigned char*) &screenY, sizeof(size_t));
-					copyHostInteger((unsigned char*) &myInstance -> mouseDownButton, (unsigned char*) &button, sizeof(size_t));
+				copyHostInteger((unsigned char*) &myInstance -> mouseDownX, (unsigned char*) &screenX, sizeof(size_t));
+				copyHostInteger((unsigned char*) &myInstance -> mouseDownY, (unsigned char*) &screenY, sizeof(size_t));
+				copyHostInteger((unsigned char*) &myInstance -> mouseDownButton, (unsigned char*) &button, sizeof(size_t));
 
-					fillRegister(&myInstance -> mouseParams[0], (unsigned char*) &myInstance -> mouseDownX);
-					fillRegister(&myInstance -> mouseParams[1], (unsigned char*) &myInstance -> mouseDownY);
-					fillRegister(&myInstance -> mouseParams[2], (unsigned char*) &myInstance -> mouseDownButton);
+				fillRegister(&myInstance -> mouseParams[0], (unsigned char*) &myInstance -> mouseDownX);
+				fillRegister(&myInstance -> mouseParams[1], (unsigned char*) &myInstance -> mouseDownY);
+				fillRegister(&myInstance -> mouseParams[2], (unsigned char*) &myInstance -> mouseDownButton);
 
-					api -> callFunction(myInstance -> mouseListenerObject, &myInstance -> mouseListener, 3, &myInstance -> mouseEventExitStatus, myInstance -> mouseParams, 3);
-					}
+				api -> callFunction(myInstance -> mouseListenerObject, 3, myInstance -> mouseParams, 3);
 				}
 
 			myInstance -> captureCount ++;
@@ -883,7 +880,7 @@ long long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, 
 			if (myInstance -> clickListenerObject != NULL)
 				{
 	            //our registers etc. are static/singletons, so we don't launch a 2nd thread until the first one has finished...
-	            if (myInstance -> mouseClickExitStatus.status == 0 && (screenX >= myInstance -> windowX && screenX <= myInstance -> windowX + myInstance -> windowWidth && screenY >= myInstance -> windowY && screenY <= myInstance -> windowY + myInstance -> windowHeight))
+	            if (screenX >= myInstance -> windowX && screenX <= myInstance -> windowX + myInstance -> windowWidth && screenY >= myInstance -> windowY && screenY <= myInstance -> windowY + myInstance -> windowHeight)
 	            	{
 		            size_t x = screenX - myInstance -> windowX;
 		            size_t y = screenY - myInstance -> windowY;
@@ -896,24 +893,21 @@ long long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, 
 					fillRegister(&myInstance -> clickParams[1], (unsigned char*) &myInstance -> clickY);
 					fillRegister(&myInstance -> clickParams[2], (unsigned char*) &myInstance -> clickButton);
 
-					api -> callFunction(myInstance -> clickListenerObject, &myInstance -> clickListener, 3, &myInstance -> mouseClickExitStatus, myInstance -> clickParams, 3);
+					api -> callFunction(myInstance -> clickListenerObject, 3, myInstance -> clickParams, 3);
 					}
 				}
 
 			if (myInstance -> mouseListenerObject != NULL)
 				{
-	            if (myInstance -> mouseEventExitStatus.status == 0)
-	            	{
-					copyHostInteger((unsigned char*) &myInstance -> mouseUpX, (unsigned char*) &screenX, sizeof(size_t));
-					copyHostInteger((unsigned char*) &myInstance -> mouseUpY, (unsigned char*) &screenY, sizeof(size_t));
-					copyHostInteger((unsigned char*) &myInstance -> mouseUpButton, (unsigned char*) &button, sizeof(size_t));
+				copyHostInteger((unsigned char*) &myInstance -> mouseUpX, (unsigned char*) &screenX, sizeof(size_t));
+				copyHostInteger((unsigned char*) &myInstance -> mouseUpY, (unsigned char*) &screenY, sizeof(size_t));
+				copyHostInteger((unsigned char*) &myInstance -> mouseUpButton, (unsigned char*) &button, sizeof(size_t));
 
-					fillRegister(&myInstance -> mouseParams[0], (unsigned char*) &myInstance -> mouseUpX);
-					fillRegister(&myInstance -> mouseParams[1], (unsigned char*) &myInstance -> mouseUpY);
-					fillRegister(&myInstance -> mouseParams[2], (unsigned char*) &myInstance -> mouseUpButton);
+				fillRegister(&myInstance -> mouseParams[0], (unsigned char*) &myInstance -> mouseUpX);
+				fillRegister(&myInstance -> mouseParams[1], (unsigned char*) &myInstance -> mouseUpY);
+				fillRegister(&myInstance -> mouseParams[2], (unsigned char*) &myInstance -> mouseUpButton);
 
-					api -> callFunction(myInstance -> mouseListenerObject, &myInstance -> mouseListener, 4, &myInstance -> mouseEventExitStatus, myInstance -> mouseParams, 3);
-					}
+				api -> callFunction(myInstance -> mouseListenerObject, 4, myInstance -> mouseParams, 3);
 				}
 
 			myInstance -> captureCount --;
@@ -929,28 +923,25 @@ long long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, 
         	{
 	        if (myInstance -> mouseListenerObject != NULL)
 	        	{
-	            if (myInstance -> mouseEventExitStatus.status == 0)
-	            	{
-					//unsigned int x = GET_X_LPARAM(lp);
-					//unsigned int y = GET_Y_LPARAM(lp);
+				//unsigned int x = GET_X_LPARAM(lp);
+				//unsigned int y = GET_Y_LPARAM(lp);
 
-					POINT point;
-					GetCursorPos(&point);
+				POINT point;
+				GetCursorPos(&point);
 
-					size_t screenX = point.x;
-					size_t screenY = point.y;
-					size_t button = 2;
+				size_t screenX = point.x;
+				size_t screenY = point.y;
+				size_t button = 2;
 
-					copyHostInteger((unsigned char*) &myInstance -> mouseDownX, (unsigned char*) &screenX, sizeof(size_t));
-					copyHostInteger((unsigned char*) &myInstance -> mouseDownY, (unsigned char*) &screenY, sizeof(size_t));
-					copyHostInteger((unsigned char*) &myInstance -> mouseDownButton, (unsigned char*) &button, sizeof(size_t));
+				copyHostInteger((unsigned char*) &myInstance -> mouseDownX, (unsigned char*) &screenX, sizeof(size_t));
+				copyHostInteger((unsigned char*) &myInstance -> mouseDownY, (unsigned char*) &screenY, sizeof(size_t));
+				copyHostInteger((unsigned char*) &myInstance -> mouseDownButton, (unsigned char*) &button, sizeof(size_t));
 
-					fillRegister(&myInstance -> mouseParams[0], (unsigned char*) &myInstance -> mouseDownX);
-					fillRegister(&myInstance -> mouseParams[1], (unsigned char*) &myInstance -> mouseDownY);
-					fillRegister(&myInstance -> mouseParams[2], (unsigned char*) &myInstance -> mouseDownButton);
+				fillRegister(&myInstance -> mouseParams[0], (unsigned char*) &myInstance -> mouseDownX);
+				fillRegister(&myInstance -> mouseParams[1], (unsigned char*) &myInstance -> mouseDownY);
+				fillRegister(&myInstance -> mouseParams[2], (unsigned char*) &myInstance -> mouseDownButton);
 
-					api -> callFunction(myInstance -> mouseListenerObject, &myInstance -> mouseListener, 3, &myInstance -> mouseEventExitStatus, myInstance -> mouseParams, 3);
-					}
+				api -> callFunction(myInstance -> mouseListenerObject, 3, myInstance -> mouseParams, 3);
 				}
 
 			myInstance -> captureCount ++;
@@ -979,7 +970,7 @@ long long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, 
 			if (myInstance -> clickListenerObject != NULL)
 				{
 	            //our registers etc. are static/singletons, so we don't launch a 2nd thread until the first one has finished...
-	            if (myInstance -> mouseClickExitStatus.status == 0 && (screenX >= myInstance -> windowX && screenX <= myInstance -> windowX + myInstance -> windowWidth && screenY >= myInstance -> windowY && screenY <= myInstance -> windowY + myInstance -> windowHeight))
+	            if (screenX >= myInstance -> windowX && screenX <= myInstance -> windowX + myInstance -> windowWidth && screenY >= myInstance -> windowY && screenY <= myInstance -> windowY + myInstance -> windowHeight)
 	            	{
 		            size_t x = screenX - myInstance -> windowX;
 		            size_t y = screenY - myInstance -> windowY;
@@ -992,24 +983,21 @@ long long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, 
 					fillRegister(&myInstance -> clickParams[1], (unsigned char*) &myInstance -> clickY);
 					fillRegister(&myInstance -> clickParams[2], (unsigned char*) &myInstance -> clickButton);
 
-					api -> callFunction(myInstance -> clickListenerObject, &myInstance -> clickListener, 3, &myInstance -> mouseClickExitStatus, myInstance -> clickParams, 3);
+					api -> callFunction(myInstance -> clickListenerObject, 3, myInstance -> clickParams, 3);
 					}
 				}
 
 			if (myInstance -> mouseListenerObject != NULL)
 				{
-	            if (myInstance -> mouseEventExitStatus.status == 0)
-	            	{
-					copyHostInteger((unsigned char*) &myInstance -> mouseUpX, (unsigned char*) &screenX, sizeof(size_t));
-					copyHostInteger((unsigned char*) &myInstance -> mouseUpY, (unsigned char*) &screenY, sizeof(size_t));
-					copyHostInteger((unsigned char*) &myInstance -> mouseUpButton, (unsigned char*) &button, sizeof(size_t));
+				copyHostInteger((unsigned char*) &myInstance -> mouseUpX, (unsigned char*) &screenX, sizeof(size_t));
+				copyHostInteger((unsigned char*) &myInstance -> mouseUpY, (unsigned char*) &screenY, sizeof(size_t));
+				copyHostInteger((unsigned char*) &myInstance -> mouseUpButton, (unsigned char*) &button, sizeof(size_t));
 
-					fillRegister(&myInstance -> mouseParams[0], (unsigned char*) &myInstance -> mouseUpX);
-					fillRegister(&myInstance -> mouseParams[1], (unsigned char*) &myInstance -> mouseUpY);
-					fillRegister(&myInstance -> mouseParams[2], (unsigned char*) &myInstance -> mouseUpButton);
+				fillRegister(&myInstance -> mouseParams[0], (unsigned char*) &myInstance -> mouseUpX);
+				fillRegister(&myInstance -> mouseParams[1], (unsigned char*) &myInstance -> mouseUpY);
+				fillRegister(&myInstance -> mouseParams[2], (unsigned char*) &myInstance -> mouseUpButton);
 
-					api -> callFunction(myInstance -> mouseListenerObject, &myInstance -> mouseListener, 4, &myInstance -> mouseEventExitStatus, myInstance -> mouseParams, 3);
-					}
+				api -> callFunction(myInstance -> mouseListenerObject, 4, myInstance -> mouseParams, 3);
 				}
 
 			myInstance -> captureCount --;
@@ -1025,28 +1013,25 @@ long long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, 
         	{
 	        if (myInstance -> mouseListenerObject != NULL)
 	        	{
-	            if (myInstance -> mouseEventExitStatus.status == 0)
-	            	{
-					//unsigned int x = GET_X_LPARAM(lp);
-					//unsigned int y = GET_Y_LPARAM(lp);
+				//unsigned int x = GET_X_LPARAM(lp);
+				//unsigned int y = GET_Y_LPARAM(lp);
 
-					POINT point;
-					GetCursorPos(&point);
+				POINT point;
+				GetCursorPos(&point);
 
-					size_t screenX = point.x;
-					size_t screenY = point.y;
-					size_t button = 3;
+				size_t screenX = point.x;
+				size_t screenY = point.y;
+				size_t button = 3;
 
-					copyHostInteger((unsigned char*) &myInstance -> mouseDownX, (unsigned char*) &screenX, sizeof(size_t));
-					copyHostInteger((unsigned char*) &myInstance -> mouseDownY, (unsigned char*) &screenY, sizeof(size_t));
-					copyHostInteger((unsigned char*) &myInstance -> mouseDownButton, (unsigned char*) &button, sizeof(size_t));
+				copyHostInteger((unsigned char*) &myInstance -> mouseDownX, (unsigned char*) &screenX, sizeof(size_t));
+				copyHostInteger((unsigned char*) &myInstance -> mouseDownY, (unsigned char*) &screenY, sizeof(size_t));
+				copyHostInteger((unsigned char*) &myInstance -> mouseDownButton, (unsigned char*) &button, sizeof(size_t));
 
-					fillRegister(&myInstance -> mouseParams[0], (unsigned char*) &myInstance -> mouseDownX);
-					fillRegister(&myInstance -> mouseParams[1], (unsigned char*) &myInstance -> mouseDownY);
-					fillRegister(&myInstance -> mouseParams[2], (unsigned char*) &myInstance -> mouseDownButton);
+				fillRegister(&myInstance -> mouseParams[0], (unsigned char*) &myInstance -> mouseDownX);
+				fillRegister(&myInstance -> mouseParams[1], (unsigned char*) &myInstance -> mouseDownY);
+				fillRegister(&myInstance -> mouseParams[2], (unsigned char*) &myInstance -> mouseDownButton);
 
-					api -> callFunction(myInstance -> mouseListenerObject, &myInstance -> mouseListener, 3, &myInstance -> mouseEventExitStatus, myInstance -> mouseParams, 3);
-					}
+				api -> callFunction(myInstance -> mouseListenerObject, 3, myInstance -> mouseParams, 3);
 				}
 
 			myInstance -> captureCount ++;
@@ -1075,7 +1060,7 @@ long long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, 
 			if (myInstance -> clickListenerObject != NULL)
 				{
 	            //our registers etc. are static/singletons, so we don't launch a 2nd thread until the first one has finished...
-	            if (myInstance -> mouseClickExitStatus.status == 0 && (screenX >= myInstance -> windowX && screenX <= myInstance -> windowX + myInstance -> windowWidth && screenY >= myInstance -> windowY && screenY <= myInstance -> windowY + myInstance -> windowHeight))
+	            if (screenX >= myInstance -> windowX && screenX <= myInstance -> windowX + myInstance -> windowWidth && screenY >= myInstance -> windowY && screenY <= myInstance -> windowY + myInstance -> windowHeight)
 	            	{
 		            size_t x = screenX - myInstance -> windowX;
 		            size_t y = screenY - myInstance -> windowY;
@@ -1088,24 +1073,21 @@ long long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, 
 					fillRegister(&myInstance -> clickParams[1], (unsigned char*) &myInstance -> clickY);
 					fillRegister(&myInstance -> clickParams[2], (unsigned char*) &myInstance -> clickButton);
 
-					api -> callFunction(myInstance -> clickListenerObject, &myInstance -> clickListener, 3, &myInstance -> mouseClickExitStatus, myInstance -> clickParams, 3);
+					api -> callFunction(myInstance -> clickListenerObject, 3, myInstance -> clickParams, 3);
 					}
 				}
 
 			if (myInstance -> mouseListenerObject != NULL)
 				{
-	            if (myInstance -> mouseEventExitStatus.status == 0)
-	            	{
-					copyHostInteger((unsigned char*) &myInstance -> mouseUpX, (unsigned char*) &screenX, sizeof(size_t));
-					copyHostInteger((unsigned char*) &myInstance -> mouseUpY, (unsigned char*) &screenY, sizeof(size_t));
-					copyHostInteger((unsigned char*) &myInstance -> mouseUpButton, (unsigned char*) &button, sizeof(size_t));
+				copyHostInteger((unsigned char*) &myInstance -> mouseUpX, (unsigned char*) &screenX, sizeof(size_t));
+				copyHostInteger((unsigned char*) &myInstance -> mouseUpY, (unsigned char*) &screenY, sizeof(size_t));
+				copyHostInteger((unsigned char*) &myInstance -> mouseUpButton, (unsigned char*) &button, sizeof(size_t));
 
-					fillRegister(&myInstance -> mouseParams[0], (unsigned char*) &myInstance -> mouseUpX);
-					fillRegister(&myInstance -> mouseParams[1], (unsigned char*) &myInstance -> mouseUpY);
-					fillRegister(&myInstance -> mouseParams[2], (unsigned char*) &myInstance -> mouseUpButton);
+				fillRegister(&myInstance -> mouseParams[0], (unsigned char*) &myInstance -> mouseUpX);
+				fillRegister(&myInstance -> mouseParams[1], (unsigned char*) &myInstance -> mouseUpY);
+				fillRegister(&myInstance -> mouseParams[2], (unsigned char*) &myInstance -> mouseUpButton);
 
-					api -> callFunction(myInstance -> mouseListenerObject, &myInstance -> mouseListener, 4, &myInstance -> mouseEventExitStatus, myInstance -> mouseParams, 3);
-					}
+				api -> callFunction(myInstance -> mouseListenerObject, 4, myInstance -> mouseParams, 3);
 				}
 
 			myInstance -> captureCount --;
@@ -1124,36 +1106,33 @@ long long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, 
 
 			if (myInstance -> mouseListenerObject != NULL)
 				{
-	            if (myInstance -> mouseEventExitStatus.status == 0)
-	            	{
-					size_t x = GET_X_LPARAM(lp);
-					size_t y = GET_Y_LPARAM(lp);
+				size_t x = GET_X_LPARAM(lp);
+				size_t y = GET_Y_LPARAM(lp);
 
-					POINT point;
-					GetCursorPos(&point);
+				POINT point;
+				GetCursorPos(&point);
 
-					size_t screenX = point.x;
-					size_t screenY = point.y;
+				size_t screenX = point.x;
+				size_t screenY = point.y;
 
-					//printf("Mouse move: %u/%u\n", screenX, screenY);
+				//printf("Mouse move: %u/%u\n", screenX, screenY);
 
-					//check if the x and y from the lparam are the same as the global x/y; if not discard the event
-					// - this is a performance-boosting filter which avoids spurious mouse move events caused by the window itself being repositioned
+				//check if the x and y from the lparam are the same as the global x/y; if not discard the event
+				// - this is a performance-boosting filter which avoids spurious mouse move events caused by the window itself being repositioned
 
-					if ((screenX != myInstance -> lastMouseMoveX || screenY != myInstance -> lastMouseMoveY)
-						&& (myInstance -> windowX + x == screenX && myInstance -> windowY + y == screenY))
-						{
-						myInstance -> lastMouseMoveX = screenX;
-						myInstance -> lastMouseMoveY = screenY;
+				if ((screenX != myInstance -> lastMouseMoveX || screenY != myInstance -> lastMouseMoveY)
+					&& (myInstance -> windowX + x == screenX && myInstance -> windowY + y == screenY))
+					{
+					myInstance -> lastMouseMoveX = screenX;
+					myInstance -> lastMouseMoveY = screenY;
 
-						copyHostInteger((unsigned char*) &myInstance -> mouseMoveX, (unsigned char*) &screenX, sizeof(size_t));
-						copyHostInteger((unsigned char*) &myInstance -> mouseMoveY, (unsigned char*) &screenY, sizeof(size_t));
+					copyHostInteger((unsigned char*) &myInstance -> mouseMoveX, (unsigned char*) &screenX, sizeof(size_t));
+					copyHostInteger((unsigned char*) &myInstance -> mouseMoveY, (unsigned char*) &screenY, sizeof(size_t));
 
-						fillRegister(&myInstance -> mouseParams[0], (unsigned char*) &myInstance -> mouseMoveX);
-						fillRegister(&myInstance -> mouseParams[1], (unsigned char*) &myInstance -> mouseMoveY);
+					fillRegister(&myInstance -> mouseParams[0], (unsigned char*) &myInstance -> mouseMoveX);
+					fillRegister(&myInstance -> mouseParams[1], (unsigned char*) &myInstance -> mouseMoveY);
 
-						api -> callFunction(myInstance -> mouseListenerObject, &myInstance -> mouseListener, 5, &myInstance -> mouseEventExitStatus, myInstance -> mouseParams, 2);
-						}
+					api -> callFunction(myInstance -> mouseListenerObject, 5, myInstance -> mouseParams, 2);
 					}
 				}
 
@@ -1370,6 +1349,7 @@ typedef struct{
 	sem_t sem;
 #endif
 #endif
+	WindowInstance *wi;
 	} CloseWindowInfo;
 
 typedef struct{
@@ -1378,24 +1358,65 @@ typedef struct{
 	VFrame *vframe;
 	unsigned char *resultData;
 	SDL_Color color;
+#ifdef WINDOWS
+	HANDLE sem;
+#endif
+#ifdef OSX
+	dispatch_semaphore_t sem;
+#else
+#ifdef LINUX
+	sem_t sem;
+#endif
+#endif
 	} GenerateTextBitmapData;
 
 typedef struct{
 	UIBitmap *bitmapData;
 	VFrame *vframe;
 	unsigned char *sourceData;
+#ifdef WINDOWS
+	HANDLE sem;
+#endif
+#ifdef OSX
+	dispatch_semaphore_t sem;
+#else
+#ifdef LINUX
+	sem_t sem;
+#endif
+#endif
 	} GenerateBitmapSurfaceData;
 
 typedef struct{
 	char *fontPath;
 	size_t size;
 	VFrame *vframe;
+	TTF_Font *fontHandle;
+#ifdef WINDOWS
+	HANDLE sem;
+#endif
+#ifdef OSX
+	dispatch_semaphore_t sem;
+#else
+#ifdef LINUX
+	sem_t sem;
+#endif
+#endif
 	} LoadFontData;
 
 typedef struct{
 	char *text;
 	TTF_Font *font;
 	VFrame *vframe;
+#ifdef WINDOWS
+	HANDLE sem;
+#endif
+#ifdef OSX
+	dispatch_semaphore_t sem;
+#else
+#ifdef LINUX
+	sem_t sem;
+#endif
+#endif
 	} GetTextWidthInfo;
 
 #ifdef WINDOWS
@@ -1425,6 +1446,7 @@ static unsigned int DX_CLOSE_WINDOW = 0;
 static unsigned int DX_GENERATE_TEXT_BITMAP = 0;
 static unsigned int DX_GENERATE_BITMAP_SURFACE = 0;
 static unsigned int DX_LOAD_FONT = 0;
+static unsigned int DX_UNLOAD_FONT = 0;
 static unsigned int DX_GET_TEXT_WIDTH = 0;
 
 #ifdef WINDOWS
@@ -1460,6 +1482,7 @@ static void* render_thread(void *ptr)
 	DX_GENERATE_TEXT_BITMAP = SDL_RegisterEvents(1);
 	DX_GENERATE_BITMAP_SURFACE = SDL_RegisterEvents(1);
 	DX_LOAD_FONT = SDL_RegisterEvents(1);
+	DX_UNLOAD_FONT = SDL_RegisterEvents(1);
 	DX_GET_TEXT_WIDTH = SDL_RegisterEvents(1);
 
 	#ifdef WINDOWS
@@ -1613,36 +1636,41 @@ static void* render_thread(void *ptr)
 				}
 				else if (e.type == DX_CLOSE_WINDOW)
 				{
-				WindowInstance *wi = (WindowInstance*) e.user.data1;
+				CloseWindowInfo *cwi = (CloseWindowInfo*) e.user.data1;
 
-				removeListItem(&instances, &lastInstance, wi);
+				removeListItem(&instances, &lastInstance, cwi -> wi);
 
-				if (wi -> clickListener.content != NULL)
+				if (cwi -> wi -> clickListener.content != NULL)
 					{
-					wi -> clickListenerObject = NULL;
-					detachPointer(&wi -> clickListener);
-					wi -> clickListener.content = NULL;
+					cwi -> wi -> clickListenerObject = NULL;
+					cwi -> wi -> clickListener.content = NULL;
 					}
 
-				if (wi -> mouseListener.content != NULL)
+				if (cwi -> wi -> mouseListener.content != NULL)
 					{
-					wi -> mouseListenerObject = NULL;
-					detachPointer(&wi -> mouseListener);
-					wi -> mouseListener.content = NULL;
+					cwi -> wi -> mouseListenerObject = NULL;
+					cwi -> wi -> mouseListener.content = NULL;
 					}
 
-				if (wi -> baseTexture != NULL)
-					SDL_DestroyTexture(wi -> baseTexture);
+				if (cwi -> wi -> baseTexture != NULL)
+					SDL_DestroyTexture(cwi -> wi -> baseTexture);
 
-				SDL_DestroyRenderer(wi -> renderer);
-				SDL_DestroyWindow(wi -> win);
+				SDL_DestroyRenderer(cwi -> wi -> renderer);
+				SDL_DestroyWindow(cwi -> wi -> win);
 
 				//TODO: cleanup wi -> frontBuffer / wi -> backBuffer ???
-				free(wi);
-
-				VFrame *frame = (VFrame*) e.user.data2;
-
-				api -> deferredReturn(frame);
+				free(cwi -> wi);
+				
+				#ifdef WINDOWS
+				ReleaseSemaphore(cwi -> sem, 1, NULL);
+				#endif
+				#ifdef OSX
+				dispatch_semaphore_signal(cwi -> sem);
+				#else
+				#ifdef LINUX
+				sem_post(&cwi -> sem);
+				#endif
+				#endif
 				}
 				else if (e.type == DX_GENERATE_TEXT_BITMAP)
 				{
@@ -1691,7 +1719,6 @@ static void* render_thread(void *ptr)
 				pixelArrayH -> owner = frame -> blocking -> instance;
 
 				arrayPTR -> content = (unsigned char*) pixelArrayH;
-				attachPointer(arrayPTR, &pixelArrayH -> scope.scopePointers);
 				pixelArrayH -> refCount ++;
 				arrayPTR -> typeLink = pixelArrayH -> gtLink -> typeLink;
 
@@ -1759,12 +1786,18 @@ static void* render_thread(void *ptr)
 
 				SDL_UnlockSurface(surf);
 
-				free(data -> text);
-				free(data);
-
 				SDL_FreeSurface(surf);
 
-				api -> deferredReturn(frame);
+				#ifdef WINDOWS
+				ReleaseSemaphore(data -> sem, 1, NULL);
+				#endif
+				#ifdef OSX
+				dispatch_semaphore_signal(data -> sem);
+				#else
+				#ifdef LINUX
+				sem_post(&data -> sem);
+				#endif
+				#endif
 				}
 				else if (e.type == DX_GENERATE_BITMAP_SURFACE)
 				{
@@ -1837,11 +1870,16 @@ static void* render_thread(void *ptr)
 
 				// -- clean up and return
 
-				VFrame *frame = data -> vframe;
-
-				free(data);
-
-				api -> deferredReturn(frame);
+				#ifdef WINDOWS
+				ReleaseSemaphore(data -> sem, 1, NULL);
+				#endif
+				#ifdef OSX
+				dispatch_semaphore_signal(data -> sem);
+				#else
+				#ifdef LINUX
+				sem_post(&data -> sem);
+				#endif
+				#endif
 				}
 				else if (e.type == DX_LOAD_FONT)
 				{
@@ -1855,13 +1893,39 @@ static void* render_thread(void *ptr)
 					}
 
 				free(lfd -> fontPath);
-				free(lfd);
 
 				size_t xs = (size_t) font;
 				size_t *result = (size_t*) &frame -> localsData[((DanaType*) ((StructuredType*) frame -> scopes[0].scope.etype) -> structure.content)[0].offset];
 				memcpy(result, &xs, sizeof(size_t));
 
-				api -> deferredReturn(frame);
+				#ifdef WINDOWS
+				ReleaseSemaphore(lfd -> sem, 1, NULL);
+				#endif
+				#ifdef OSX
+				dispatch_semaphore_signal(lfd -> sem);
+				#else
+				#ifdef LINUX
+				sem_post(&lfd -> sem);
+				#endif
+				#endif
+				}
+				else if (e.type == DX_UNLOAD_FONT)
+				{
+				LoadFontData *lfd = (LoadFontData*) e.user.data1;
+				TTF_Font *font = lfd -> fontHandle;
+				
+				TTF_CloseFont(font);
+				
+				#ifdef WINDOWS
+				ReleaseSemaphore(lfd -> sem, 1, NULL);
+				#endif
+				#ifdef OSX
+				dispatch_semaphore_signal(lfd -> sem);
+				#else
+				#ifdef LINUX
+				sem_post(&lfd -> sem);
+				#endif
+				#endif
 				}
 				else if (e.type == DX_GET_TEXT_WIDTH)
 				{
@@ -1873,14 +1937,20 @@ static void* render_thread(void *ptr)
 				TTF_SizeText(gwi -> font, gwi -> text, &sdl_width, NULL);
 				width = sdl_width;
 
-				free(gwi -> text);
-				free(gwi);
-
 				size_t *result = (size_t*) &frame -> localsData[((DanaType*) ((StructuredType*) frame -> scopes[0].scope.etype) -> structure.content)[0].offset];
 
 				copyHostInteger((unsigned char*) result, (unsigned char*) &width, sizeof(size_t));
 
-				api -> deferredReturn(frame);
+				#ifdef WINDOWS
+				ReleaseSemaphore(gwi -> sem, 1, NULL);
+				#endif
+				#ifdef OSX
+				dispatch_semaphore_signal(gwi -> sem);
+				#else
+				#ifdef LINUX
+				sem_post(&gwi -> sem);
+				#endif
+				#endif
 				}
 			} while(SDL_PollEvent(&e)); //power through all other events to clear the queue
 		}
@@ -1937,87 +2007,32 @@ static void* render_thread(void *ptr)
 	#endif
 	}
 
-#ifdef STATS
-#ifdef WINDOWS
-DWORD WINAPI stats_thread(LPVOID ptr)
-#else
-static void* stats_thread(void *ptr)
-#endif
+INSTRUCTION_DEF op_make_window(INSTRUCTION_PARAM_LIST)
 	{
-	#ifdef LINUX
-	pthread_detach(pthread_self());
-	#endif
-
-	size_t ms = 1024;
-
-	while (true)
-		{
-		#ifdef WINDOWS
-		Sleep(ms);
-		#endif
-		#ifdef LINUX
-		struct timespec ts;
-		ts.tv_sec = ms / 1000;
-		ts.tv_nsec = (ms - (ts.tv_sec * 1000)) * 1000000;
-		nanosleep(&ts, NULL);
-		#endif
-
-		stats.lastIPS = api -> getStat(STAT_TYPE_INSTRUCTIONS_EXECUTED);
-
-		stats.lastDXPS = api -> getStat(STAT_TYPE_DXU_CALLS_MADE);
-
-		stats.lastOCPS = api -> getStat(STAT_TYPE_OBJECT_CALLS_MADE);
-
-		stats.lastLCPS = api -> getStat(STAT_TYPE_LOCAL_CALLS_MADE);
-
-		stats.lastFPS = stats.framesRendered;
-		stats.framesRendered = 0;
-		}
-
-	#ifdef WINDOWS
-	return 0;
-	#else
-	return NULL;
-	#endif
-	}
-#endif
-
-#ifdef WINDOWS
-DWORD WINAPI make_window_thread( LPVOID ptr )
-#else
-static void * make_window_thread(void *ptr)
-#endif
-	{
-	#ifdef LINUX
-	pthread_detach(pthread_self());
-	#endif
-
-	VFrame *cframe = (VFrame*) ptr;
-
 	MakeWindowInfo *mwInfo = malloc(sizeof(MakeWindowInfo));
 	memset(mwInfo, '\0', sizeof(MakeWindowInfo));
-
+	
 	#ifdef WINDOWS
 	mwInfo -> sem = CreateSemaphore(NULL, 0, 1, NULL);
 	#endif
 	#ifdef OSX
 	dispatch_semaphore_t *sem;
 	sem = &mwInfo -> sem;
-  *sem = dispatch_semaphore_create(0);
+	*sem = dispatch_semaphore_create(0);
 	#else
 	#ifdef LINUX
 	sem_init(&mwInfo -> sem, 0, 0);
 	#endif
 	#endif
-
+	
 	//push a create window event to the SDL thread
 	SDL_Event newEvent;
 	SDL_zero(newEvent);
 	newEvent.type = DX_NEW_WINDOW_EVENT;
 	newEvent.user.data1 = mwInfo;
-
+	
 	SDL_PushEvent(&newEvent);
-
+	
 	#ifdef WINDOWS
 	WaitForSingleObject(mwInfo -> sem, INFINITE);
 	#endif
@@ -2028,7 +2043,7 @@ static void * make_window_thread(void *ptr)
 	sem_wait(&mwInfo -> sem);
 	#endif
 	#endif
-
+	
 	#ifdef WINDOWS
 	CloseHandle(mwInfo -> sem);
 	#endif
@@ -2039,45 +2054,15 @@ static void * make_window_thread(void *ptr)
 	sem_destroy(&mwInfo -> sem);
 	#endif
 	#endif
-
-
+	
 	//return "mwInfo -> instanceResult" as an unsigned int
 	size_t xs = (size_t) mwInfo -> instanceResult;
 	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
 	memcpy(result, &xs, sizeof(size_t));
-
-	api -> deferredReturn(cframe);
-
+	
 	free(mwInfo);
-
-	#ifdef WINDOWS
-	return 0;
-	#else
-	return NULL;
-	#endif
-	}
-
-INSTRUCTION_DEF op_make_window(INSTRUCTION_PARAM_LIST)
-	{
-	#ifdef WINDOWS
-	HANDLE th = CreateThread(
-            NULL,                   // default security attributes
-            0,                      // use default stack size
-            make_window_thread,  		     // thread function name
-            cframe,          // argument to thread function
-            0,                      // use default creation flags
-            NULL);   // returns the thread identifier
-
-	CloseHandle(th);
-	#else
-	int err = 0;
-	pthread_t th;
-	memset(&th, '\0', sizeof(pthread_t));
-
-	if ((err = pthread_create(&th, NULL, make_window_thread, cframe)) != 0){}
-	#endif
-
-	return RETURN_DEFERRED;
+	
+	return RETURN_DIRECT;
 	}
 
 INSTRUCTION_DEF op_start_poly(INSTRUCTION_PARAM_LIST)
@@ -2468,6 +2453,19 @@ INSTRUCTION_DEF op_add_bitmap(INSTRUCTION_PARAM_LIST)
 		gb -> sourceData = ((VVarLivePTR*) getVariableContent(cframe, 1)) -> content;
 		gb -> vframe = cframe;
 		gb -> bitmapData = poly;
+		
+		#ifdef WINDOWS
+		gb -> sem = CreateSemaphore(NULL, 0, 1, NULL);
+		#endif
+		#ifdef OSX
+		dispatch_semaphore_t *sem;
+		sem = &gb -> sem;
+		*sem = dispatch_semaphore_create(0);
+		#else
+		#ifdef LINUX
+		sem_init(&gb -> sem, 0, 0);
+		#endif
+		#endif
 
 		SDL_Event newEvent;
 		SDL_zero(newEvent);
@@ -2475,8 +2473,32 @@ INSTRUCTION_DEF op_add_bitmap(INSTRUCTION_PARAM_LIST)
 		newEvent.user.data1 = gb;
 
 		SDL_PushEvent(&newEvent);
+		
+		#ifdef WINDOWS
+		WaitForSingleObject(gb -> sem, INFINITE);
+		#endif
+		#ifdef OSX
+		dispatch_semaphore_wait(gb -> sem, DISPATCH_TIME_FOREVER);
+		#else
+		#ifdef LINUX
+		sem_wait(&gb -> sem);
+		#endif
+		#endif
 
-		return RETURN_DEFERRED;
+		#ifdef WINDOWS
+		CloseHandle(gb -> sem);
+		#endif
+		#ifdef OSX
+		dispatch_release(gb -> sem);
+		#else
+		#ifdef LINUX
+		sem_destroy(&gb -> sem);
+		#endif
+		#endif
+		
+		free(gb);
+
+		return RETURN_DIRECT;
 		}
 
 	return RETURN_DIRECT;
@@ -2676,6 +2698,19 @@ INSTRUCTION_DEF op_get_text_width_with(INSTRUCTION_PARAM_LIST)
 		gwi -> text = text;
 		gwi -> font = font;
 		gwi -> vframe = cframe;
+		
+		#ifdef WINDOWS
+		gwi -> sem = CreateSemaphore(NULL, 0, 1, NULL);
+		#endif
+		#ifdef OSX
+		dispatch_semaphore_t *sem;
+		sem = &gwi -> sem;
+		*sem = dispatch_semaphore_create(0);
+		#else
+		#ifdef LINUX
+		sem_init(&gwi -> sem, 0, 0);
+		#endif
+		#endif
 
 		SDL_Event newEvent;
 		SDL_zero(newEvent);
@@ -2683,8 +2718,32 @@ INSTRUCTION_DEF op_get_text_width_with(INSTRUCTION_PARAM_LIST)
 		newEvent.user.data1 = gwi;
 
 		SDL_PushEvent(&newEvent);
+		
+		#ifdef WINDOWS
+		WaitForSingleObject(gwi -> sem, INFINITE);
+		#endif
+		#ifdef OSX
+		dispatch_semaphore_wait(gwi -> sem, DISPATCH_TIME_FOREVER);
+		#else
+		#ifdef LINUX
+		sem_wait(&gwi -> sem);
+		#endif
+		#endif
 
-		return RETURN_DEFERRED;
+		#ifdef WINDOWS
+		CloseHandle(gwi -> sem);
+		#endif
+		#ifdef OSX
+		dispatch_release(gwi -> sem);
+		#else
+		#ifdef LINUX
+		sem_destroy(&gwi -> sem);
+		#endif
+		#endif
+		
+		free(gwi);
+
+		return RETURN_DIRECT;
 		}
 
 	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
@@ -2850,7 +2909,6 @@ INSTRUCTION_DEF op_get_font_name(INSTRUCTION_PARAM_LIST)
 		VVarLivePTR *ptrh = (VVarLivePTR*) ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 1)) -> content) -> data;
 
 		ptrh -> content = (unsigned char*) newArray;
-		attachPointer(ptrh, &newArray -> scope.scopePointers);
 		newArray -> refCount ++;
 		ptrh -> typeLink = newArray -> gtLink -> typeLink;
     	}
@@ -2914,14 +2972,51 @@ INSTRUCTION_DEF op_get_text_bitmap_with(INSTRUCTION_PARAM_LIST)
 		gb -> color.b = b;
 		gb -> color.a = a;
 
+		#ifdef WINDOWS
+		gb -> sem = CreateSemaphore(NULL, 0, 1, NULL);
+		#endif
+		#ifdef OSX
+		dispatch_semaphore_t *sem;
+		sem = &gb -> sem;
+		*sem = dispatch_semaphore_create(0);
+		#else
+		#ifdef LINUX
+		sem_init(&gb -> sem, 0, 0);
+		#endif
+		#endif
+		
 		SDL_Event newEvent;
 		SDL_zero(newEvent);
 		newEvent.type = DX_GENERATE_TEXT_BITMAP;
 		newEvent.user.data1 = gb;
 
 		SDL_PushEvent(&newEvent);
+		
+		#ifdef WINDOWS
+		WaitForSingleObject(gb -> sem, INFINITE);
+		#endif
+		#ifdef OSX
+		dispatch_semaphore_wait(gb -> sem, DISPATCH_TIME_FOREVER);
+		#else
+		#ifdef LINUX
+		sem_wait(&gb -> sem);
+		#endif
+		#endif
 
-		return RETURN_DEFERRED;
+		#ifdef WINDOWS
+		CloseHandle(gb -> sem);
+		#endif
+		#ifdef OSX
+		dispatch_release(gb -> sem);
+		#else
+		#ifdef LINUX
+		sem_destroy(&gb -> sem);
+		#endif
+		#endif
+		
+		free(gb);
+
+		return RETURN_DIRECT;
 		}
 
 	return RETURN_DIRECT;
@@ -3150,17 +3245,61 @@ INSTRUCTION_DEF op_close_window(INSTRUCTION_PARAM_LIST)
 	if (hnd != 0)
 		{
 		WindowInstance *instance = (WindowInstance*) hnd;
+		
+		CloseWindowInfo *mwInfo = malloc(sizeof(CloseWindowInfo));
+		memset(mwInfo, '\0', sizeof(CloseWindowInfo));
+
+		#ifdef WINDOWS
+		mwInfo -> sem = CreateSemaphore(NULL, 0, 1, NULL);
+		#endif
+		#ifdef OSX
+		dispatch_semaphore_t *sem;
+		sem = &mwInfo -> sem;
+		*sem = dispatch_semaphore_create(0);
+		#else
+		#ifdef LINUX
+		sem_init(&mwInfo -> sem, 0, 0);
+		#endif
+		#endif
+		
+		mwInfo -> wi = instance;
 
 		SDL_Event newEvent;
 		SDL_zero(newEvent);
 		newEvent.type = DX_CLOSE_WINDOW;
-		newEvent.user.data1 = instance;
+		newEvent.user.data1 = mwInfo;
 		newEvent.user.data2 = cframe;
 
 		SDL_PushEvent(&newEvent);
+		
+		#ifdef WINDOWS
+		WaitForSingleObject(mwInfo -> sem, INFINITE);
+		#endif
+		#ifdef OSX
+		dispatch_semaphore_wait(mwInfo -> sem, DISPATCH_TIME_FOREVER);
+		#else
+		#ifdef LINUX
+		sem_wait(&mwInfo -> sem);
+		#endif
+		#endif
+
+		#ifdef WINDOWS
+		CloseHandle(mwInfo -> sem);
+		#endif
+		#ifdef OSX
+		dispatch_release(mwInfo -> sem);
+		#else
+		#ifdef LINUX
+		sem_destroy(&mwInfo -> sem);
+		#endif
+		#endif
+		
+		free(mwInfo);
+		
+		return RETURN_DIRECT;
 		}
 
-	return RETURN_DEFERRED;
+	return RETURN_DIRECT;
 	}
 
 INSTRUCTION_DEF op_register_click_listener(INSTRUCTION_PARAM_LIST)
@@ -3174,7 +3313,6 @@ INSTRUCTION_DEF op_register_click_listener(INSTRUCTION_PARAM_LIST)
 
 		unsigned char *vc = getVariableContent(cframe, 1);
 		instance -> clickListenerObject = ((VVarLivePTR*) vc) -> content;
-		attachPointer(&instance -> clickListener, (VVar*) vc);
 		instance -> clickListener.content = ((VVarLivePTR*) vc) -> content;
 		}
 
@@ -3192,7 +3330,6 @@ INSTRUCTION_DEF op_register_mouse_listener(INSTRUCTION_PARAM_LIST)
 
 		unsigned char *vc = getVariableContent(cframe, 1);
 		instance -> mouseListenerObject = ((VVarLivePTR*) vc) -> content;
-		attachPointer(&instance -> mouseListener, (VVar*) vc);
 		instance -> mouseListener.content = ((VVarLivePTR*) vc) -> content;
 		}
 
@@ -3258,15 +3395,52 @@ INSTRUCTION_DEF op_load_font(INSTRUCTION_PARAM_LIST)
 		lfd -> fontPath = fontPath;
 		lfd -> size = sz;
 		lfd -> vframe = cframe;
-
+		
+		#ifdef WINDOWS
+		lfd -> sem = CreateSemaphore(NULL, 0, 1, NULL);
+		#endif
+		#ifdef OSX
+		dispatch_semaphore_t *sem;
+		sem = &lfd -> sem;
+		*sem = dispatch_semaphore_create(0);
+		#else
+		#ifdef LINUX
+		sem_init(&lfd -> sem, 0, 0);
+		#endif
+		#endif
+		
 		SDL_Event newEvent;
 		SDL_zero(newEvent);
 		newEvent.type = DX_LOAD_FONT;
 		newEvent.user.data1 = lfd;
-
+		
 		SDL_PushEvent(&newEvent);
+		
+		#ifdef WINDOWS
+		WaitForSingleObject(lfd -> sem, INFINITE);
+		#endif
+		#ifdef OSX
+		dispatch_semaphore_wait(lfd -> sem, DISPATCH_TIME_FOREVER);
+		#else
+		#ifdef LINUX
+		sem_wait(&lfd -> sem);
+		#endif
+		#endif
+		
+		#ifdef WINDOWS
+		CloseHandle(lfd -> sem);
+		#endif
+		#ifdef OSX
+		dispatch_release(lfd -> sem);
+		#else
+		#ifdef LINUX
+		sem_destroy(&lfd -> sem);
+		#endif
+		#endif
+		
+		free(lfd);
 
-		return RETURN_DEFERRED;
+		return RETURN_DIRECT;
 		}
 
 	free(path);
@@ -3274,33 +3448,70 @@ INSTRUCTION_DEF op_load_font(INSTRUCTION_PARAM_LIST)
 	return RETURN_DIRECT;
 	}
 
-/*
-//NOTE: this function is sometimes useful to do a timer "quit" click, without actual user interaction
-DWORD WINAPI sleep_thread(LPVOID ptr)
+INSTRUCTION_DEF op_unload_font(INSTRUCTION_PARAM_LIST)
 	{
-	printf("sleeping...\n");
-	Sleep(30000);
-	printf("awake...\n");
+	size_t hnd = 0;
+	memcpy(&hnd, getVariableContent(cframe, 0), sizeof(size_t));
 	
-	WindowInstance *myInstance = (WindowInstance*) instances -> data;
-	
-	size_t x = 184;
-	size_t y = 26;
-	size_t button = 1;
-	
-	copyHostInteger((unsigned char*) &myInstance -> clickX, (unsigned char*) &x, sizeof(size_t));
-	copyHostInteger((unsigned char*) &myInstance -> clickY, (unsigned char*) &y, sizeof(size_t));
-	copyHostInteger((unsigned char*) &myInstance -> clickButton, (unsigned char*) &button, sizeof(size_t));
+	if (hnd != 0)
+		{
+		TTF_Font *font = (TTF_Font*) hnd;
+		
+		LoadFontData *lfd = malloc(sizeof(LoadFontData));
+		memset(lfd, '\0', sizeof(LoadFontData));
 
-	fillRegister(&myInstance -> clickParams[0], (unsigned char*) &myInstance -> clickX);
-	fillRegister(&myInstance -> clickParams[1], (unsigned char*) &myInstance -> clickY);
-	fillRegister(&myInstance -> clickParams[2], (unsigned char*) &myInstance -> clickButton);
+		lfd -> fontHandle = font;
+		lfd -> vframe = cframe;
+		
+		#ifdef WINDOWS
+		lfd -> sem = CreateSemaphore(NULL, 0, 1, NULL);
+		#endif
+		#ifdef OSX
+		dispatch_semaphore_t *sem;
+		sem = &lfd -> sem;
+		*sem = dispatch_semaphore_create(0);
+		#else
+		#ifdef LINUX
+		sem_init(&lfd -> sem, 0, 0);
+		#endif
+		#endif
+		
+		SDL_Event newEvent;
+		SDL_zero(newEvent);
+		newEvent.type = DX_UNLOAD_FONT;
+		newEvent.user.data1 = lfd;
+		
+		SDL_PushEvent(&newEvent);
+		
+		#ifdef WINDOWS
+		WaitForSingleObject(lfd -> sem, INFINITE);
+		#endif
+		#ifdef OSX
+		dispatch_semaphore_wait(lfd -> sem, DISPATCH_TIME_FOREVER);
+		#else
+		#ifdef LINUX
+		sem_wait(&lfd -> sem);
+		#endif
+		#endif
+		
+		#ifdef WINDOWS
+		CloseHandle(lfd -> sem);
+		#endif
+		#ifdef OSX
+		dispatch_release(lfd -> sem);
+		#else
+		#ifdef LINUX
+		sem_destroy(&lfd -> sem);
+		#endif
+		#endif
+		
+		free(lfd);
 
-	api -> callFunction(myInstance -> clickListenerObject, &myInstance -> clickListener, 3, &myInstance -> mouseClickExitStatus, myInstance -> clickParams, 3);
+		return RETURN_DIRECT;
+		}
 	
-	return 0;
+	return RETURN_DIRECT;
 	}
-*/
 
 static void initRendering()
 	{
@@ -3423,6 +3634,7 @@ Interface* load(CoreAPI *capi)
 	setInterfaceFunction("getFontName", op_get_font_name);
 	setInterfaceFunction("isFontFixedWidth", op_is_font_fixed_width);
 	setInterfaceFunction("getTextBitmapWith", op_get_text_bitmap_with);
+	setInterfaceFunction("unloadFont", op_unload_font);
 	
 	primeFontDirectories();
 

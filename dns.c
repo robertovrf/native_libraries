@@ -128,7 +128,6 @@ INSTRUCTION_DEF op_get_host_by_name(INSTRUCTION_PARAM_LIST)
 		VVarLivePTR *ptrh = (VVarLivePTR*) ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 1)) -> content) -> data;
 
 		ptrh -> content = (unsigned char*) newArray;
-		attachPointer(ptrh, &newArray -> scope.scopePointers);
 		newArray -> refCount = 1;
 		ptrh -> typeLink = newArray -> gtLink -> typeLink;
 

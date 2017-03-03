@@ -522,18 +522,8 @@ INSTRUCTION_DEF op_tcp_unbind(INSTRUCTION_PARAM_LIST)
 	return RETURN_DIRECT;
 	}
 
-#ifdef WINDOWS
-DWORD WINAPI connect_thread( LPVOID ptr ) 
-#else
-static void * connect_thread(void *ptr)
-#endif
+INSTRUCTION_DEF op_tcp_connect(INSTRUCTION_PARAM_LIST)
 	{
-	#ifdef LINUX
-	pthread_detach(pthread_self());
-	#endif
-	
-	VFrame *cframe = (VFrame*) ptr;
-	
 	LiveArray *array = (LiveArray*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content;
 	
 	char *addr = NULL;
@@ -612,105 +602,7 @@ static void * connect_thread(void *ptr)
 	
 	free(addr);
 	
-	api -> deferredReturn(cframe);
-	
-	#ifdef WINDOWS
-	return 0;
-	#else
-	return NULL;
-	#endif
-	}
-
-INSTRUCTION_DEF op_tcp_connect(INSTRUCTION_PARAM_LIST)
-	{
-	if (! addCloseQueueItem())
-		{
-		size_t totalAmt = 0;
-		size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
-		copyHostInteger((unsigned char*) result, (unsigned char*) &totalAmt, sizeof(size_t));
-		
-		printf("CRITICAL: out of memory in TCP::connect\n");
-		
-		return RETURN_DIRECT;
-		}
-	
-	#ifdef WINDOWS
-	HANDLE th = CreateThread( 
-            NULL,                   // default security attributes
-            0,                      // use default stack size  
-            connect_thread,  		     // thread function name
-            cframe,          // argument to thread function 
-            0,                      // use default creation flags 
-            NULL);   // returns the thread identifier
-	
-	CloseHandle(th);
-	#else
-	int err = 0;
-	pthread_t th;
-	memset(&th, '\0', sizeof(pthread_t));
-	
-	if ((err = pthread_create(&th, NULL, connect_thread, cframe)) != 0)
-		{
-		size_t totalAmt = 0;
-		size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
-		copyHostInteger((unsigned char*) result, (unsigned char*) &totalAmt, sizeof(size_t));
-		
-		printf("CRITICAL: thread launch failure in TCP::connect [%s]\n", getThreadError(err));
-		
-		return RETURN_DIRECT;
-		}
-	#endif
-	
-	return RETURN_DEFERRED;
-	}
-
-#ifdef WINDOWS
-DWORD WINAPI disconnect_thread( LPVOID ptr ) 
-#else
-static void * disconnect_thread(void *ptr)
-#endif
-	{
-	while (true)
-		{
-		waitForCloseQueue();
-        
-		if (closeQueueShutdown) break;
-		
-		//we've been signalled, so close the next socket on the list
-		CloseItem *cs = getCloseQueueItem();
-		
-		VFrame *cframe = cs -> frame;
-		int socket = cs -> socket;
-		
-		#ifdef WINDOWS
-		//#(X-SOC-MS-1)
-		if (socket != 0)
-			{
-			GUID guidDisconnectEx = WSAID_DISCONNECTEX;
-			DWORD bytesret = 0;
-			LPFN_DISCONNECTEX disconn;
-			WSAIoctl(socket, SIO_GET_EXTENSION_FUNCTION_POINTER, &guidDisconnectEx, sizeof(guidDisconnectEx), &disconn, sizeof(disconn), &bytesret, NULL, NULL);
-			if (bytesret == sizeof(disconn)) disconn(socket, NULL, 0, 0); else printf("CRITICAL SOCKET ERROR\n");
-			}
-		closesocket(socket);
-		#endif
-		#ifdef LINUX
-		shutdown(socket, SHUT_RDWR);
-		//NOTE: do we now need to read any/all pending data on the socket?
-		// - http://blog.netherlabs.nl/articles/2009/01/18/the-ultimate-so_linger-page-or-why-is-my-tcp-not-reliable
-		close(socket);
-		#endif
-		
-		free(cs);
-		
-		api -> deferredReturn(cframe);
-		}
-	
-	#ifdef WINDOWS
-	return 0;
-	#else
-	return NULL;
-	#endif
+	return RETURN_DIRECT;
 	}
 
 INSTRUCTION_DEF op_tcp_disconnect(INSTRUCTION_PARAM_LIST)
@@ -718,25 +610,30 @@ INSTRUCTION_DEF op_tcp_disconnect(INSTRUCTION_PARAM_LIST)
 	size_t xs;
 	memcpy(&xs, getVariableContent(cframe, 0), sizeof(size_t));
 	
-	int socket = xs;
-	
-	enqueueCloseSocket(cframe, socket);
+	#ifdef WINDOWS
+	//#(X-SOC-MS-1)
+	if (xs != 0)
+		{
+		GUID guidDisconnectEx = WSAID_DISCONNECTEX;
+		DWORD bytesret = 0;
+		LPFN_DISCONNECTEX disconn;
+		WSAIoctl(xs, SIO_GET_EXTENSION_FUNCTION_POINTER, &guidDisconnectEx, sizeof(guidDisconnectEx), &disconn, sizeof(disconn), &bytesret, NULL, NULL);
+		if (bytesret == sizeof(disconn)) disconn(xs, NULL, 0, 0); else printf("CRITICAL SOCKET ERROR\n");
+		}
+	closesocket(xs);
+	#endif
+	#ifdef LINUX
+	shutdown(xs, SHUT_RDWR);
+	//NOTE: do we now need to read any/all pending data on the socket?
+	// - http://blog.netherlabs.nl/articles/2009/01/18/the-ultimate-so_linger-page-or-why-is-my-tcp-not-reliable
+	close(xs);
+	#endif
     
-	return RETURN_DEFERRED;
+	return RETURN_DIRECT;
 	}
 
-#ifdef WINDOWS
-DWORD WINAPI accept_thread( LPVOID ptr ) 
-#else
-static void * accept_thread(void *ptr)
-#endif
+INSTRUCTION_DEF op_tcp_accept(INSTRUCTION_PARAM_LIST)
 	{
-	#ifdef LINUX
-	pthread_detach(pthread_self());
-	#endif
-	
-	VFrame *cframe = (VFrame*) ptr;
-	
 	size_t xs;
 	memcpy(&xs, getVariableContent(cframe, 0), sizeof(size_t));
 	
@@ -761,72 +658,13 @@ static void * accept_thread(void *ptr)
 	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
 	memcpy(result, &xs, sizeof(size_t));
 	
-	api -> deferredReturn(cframe);
-	
-	#ifdef WINDOWS
-	return 0;
-	#else
-	return NULL;
-	#endif
-	}
-
-INSTRUCTION_DEF op_tcp_accept(INSTRUCTION_PARAM_LIST)
-	{
-	if (! addCloseQueueItem())
-		{
-		size_t totalAmt = 0;
-		size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
-		copyHostInteger((unsigned char*) result, (unsigned char*) &totalAmt, sizeof(size_t));
-		
-		printf("CRITICAL: out of memory TCP::accept\n");
-		
-		return RETURN_DIRECT;
-		}
-	
-	#ifdef WINDOWS
-	HANDLE th = CreateThread( 
-            NULL,                   // default security attributes
-            0,                      // use default stack size  
-            accept_thread,  		     // thread function name
-            cframe,          // argument to thread function 
-            0,                      // use default creation flags 
-            NULL);   // returns the thread identifier
-	
-	CloseHandle(th);
-	#else
-	int err = 0;
-	pthread_t th;
-	memset(&th, '\0', sizeof(pthread_t));
-	
-	if ((err = pthread_create(&th, NULL, accept_thread, cframe)) != 0)
-		{
-		size_t totalAmt = 0;
-		size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
-		copyHostInteger((unsigned char*) result, (unsigned char*) &totalAmt, sizeof(size_t));
-		
-		printf("CRITICAL: thread launch failure in TCP::accept [%s]\n", getThreadError(err));
-		
-		return RETURN_DIRECT;
-		}
-	#endif
-	
-	return RETURN_DEFERRED;
+	return RETURN_DIRECT;
 	}
 
 #define BUF_LEN 128
 
-#ifdef WINDOWS
-DWORD WINAPI recv_thread( LPVOID ptr ) 
-#else
-static void * recv_thread(void *ptr)
-#endif
+INSTRUCTION_DEF op_tcp_recv(INSTRUCTION_PARAM_LIST)
 	{
-	#ifdef LINUX
-	pthread_detach(pthread_self());
-	#endif
-	
-	VFrame *cframe = (VFrame*) ptr;
-	
 	Component *dataOwner = ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 2)) -> content) -> owner;
 	
 	size_t xs = 0;
@@ -874,7 +712,6 @@ static void * recv_thread(void *ptr)
 		VVarLivePTR *ptrh = (VVarLivePTR*) ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 2)) -> content) -> data;
 		
 		ptrh -> content = (unsigned char*) newArray;
-		attachPointer(ptrh, &newArray -> scope.scopePointers);
 		newArray -> refCount ++;
 		((VVarLivePTR*) ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 2)) -> content) -> data) -> typeLink = newArray -> gtLink -> typeLink;
 		}
@@ -887,59 +724,11 @@ static void * recv_thread(void *ptr)
 	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
 	copyHostInteger((unsigned char*) result, (unsigned char*) &totalAmt, sizeof(size_t));
 	
-	api -> deferredReturn(cframe);
-	
-	#ifdef WINDOWS
-	return 0;
-	#else
-	return NULL;
-	#endif
+	return RETURN_DIRECT;
 	}
 
-INSTRUCTION_DEF op_tcp_recv(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_tcp_send(INSTRUCTION_PARAM_LIST)
 	{
-	#ifdef WINDOWS
-	HANDLE th = CreateThread( 
-            NULL,                   // default security attributes
-            0,                      // use default stack size  
-            recv_thread,  		     // thread function name
-            cframe,          // argument to thread function 
-            0,                      // use default creation flags 
-            NULL);   // returns the thread identifier
-	
-	CloseHandle(th);
-	#else
-	int err = 0;
-	pthread_t th;
-	memset(&th, '\0', sizeof(pthread_t));
-	
-	if ((err = pthread_create(&th, NULL, recv_thread, cframe)) != 0)
-		{
-		size_t totalAmt = 0;
-		size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
-		copyHostInteger((unsigned char*) result, (unsigned char*) &totalAmt, sizeof(size_t));
-		
-		printf("CRITICAL: thread launch failure in TCP::recv [%s]\n", getThreadError(err));
-		
-		return RETURN_DIRECT;
-		}
-	#endif
-	
-	return RETURN_DEFERRED;
-	}
-
-#ifdef WINDOWS
-DWORD WINAPI send_thread( LPVOID ptr ) 
-#else
-static void * send_thread(void *ptr)
-#endif
-	{
-	#ifdef LINUX
-	pthread_detach(pthread_self());
-	#endif
-	
-	VFrame *cframe = (VFrame*) ptr;
-	
 	size_t xs = 0;
 	memcpy(&xs, getVariableContent(cframe, 0), sizeof(size_t));
 	
@@ -956,45 +745,7 @@ static void * send_thread(void *ptr)
 	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
 	copyHostInteger((unsigned char*) result, (unsigned char*) &totalAmt, sizeof(size_t));
 	
-	api -> deferredReturn(cframe);
-	
-	#ifdef WINDOWS
-	return 0;
-	#else
-	return NULL;
-	#endif
-	}
-
-INSTRUCTION_DEF op_tcp_send(INSTRUCTION_PARAM_LIST)
-	{
-	#ifdef WINDOWS
-	HANDLE th = CreateThread( 
-            NULL,                   // default security attributes
-            0,                      // use default stack size  
-            send_thread,  		     // thread function name
-            cframe,          // argument to thread function 
-            0,                      // use default creation flags 
-            NULL);   // returns the thread identifier
-	
-	CloseHandle(th);
-	#else
-	int err = 0;
-	pthread_t th;
-	memset(&th, '\0', sizeof(pthread_t));
-	
-	if ((err = pthread_create(&th, NULL, send_thread, cframe)) != 0)
-		{
-		size_t totalAmt = 0;
-		size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
-		copyHostInteger((unsigned char*) result, (unsigned char*) &totalAmt, sizeof(size_t));
-		
-		printf("CRITICAL: thread launch failure in TCP::send\n");
-		
-		return RETURN_DIRECT;
-		}
-	#endif
-	
-	return RETURN_DEFERRED;
+	return RETURN_DIRECT;
 	}
 
 INSTRUCTION_DEF op_tcp_get_local_address(INSTRUCTION_PARAM_LIST)
@@ -1072,7 +823,6 @@ INSTRUCTION_DEF op_tcp_get_local_address(INSTRUCTION_PARAM_LIST)
 	VVarLivePTR *ptrh = (VVarLivePTR*) ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 1)) -> content) -> data;
 	
 	ptrh -> content = (unsigned char*) newArray;
-	attachPointer(ptrh, &newArray -> scope.scopePointers);
 	newArray -> refCount ++;
 	ptrh -> typeLink = newArray -> gtLink -> typeLink;
 	
@@ -1159,7 +909,6 @@ INSTRUCTION_DEF op_tcp_get_remote_address(INSTRUCTION_PARAM_LIST)
 	VVarLivePTR *ptrh = (VVarLivePTR*) ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 1)) -> content) -> data;
 	
 	ptrh -> content = (unsigned char*) newArray;
-	attachPointer(ptrh, &newArray -> scope.scopePointers);
 	newArray -> refCount ++;
 	ptrh -> typeLink = newArray -> gtLink -> typeLink;
 	
@@ -1222,26 +971,6 @@ Interface* load(CoreAPI *capi)
 	sem_init(&queueSignal, 0, 0);
 	#endif
     #endif
-	
-	#ifdef WINDOWS
-	HANDLE th = CreateThread( 
-            NULL,                   // default security attributes
-            0,                      // use default stack size  
-            disconnect_thread,  		     // thread function name
-            NULL,          // argument to thread function 
-            0,                      // use default creation flags 
-            NULL);   // returns the thread identifier
-	
-	CloseHandle(th);
-	#else
-	int err = 0;
-	pthread_t th;
-	memset(&th, '\0', sizeof(pthread_t));
-	
-	if ((err = pthread_create(&th, NULL, disconnect_thread, NULL)) != 0)
-		{
-		}
-	#endif
 	
 	return getPublicInterface();
 	}

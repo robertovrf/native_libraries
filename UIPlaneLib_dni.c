@@ -334,6 +334,10 @@ static const DanaType function_UIPlaneLib_getTextBitmapWith_def[] = {
 {TYPE_LITERAL, X_FLAT, 0, 1, 1, 0},
 {TYPE_LITERAL, X_FLAT, 0, 1, 1, 0}};
 static const StructuredType function_UIPlaneLib_getTextBitmapWith_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_getTextBitmapWith_def, NULL, 0, sizeof(function_UIPlaneLib_getTextBitmapWith_def)}, 0};
+static const DanaType function_UIPlaneLib_unloadFont_def[] = {
+{TYPE_LITERAL, X_FLAT, 0, 0, 0, 0},
+{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0}};
+static const StructuredType function_UIPlaneLib_unloadFont_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_unloadFont_def, NULL, 0, sizeof(function_UIPlaneLib_unloadFont_def)}, 0};
 static const StructuredFunctionType intf_fnc[] = {
 {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_clone_def, NULL, 0, sizeof(function_UIPlaneLib_clone_def)}, 0},
 {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_equals_def, NULL, 0, sizeof(function_UIPlaneLib_equals_def)}, 0},
@@ -367,7 +371,8 @@ static const StructuredFunctionType intf_fnc[] = {
 {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_getFontMetrics_def, NULL, 0, sizeof(function_UIPlaneLib_getFontMetrics_def)}, 0},
 {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_getFontName_def, NULL, 0, sizeof(function_UIPlaneLib_getFontName_def)}, 0},
 {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_isFontFixedWidth_def, NULL, 0, sizeof(function_UIPlaneLib_isFontFixedWidth_def)}, 0},
-{{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_getTextBitmapWith_def, NULL, 0, sizeof(function_UIPlaneLib_getTextBitmapWith_def)}, 0}};
+{{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_getTextBitmapWith_def, NULL, 0, sizeof(function_UIPlaneLib_getTextBitmapWith_def)}, 0},
+{{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_unloadFont_def, NULL, 0, sizeof(function_UIPlaneLib_unloadFont_def)}, 0}};
 static const DanaType intf_def[] = {
 {TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &intf_fnc[0]}},
 {TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &intf_fnc[1]}},
@@ -401,7 +406,8 @@ static const DanaType intf_def[] = {
 {TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &intf_fnc[29]}},
 {TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &intf_fnc[30]}},
 {TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &intf_fnc[31]}},
-{TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &intf_fnc[32]}}};
+{TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &intf_fnc[32]}},
+{TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &intf_fnc[33]}}};
 static StructuredInterfaceType ILib = {{(unsigned char*) "UIPlaneLib", NULL, 0, 10}, {(unsigned char*) intf_def, NULL, 0, sizeof(intf_def)}, 0};
 static DanaType cloneLocalsSpec[] = {
 {TYPE_LITERAL, X_FLAT, 0, 1, 1, 0},
@@ -605,6 +611,10 @@ static DanaType getTextBitmapWithLocalsSpec[] = {
 {TYPE_LITERAL, X_FLAT, 0, 1, 1, 0},
 {TYPE_LITERAL, X_FLAT, 0, 1, 1, 0}};
 static StructuredType getTextBitmapWithLocalsDef = {{}, {(unsigned char*) getTextBitmapWithLocalsSpec, NULL, 0, sizeof(getTextBitmapWithLocalsSpec)}, 0};
+static DanaType unloadFontLocalsSpec[] = {
+{TYPE_LITERAL, X_FLAT, 0, 0, 0, 0},
+{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0}};
+static StructuredType unloadFontLocalsDef = {{}, {(unsigned char*) unloadFontLocalsSpec, NULL, 0, sizeof(unloadFontLocalsSpec)}, 0};
 static unsigned char op_clone_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
 static unsigned char op_equals_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
 static unsigned char op_toString_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
@@ -638,6 +648,7 @@ static unsigned char op_getFontMetrics_thread_spec[sizeof(VFrameHeader)+sizeof(V
 static unsigned char op_getFontName_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
 static unsigned char op_isFontFixedWidth_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
 static unsigned char op_getTextBitmapWith_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
+static unsigned char op_unloadFont_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
 static SourceHeader header;
 static Component self;
 static size_t interfaceFunctions[] = {
@@ -673,7 +684,8 @@ static size_t interfaceFunctions[] = {
 (size_t) op_getFontMetrics_thread_spec,
 (size_t) op_getFontName_thread_spec,
 (size_t) op_isFontFixedWidth_thread_spec,
-(size_t) op_getTextBitmapWith_thread_spec};
+(size_t) op_getTextBitmapWith_thread_spec,
+(size_t) op_unloadFont_thread_spec};
 static DanaType libType = {TYPE_OBJECT, 0, 0, 0, 0, 0, {(unsigned char*) &ILib}};
 static InterfaceDetails ids[] = {{(size_t) &libType, (size_t) &libType, 0, NULL}};
 static Interface objectInterfaces[] = {{&ids[0], {&self, NULL, NULL, interfaceFunctions, NULL, NULL}}		};
@@ -722,6 +734,7 @@ populateOffsets(getFontMetricsLocalsSpec, sizeof(getFontMetricsLocalsSpec) / siz
 populateOffsets(getFontNameLocalsSpec, sizeof(getFontNameLocalsSpec) / sizeof(DanaType), &getFontNameLocalsDef);
 populateOffsets(isFontFixedWidthLocalsSpec, sizeof(isFontFixedWidthLocalsSpec) / sizeof(DanaType), &isFontFixedWidthLocalsDef);
 populateOffsets(getTextBitmapWithLocalsSpec, sizeof(getTextBitmapWithLocalsSpec) / sizeof(DanaType), &getTextBitmapWithLocalsDef);
+populateOffsets(unloadFontLocalsSpec, sizeof(unloadFontLocalsSpec) / sizeof(DanaType), &unloadFontLocalsDef);
 ((VFrameHeader*) op_clone_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + cloneLocalsDef.size;
 ((VFrameHeader*) op_clone_thread_spec) -> formalParamsCount = (cloneLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
 ((size_t*) &((VFrameHeader*) op_clone_thread_spec)[1])[0] = (size_t) &cloneLocalsDef;
@@ -854,6 +867,10 @@ populateOffsets(getTextBitmapWithLocalsSpec, sizeof(getTextBitmapWithLocalsSpec)
 ((VFrameHeader*) op_getTextBitmapWith_thread_spec) -> formalParamsCount = (getTextBitmapWithLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
 ((size_t*) &((VFrameHeader*) op_getTextBitmapWith_thread_spec)[1])[0] = (size_t) &getTextBitmapWithLocalsDef;
 ((VFrameHeader*) op_getTextBitmapWith_thread_spec) -> functionName = "getTextBitmapWith";
+((VFrameHeader*) op_unloadFont_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + unloadFontLocalsDef.size;
+((VFrameHeader*) op_unloadFont_thread_spec) -> formalParamsCount = (unloadFontLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
+((size_t*) &((VFrameHeader*) op_unloadFont_thread_spec)[1])[0] = (size_t) &unloadFontLocalsDef;
+((VFrameHeader*) op_unloadFont_thread_spec) -> functionName = "unloadFont";
 memset(&self, '\0', sizeof(self));
 self.objects = objects; self.header = &header; self.header -> objectsCount = sizeof(objects) / sizeof(ObjectSpec);
 objectInterfaces[0].lbp.spec = &objects[0];
@@ -898,7 +915,8 @@ static Fable interfaceMappings[] = {
 {"getFontMetrics", (VFrameHeader*) op_getFontMetrics_thread_spec},
 {"getFontName", (VFrameHeader*) op_getFontName_thread_spec},
 {"isFontFixedWidth", (VFrameHeader*) op_isFontFixedWidth_thread_spec},
-{"getTextBitmapWith", (VFrameHeader*) op_getTextBitmapWith_thread_spec}};
+{"getTextBitmapWith", (VFrameHeader*) op_getTextBitmapWith_thread_spec},
+{"unloadFont", (VFrameHeader*) op_unloadFont_thread_spec}};
 void setInterfaceFunction(char *name, void *ptr){
 int i = 0;
 for (i = 0; i < sizeof(interfaceMappings) / sizeof(Fable); i ++){

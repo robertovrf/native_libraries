@@ -57,7 +57,6 @@ INSTRUCTION_DEF op_get_platform_name(INSTRUCTION_PARAM_LIST)
 	VVarLivePTR *ptrh = (VVarLivePTR*) ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content) -> data;
 	
 	ptrh -> content = (unsigned char*) newArray;
-	attachPointer(ptrh, &newArray -> scope.scopePointers);
 	newArray -> refCount = 1;
 	ptrh -> typeLink = newArray -> gtLink -> typeLink;
 	
@@ -122,7 +121,6 @@ INSTRUCTION_DEF op_get_platform_version(INSTRUCTION_PARAM_LIST)
 	VVarLivePTR *ptrh = (VVarLivePTR*) ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content) -> data;
 	
 	ptrh -> content = (unsigned char*) newArray;
-	attachPointer(ptrh, &newArray -> scope.scopePointers);
 	newArray -> refCount = 1;
 	ptrh -> typeLink = newArray -> gtLink -> typeLink;
 	
@@ -145,7 +143,6 @@ INSTRUCTION_DEF op_get_chip_name(INSTRUCTION_PARAM_LIST)
 	VVarLivePTR *ptrh = (VVarLivePTR*) ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content) -> data;
 	
 	ptrh -> content = (unsigned char*) newArray;
-	attachPointer(ptrh, &newArray -> scope.scopePointers);
 	newArray -> refCount = 1;
 	ptrh -> typeLink = newArray -> gtLink -> typeLink;
 	
@@ -180,7 +177,6 @@ INSTRUCTION_DEF op_get_host_name(INSTRUCTION_PARAM_LIST)
 	VVarLivePTR *ptrh = (VVarLivePTR*) ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content) -> data;
 	
 	ptrh -> content = (unsigned char*) newArray;
-	attachPointer(ptrh, &newArray -> scope.scopePointers);
 	newArray -> refCount = 1;
 	ptrh -> typeLink = newArray -> gtLink -> typeLink;
 	
@@ -224,7 +220,6 @@ INSTRUCTION_DEF op_get_variable(INSTRUCTION_PARAM_LIST)
 		VVarLivePTR *ptrh = (VVarLivePTR*) ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 1)) -> content) -> data;
 		
 		ptrh -> content = (unsigned char*) newArray;
-		attachPointer(ptrh, &newArray -> scope.scopePointers);
 		newArray -> refCount = 1;
 		ptrh -> typeLink = newArray -> gtLink -> typeLink;
 		
@@ -281,7 +276,6 @@ INSTRUCTION_DEF op_get_system_font(INSTRUCTION_PARAM_LIST)
 			VVarLivePTR *ptrh = (VVarLivePTR*) ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 1)) -> content) -> data;
 			
 			ptrh -> content = (unsigned char*) newArray;
-			attachPointer(ptrh, &newArray -> scope.scopePointers);
 			newArray -> refCount = 1;
 			ptrh -> typeLink = newArray -> gtLink -> typeLink;
 			}
