@@ -194,152 +194,6 @@ sem_t queueSignal;
 #endif
 #endif
 
-static CloseItem *closeQueue;
-static CloseItem *closeQueueEnd;
-static CloseItem *closeQueueFree;
-
-static bool closeQueueShutdown = false;
-
-static void signalCloseQueue()
-	{
-	#ifdef WINDOWS
-	ReleaseSemaphore(queueSignal, 1, NULL);
-	#endif
-    #ifdef OSX
-    dispatch_semaphore_signal(queueSignal);
-    #else
-	#ifdef LINUX
-	sem_post(&queueSignal);
-	#endif
-    #endif
-	}
-
-static void enqueueCloseSocket(VFrame *f, int socket)
-	{
-	#ifdef WINDOWS
-	WaitForSingleObject(queueAccessLock, INFINITE);
-	#endif
-    #ifdef OSX
-    dispatch_semaphore_wait(queueAccessLock, DISPATCH_TIME_FOREVER);
-    #else
-	#ifdef LINUX
-	sem_wait(&queueAccessLock);
-	#endif
-    #endif
-	
-	closeQueueFree -> frame = f;
-	closeQueueFree -> socket = socket;
-	closeQueueFree = closeQueueFree -> next;
-	
-	#ifdef WINDOWS
-	ReleaseSemaphore(queueAccessLock, 1, NULL);
-	#endif
-    #ifdef OSX
-    dispatch_semaphore_signal(queueAccessLock);
-    #else
-	#ifdef LINUX
-	sem_post(&queueAccessLock);
-	#endif
-    #endif
-	
-	//signal semaphore
-	signalCloseQueue();
-	}
-
-static bool addCloseQueueItem()
-	{
-	CloseItem *nci = malloc(sizeof(CloseItem));
-	
-	if (nci == NULL) return false;
-	
-	memset(nci, '\0', sizeof(CloseItem));
-	
-	#ifdef WINDOWS
-	WaitForSingleObject(queueAccessLock, INFINITE);
-	#endif
-    #ifdef OSX
-    dispatch_semaphore_wait(queueAccessLock, DISPATCH_TIME_FOREVER);
-    #else
-	#ifdef LINUX
-	sem_wait(&queueAccessLock);
-	#endif
-    #endif
-	
-	if (closeQueue == NULL)
-		{
-		closeQueue = nci;
-		}
-		else
-		{
-		closeQueueEnd -> next = nci;
-		}
-	closeQueueEnd = nci;
-	
-	if (closeQueueFree == NULL)
-		closeQueueFree = nci;
-	
-	#ifdef WINDOWS
-	ReleaseSemaphore(queueAccessLock, 1, NULL);
-	#endif
-    #ifdef OSX
-    dispatch_semaphore_signal(queueAccessLock);
-    #else
-	#ifdef LINUX
-	sem_post(&queueAccessLock);
-	#endif
-    #endif
-	
-	return true;
-	}
-
-static CloseItem* getCloseQueueItem()
-	{
-	#ifdef WINDOWS
-	WaitForSingleObject(queueAccessLock, INFINITE);
-	#endif
-    #ifdef OSX
-    dispatch_semaphore_wait(queueAccessLock, DISPATCH_TIME_FOREVER);
-    #else
-	#ifdef LINUX
-	sem_wait(&queueAccessLock);
-	#endif
-    #endif
-	
-	CloseItem *cs = closeQueue;
-	closeQueue = cs -> next;
-	if (closeQueueEnd == cs)
-		closeQueueEnd = closeQueue;
-	if (closeQueueFree == cs)
-		closeQueueFree = closeQueue;
-	
-	#ifdef WINDOWS
-	ReleaseSemaphore(queueAccessLock, 1, NULL);
-	#endif
-    #ifdef OSX
-    dispatch_semaphore_signal(queueAccessLock);
-    #else
-	#ifdef LINUX
-	sem_post(&queueAccessLock);
-	#endif
-    #endif
-	
-	return cs;
-	}
-
-static void waitForCloseQueue()
-	{
-	#ifdef WINDOWS
-	WaitForSingleObject(queueSignal, INFINITE);
-	#endif
-    #ifdef OSX
-    dispatch_semaphore_wait(queueSignal, DISPATCH_TIME_FOREVER);
-    #else
-	#ifdef LINUX
-	sem_wait(&queueSignal);
-	#endif
-    #endif
-	}
-
 #define MAX_ADDR 64
 INSTRUCTION_DEF op_tcp_bind(INSTRUCTION_PARAM_LIST)
 	{
@@ -676,6 +530,11 @@ INSTRUCTION_DEF op_tcp_recv(INSTRUCTION_PARAM_LIST)
 	copyHostInteger((unsigned char*) &len, getVariableContent(cframe, 1), sizeof(size_t));
 	
 	unsigned char *pbuf = malloc(len);
+	
+	if (pbuf == NULL)
+		{
+		len = 0;
+		}
 	
 	int amt = 1;
 	size_t totalAmt = 0;

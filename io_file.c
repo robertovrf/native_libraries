@@ -121,6 +121,11 @@ INSTRUCTION_DEF op_file_read(INSTRUCTION_PARAM_LIST)
 	
 	unsigned char *pbuf = malloc(len);
 	
+	if (pbuf == NULL)
+		{
+		len = 0;
+		}
+	
 	size_t amt = 1;
 	size_t totalAmt = 0;
 	
