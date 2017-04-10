@@ -16,6 +16,8 @@
 #include <unistd.h>
 #endif
 
+#include <errno.h>
+
 #include <sys/stat.h>
 
 static CoreAPI *api;
@@ -77,6 +79,9 @@ INSTRUCTION_DEF op_file_open(INSTRUCTION_PARAM_LIST)
 		{
 		fd = fopen(path, "ab");
 		}
+	
+	if (fd == NULL)
+		api -> throwException(cframe, strerror(errno));
 	
 	//the return value is written to local variable 0
 	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
