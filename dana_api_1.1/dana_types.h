@@ -225,7 +225,6 @@ typedef struct vthread{
 	ScopeContainer *scopeStack;
 	unsigned char *localsData;
 	LiveObject *io;
-	void *om;
 	void *pr;
 	void *pa;
 	struct vthread *nrf;
@@ -244,7 +243,8 @@ typedef struct vthread{
 	unsigned char xf;
 	unsigned char inss;
 	void* to;
-	void* totc;
+	void* totcn;
+	void* totcp;
 	} VFrame;
 
 typedef struct{

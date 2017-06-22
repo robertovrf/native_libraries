@@ -3662,7 +3662,7 @@ void unload()
 	#endif
 
 	SDL_Quit();
-
+	
 	api -> decrementGTRefCount(charArrayGT);
 	api -> decrementGTRefCount(pixelArrayGT);
 	}
