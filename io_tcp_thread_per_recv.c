@@ -123,28 +123,6 @@ static CoreAPI *api;
 
 static GlobalTypeLink *charArrayGT = NULL;
 
-/*
-the below approach is not currently usable because we can never be sure when it's OK to free a DanaSocket
- - i.e. a recv() call can come in at any time and then want to query the status of the socket, which may have been freed by a disconnect thread
-
-typedef struct{
-	#ifdef WINDOWS
-	SOCKET socket;
-	#endif
-	#ifdef LINUX
-	int socket;
-	#endif
-	#ifdef WINDOWS
-	HANDLE lock;
-	#endif
-	#ifdef LINUX
-	sem_t lock;
-	#endif
-	size_t refCount;
-	bool disconnected;
-	} DanaSocket;
-*/
-
 #ifdef LINUX
 static char* getThreadError(int err)
 	{
@@ -159,39 +137,6 @@ static char* getThreadError(int err)
 	
 	return "unknown error";
 	}
-#endif
-
-/*
-The close queue, and associated semaphores, are used to guarantee that a socket that's been opened can definitely be closed (i.e. guarantee that there's enough remaining memory / system resources to do this). There is a single "socket close" thread which works through the queue of ready-to-close sockets. A possible disadvantage of this approach is that queued sockets may take a while to close while they wait for earlier sockets in the queue to finish closing. This could potentially be solved by using a pool of socket close threads.
-*/
-
-typedef struct __ci{
-	#ifdef WINDOWS
-	SOCKET socket;
-	#endif
-	#ifdef LINUX
-	int socket;
-	#endif
-	VFrame *frame;
-	
-	struct __ci *next;
-	} CloseItem;
-
-#ifdef WINDOWS
-#include <Windows.h>
-HANDLE queueAccessLock;
-HANDLE queueSignal;
-#endif
-
-#ifdef OSX
-dispatch_semaphore_t queueAccessLock;
-dispatch_semaphore_t queueSignal;
-#else
-#ifdef LINUX
-#include <semaphore.h>
-sem_t queueAccessLock;
-sem_t queueSignal;
-#endif
 #endif
 
 #define MAX_ADDR 64
@@ -272,8 +217,12 @@ INSTRUCTION_DEF op_tcp_bind(INSTRUCTION_PARAM_LIST)
 	if (getaddrinfo(addr, portstr, &hints, &adr_result) != 0)
 		{
 		#ifdef WINDOWS
-		//printf(" - TCPlib::Bind::Address construction error on %s:%s [%s]", addr, portstr, getSocketError(WSAGetLastError()));
+		api -> throwException(cframe, getSocketError(WSAGetLastError()));
 		#endif
+		#ifdef LINUX
+		api -> throwException(cframe, strerror(errno));
+		#endif
+		
 		addressOK = false;
 		}
 	
@@ -324,6 +273,13 @@ INSTRUCTION_DEF op_tcp_bind(INSTRUCTION_PARAM_LIST)
 		
 		if (bind(newSocket, adr_result->ai_addr, (int)adr_result->ai_addrlen) < 0)
 			{
+			#ifdef WINDOWS
+			api -> throwException(cframe, getSocketError(WSAGetLastError()));
+			#endif
+			#ifdef LINUX
+			api -> throwException(cframe, strerror(errno));
+			#endif
+			
 			connected = false;
 			}
 		
@@ -332,7 +288,10 @@ INSTRUCTION_DEF op_tcp_bind(INSTRUCTION_PARAM_LIST)
 			if (listen(newSocket, MAX_PENDING) < 0)
 				{
 				#ifdef WINDOWS
-				//printf(" - TCPlib::Listen error on %s:%s [%s]\n", addr, portstr, getSocketError(WSAGetLastError()));
+				api -> throwException(cframe, getSocketError(WSAGetLastError()));
+				#endif
+				#ifdef LINUX
+				api -> throwException(cframe, strerror(errno));
 				#endif
 				
 				connected = false;
@@ -355,23 +314,15 @@ INSTRUCTION_DEF op_tcp_bind(INSTRUCTION_PARAM_LIST)
 
 INSTRUCTION_DEF op_tcp_unbind(INSTRUCTION_PARAM_LIST)
 	{
-	/*
-	int master = 0;
-	memcpy(&master, registers[0].PR.content, sizeof(unsigned int));
+	size_t xs;
+	memcpy(&xs, getVariableContent(cframe, 0), sizeof(size_t));
 	
 	#ifdef WINDOWS
-	closesocket(master);
+	closesocket(xs);
 	#endif
 	#ifdef LINUX
-	close(master);
+	close(xs);
 	#endif
-	
-	//return void
-	api -> prepRegister(returnRegister);
-	returnRegister[0].PR.vsize = 0;
-	returnRegister[0].type = TYPE_LITERAL;
-	returnRegister[0].xtype = X_FLAT;
-	*/
 	
 	return RETURN_DIRECT;
 	}
@@ -433,7 +384,13 @@ INSTRUCTION_DEF op_tcp_connect(INSTRUCTION_PARAM_LIST)
 		
 		if (connect(newSocket, adr_result->ai_addr, (int) adr_result->ai_addrlen) < 0)
 			{
-			//printf("TCPlib::Connect error to %s:%i [%s]\n", addr, port, getSocketError(WSAGetLastError()));
+			#ifdef WINDOWS
+			api -> throwException(cframe, getSocketError(WSAGetLastError()));
+			#endif
+			#ifdef LINUX
+			api -> throwException(cframe, strerror(errno));
+			#endif
+			
 			#ifdef WINDOWS
 			closesocket(newSocket);
 			#endif
@@ -498,11 +455,10 @@ INSTRUCTION_DEF op_tcp_accept(INSTRUCTION_PARAM_LIST)
 	if ((socket = accept(masterSocket, NULL, NULL)) < 0)
 		{
 		#ifdef WINDOWS
-		//printf("TCPlib::Accept error [%s]\n", getSocketError(WSAGetLastError()));
+		api -> throwException(cframe, getSocketError(WSAGetLastError()));
 		#endif
-		
 		#ifdef LINUX
-		//printf("TCPlib::Accept error [%s]\n", strerror(errno));
+		api -> throwException(cframe, strerror(errno));
 		#endif
 		}
 	
@@ -812,24 +768,6 @@ Interface* load(CoreAPI *capi)
 	
 	setInterfaceFunction("getLocalAddress", op_tcp_get_local_address);
 	setInterfaceFunction("getRemoteAddress", op_tcp_get_remote_address);
-	
-	// semaphore setup
-	#ifdef WINDOWS
-	queueAccessLock = CreateSemaphore(NULL, 1, LONG_MAX, NULL);
-	queueSignal = CreateSemaphore(NULL, 0, LONG_MAX, NULL);
-	#endif
-    #ifdef OSX
-    dispatch_semaphore_t *sem;
-    sem = &queueAccessLock;
-    *sem = dispatch_semaphore_create(1);
-    sem = &queueSignal;
-    *sem = dispatch_semaphore_create(0);
-    #else
-	#ifdef LINUX
-	sem_init(&queueAccessLock, 0, 1);
-	sem_init(&queueSignal, 0, 0);
-	#endif
-    #endif
 	
 	return getPublicInterface();
 	}
