@@ -27,11 +27,9 @@ typedef struct _pi_semaphore{
 	#endif
 	} Semaphore;
 
-Semaphore sleepSem;
-Semaphore intSem;
-
 void semaphore_init(Semaphore *s, unsigned int initialValue);
-void semaphore_wait(Semaphore *s);
+int semaphore_wait(Semaphore *s);
 void semaphore_post(Semaphore *s);
+void semaphore_destroy(Semaphore *s);
 
 #endif

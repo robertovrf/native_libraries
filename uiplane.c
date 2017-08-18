@@ -167,6 +167,15 @@ typedef struct _uio{
 
 //TODO: the following state will probably be in "internal state" of my object, eventually...
 
+typedef struct __event_item {
+	size_t type;
+	size_t button_id;
+	size_t x;
+	size_t y;
+	
+	struct __event_item *next;
+} EventItem;
+
 typedef struct{
 	RGBAInt backgroundColour;
 
@@ -231,6 +240,12 @@ typedef struct{
 	size_t mouseMoveY;
 
 	size_t captureCount;
+	
+	Semaphore eventQueueSignal;
+	Semaphore eventQueueLock;
+	
+	EventItem *eventQueue;
+	EventItem *eventQueueEnd;
 
 	long int sdlProc;
 	} WindowInstance;
@@ -260,6 +275,66 @@ typedef struct{
 
 static StatList stats;
 #endif
+
+void semaphore_init(Semaphore *s, unsigned int initialValue)
+	{
+	#ifdef WINDOWS
+	s -> sem = CreateSemaphore(NULL, initialValue, 1, NULL);
+	#endif
+	#ifdef OSX
+	dispatch_semaphore_t *sem;
+	sem = &s -> sem;
+    *sem = dispatch_semaphore_create(initialValue);
+	#else
+	#ifdef LINUX
+	sem_init(&s -> sem, initialValue, 0);
+	#endif
+	#endif
+	}
+
+int semaphore_wait(Semaphore *s)
+	{
+	#ifdef WINDOWS
+	return WaitForSingleObject(s -> sem, INFINITE);
+	#endif
+	#ifdef OSX
+	dispatch_semaphore_wait(s -> sem, DISPATCH_TIME_FOREVER);
+	#else
+	#ifdef LINUX
+	sem_wait(&s -> sem);
+	#endif
+	#endif
+	}
+
+void semaphore_post(Semaphore *s)
+	{
+	#ifdef WINDOWS
+	ReleaseSemaphore(s -> sem, 1, NULL);
+	#endif
+	#ifdef OSX
+	dispatch_semaphore_signal(s -> sem);
+	#else
+	#ifdef LINUX
+	sem_post(&s -> sem);
+	#endif
+	#endif
+	}
+
+void semaphore_destroy(Semaphore *s)
+	{
+	#ifdef WINDOWS
+	CloseHandle(s -> sem);
+	#endif
+    #ifdef OSX
+    dispatch_release(s -> sem);
+    #else
+	#ifdef LINUX
+	sem_close(&s -> sem);
+	#endif
+    #endif
+	}
+
+static void addEventItem(WindowInstance *w, size_t type, size_t button_id, size_t x, size_t y);
 
 static ListItem* addListItem(ListItem **lst, ListItem **last, void *data)
 	{
@@ -552,7 +627,6 @@ static void cleanupBuffer(UIObject *buf)
 
 SDL_Texture* renderSurface(UISurface *s, SDL_Renderer *myRenderer)
 	{
-
 	SDL_Texture *baseTarget = SDL_GetRenderTarget(myRenderer);
 
 	SDL_Texture *st = SDL_CreateTexture(myRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, s -> width, s -> height);
@@ -831,29 +905,15 @@ long long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, 
 		{
         case WM_LBUTTONDOWN:
         	{
-	        if (myInstance -> mouseListenerObject != NULL)
-	        	{
-				//unsigned int x = GET_X_LPARAM(lp);
-				//unsigned int y = GET_Y_LPARAM(lp);
+			POINT point;
+			GetCursorPos(&point);
 
-				POINT point;
-				GetCursorPos(&point);
-
-				size_t screenX = point.x;
-				size_t screenY = point.y;
-				size_t button = 1;
-
-				copyHostInteger((unsigned char*) &myInstance -> mouseDownX, (unsigned char*) &screenX, sizeof(size_t));
-				copyHostInteger((unsigned char*) &myInstance -> mouseDownY, (unsigned char*) &screenY, sizeof(size_t));
-				copyHostInteger((unsigned char*) &myInstance -> mouseDownButton, (unsigned char*) &button, sizeof(size_t));
-
-				fillRegister(&myInstance -> mouseParams[0], (unsigned char*) &myInstance -> mouseDownX);
-				fillRegister(&myInstance -> mouseParams[1], (unsigned char*) &myInstance -> mouseDownY);
-				fillRegister(&myInstance -> mouseParams[2], (unsigned char*) &myInstance -> mouseDownButton);
-
-				api -> callFunction(myInstance -> mouseListenerObject, 3, myInstance -> mouseParams, 3);
-				}
-
+			size_t screenX = point.x;
+			size_t screenY = point.y;
+			size_t button = 1;
+			
+			addEventItem(myInstance, 2, button, screenX, screenY);
+			
 			myInstance -> captureCount ++;
 
 			if (myInstance -> captureCount == 1)
@@ -876,40 +936,9 @@ long long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, 
 			size_t screenX = point.x;
 			size_t screenY = point.y;
 			size_t button = 1;
-
-			if (myInstance -> clickListenerObject != NULL)
-				{
-	            //our registers etc. are static/singletons, so we don't launch a 2nd thread until the first one has finished...
-	            if (screenX >= myInstance -> windowX && screenX <= myInstance -> windowX + myInstance -> windowWidth && screenY >= myInstance -> windowY && screenY <= myInstance -> windowY + myInstance -> windowHeight)
-	            	{
-		            size_t x = screenX - myInstance -> windowX;
-		            size_t y = screenY - myInstance -> windowY;
-
-					copyHostInteger((unsigned char*) &myInstance -> clickX, (unsigned char*) &x, sizeof(size_t));
-					copyHostInteger((unsigned char*) &myInstance -> clickY, (unsigned char*) &y, sizeof(size_t));
-					copyHostInteger((unsigned char*) &myInstance -> clickButton, (unsigned char*) &button, sizeof(size_t));
-
-					fillRegister(&myInstance -> clickParams[0], (unsigned char*) &myInstance -> clickX);
-					fillRegister(&myInstance -> clickParams[1], (unsigned char*) &myInstance -> clickY);
-					fillRegister(&myInstance -> clickParams[2], (unsigned char*) &myInstance -> clickButton);
-
-					api -> callFunction(myInstance -> clickListenerObject, 3, myInstance -> clickParams, 3);
-					}
-				}
-
-			if (myInstance -> mouseListenerObject != NULL)
-				{
-				copyHostInteger((unsigned char*) &myInstance -> mouseUpX, (unsigned char*) &screenX, sizeof(size_t));
-				copyHostInteger((unsigned char*) &myInstance -> mouseUpY, (unsigned char*) &screenY, sizeof(size_t));
-				copyHostInteger((unsigned char*) &myInstance -> mouseUpButton, (unsigned char*) &button, sizeof(size_t));
-
-				fillRegister(&myInstance -> mouseParams[0], (unsigned char*) &myInstance -> mouseUpX);
-				fillRegister(&myInstance -> mouseParams[1], (unsigned char*) &myInstance -> mouseUpY);
-				fillRegister(&myInstance -> mouseParams[2], (unsigned char*) &myInstance -> mouseUpButton);
-
-				api -> callFunction(myInstance -> mouseListenerObject, 4, myInstance -> mouseParams, 3);
-				}
-
+			
+			addEventItem(myInstance, 1, button, screenX, screenY);
+			
 			myInstance -> captureCount --;
 
 			if (myInstance -> captureCount == 0)
@@ -941,7 +970,7 @@ long long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, 
 				fillRegister(&myInstance -> mouseParams[1], (unsigned char*) &myInstance -> mouseDownY);
 				fillRegister(&myInstance -> mouseParams[2], (unsigned char*) &myInstance -> mouseDownButton);
 
-				api -> callFunction(myInstance -> mouseListenerObject, 3, myInstance -> mouseParams, 3);
+				api -> callFunction(myInstance -> mouseListenerObject, 4, myInstance -> mouseParams, 3);
 				}
 
 			myInstance -> captureCount ++;
@@ -983,7 +1012,7 @@ long long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, 
 					fillRegister(&myInstance -> clickParams[1], (unsigned char*) &myInstance -> clickY);
 					fillRegister(&myInstance -> clickParams[2], (unsigned char*) &myInstance -> clickButton);
 
-					api -> callFunction(myInstance -> clickListenerObject, 3, myInstance -> clickParams, 3);
+					api -> callFunction(myInstance -> clickListenerObject, 4, myInstance -> clickParams, 3);
 					}
 				}
 
@@ -997,7 +1026,7 @@ long long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, 
 				fillRegister(&myInstance -> mouseParams[1], (unsigned char*) &myInstance -> mouseUpY);
 				fillRegister(&myInstance -> mouseParams[2], (unsigned char*) &myInstance -> mouseUpButton);
 
-				api -> callFunction(myInstance -> mouseListenerObject, 4, myInstance -> mouseParams, 3);
+				api -> callFunction(myInstance -> mouseListenerObject, 5, myInstance -> mouseParams, 3);
 				}
 
 			myInstance -> captureCount --;
@@ -1031,7 +1060,7 @@ long long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, 
 				fillRegister(&myInstance -> mouseParams[1], (unsigned char*) &myInstance -> mouseDownY);
 				fillRegister(&myInstance -> mouseParams[2], (unsigned char*) &myInstance -> mouseDownButton);
 
-				api -> callFunction(myInstance -> mouseListenerObject, 3, myInstance -> mouseParams, 3);
+				api -> callFunction(myInstance -> mouseListenerObject, 4, myInstance -> mouseParams, 3);
 				}
 
 			myInstance -> captureCount ++;
@@ -1073,7 +1102,7 @@ long long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, 
 					fillRegister(&myInstance -> clickParams[1], (unsigned char*) &myInstance -> clickY);
 					fillRegister(&myInstance -> clickParams[2], (unsigned char*) &myInstance -> clickButton);
 
-					api -> callFunction(myInstance -> clickListenerObject, 3, myInstance -> clickParams, 3);
+					api -> callFunction(myInstance -> clickListenerObject, 4, myInstance -> clickParams, 3);
 					}
 				}
 
@@ -1087,7 +1116,7 @@ long long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, 
 				fillRegister(&myInstance -> mouseParams[1], (unsigned char*) &myInstance -> mouseUpY);
 				fillRegister(&myInstance -> mouseParams[2], (unsigned char*) &myInstance -> mouseUpButton);
 
-				api -> callFunction(myInstance -> mouseListenerObject, 4, myInstance -> mouseParams, 3);
+				api -> callFunction(myInstance -> mouseListenerObject, 5, myInstance -> mouseParams, 3);
 				}
 
 			myInstance -> captureCount --;
@@ -1104,37 +1133,26 @@ long long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, 
         	{
 	        //NOTE: for all of these cases, instead of ignoring additional events that happen before the current one finishes, it might be better to queue them up in a (probably fixed-size) buffer so that they get delivered still when the currently-executing handler finishes...
 
-			if (myInstance -> mouseListenerObject != NULL)
+			size_t x = GET_X_LPARAM(lp);
+			size_t y = GET_Y_LPARAM(lp);
+
+			POINT point;
+			GetCursorPos(&point);
+
+			size_t screenX = point.x;
+			size_t screenY = point.y;
+			
+			//check if the x and y from the lparam are the same as the global x/y; if not discard the event
+			// - this is a performance-boosting filter which avoids spurious mouse move events caused by the window itself being repositioned
+			
+			if ((screenX != myInstance -> lastMouseMoveX || screenY != myInstance -> lastMouseMoveY)
+				&& (myInstance -> windowX + x == screenX && myInstance -> windowY + y == screenY))
 				{
-				size_t x = GET_X_LPARAM(lp);
-				size_t y = GET_Y_LPARAM(lp);
-
-				POINT point;
-				GetCursorPos(&point);
-
-				size_t screenX = point.x;
-				size_t screenY = point.y;
-
-				//printf("Mouse move: %u/%u\n", screenX, screenY);
-
-				//check if the x and y from the lparam are the same as the global x/y; if not discard the event
-				// - this is a performance-boosting filter which avoids spurious mouse move events caused by the window itself being repositioned
-
-				if ((screenX != myInstance -> lastMouseMoveX || screenY != myInstance -> lastMouseMoveY)
-					&& (myInstance -> windowX + x == screenX && myInstance -> windowY + y == screenY))
-					{
-					myInstance -> lastMouseMoveX = screenX;
-					myInstance -> lastMouseMoveY = screenY;
-
-					copyHostInteger((unsigned char*) &myInstance -> mouseMoveX, (unsigned char*) &screenX, sizeof(size_t));
-					copyHostInteger((unsigned char*) &myInstance -> mouseMoveY, (unsigned char*) &screenY, sizeof(size_t));
-
-					fillRegister(&myInstance -> mouseParams[0], (unsigned char*) &myInstance -> mouseMoveX);
-					fillRegister(&myInstance -> mouseParams[1], (unsigned char*) &myInstance -> mouseMoveY);
-
-					api -> callFunction(myInstance -> mouseListenerObject, 5, myInstance -> mouseParams, 2);
-					}
+				addEventItem(myInstance, 3, 1, screenX, screenY);
 				}
+			
+			myInstance -> lastMouseMoveX = screenX;
+			myInstance -> lastMouseMoveY = screenY;
 
 			return 0;
         	}
@@ -1228,10 +1246,14 @@ static WindowInstance* createNewWindow()
 
 	myInstance -> windowWidth = 500;
 	myInstance -> windowHeight = 500;
-
+	
 	#ifdef WINDOWS
 	myInstance -> renderLock = CreateSemaphore(NULL, 1, 1, NULL);
 	#endif
+	
+	//event queue
+	semaphore_init(&myInstance -> eventQueueSignal, 0);
+	semaphore_init(&myInstance -> eventQueueLock, 1);
 
 	//temporary global variable:
 	//mainInstance = myInstance;
@@ -1654,9 +1676,11 @@ static void* render_thread(void *ptr)
 
 				if (cwi -> wi -> baseTexture != NULL)
 					SDL_DestroyTexture(cwi -> wi -> baseTexture);
-
+				
 				SDL_DestroyRenderer(cwi -> wi -> renderer);
 				SDL_DestroyWindow(cwi -> wi -> win);
+				
+				semaphore_destroy(&cwi -> wi -> eventQueueSignal);
 
 				//TODO: cleanup wi -> frontBuffer / wi -> backBuffer ???
 				free(cwi -> wi);
@@ -2179,6 +2203,30 @@ INSTRUCTION_DEF op_end_poly(INSTRUCTION_PARAM_LIST)
 	return RETURN_DIRECT;
 	}
 
+static void addUIObject(WindowInstance *instance, UIObject *o)
+	{
+	if (instance -> surfaceStack != NULL)
+		{
+		UISurface *surface = (UISurface*) instance -> surfaceStack -> object;
+
+		if (surface -> lastObject == NULL)
+			surface -> objects = o;
+			else
+			surface -> lastObject -> next = o;
+
+		surface -> lastObject = o;
+		}
+		else
+		{
+		if (instance -> backBufferEnd == NULL)
+			instance -> backBuffer = o;
+			else
+			instance -> backBufferEnd -> next = o;
+
+		instance -> backBufferEnd = o;
+		}
+	}
+
 INSTRUCTION_DEF op_add_rect(INSTRUCTION_PARAM_LIST)
 	{
 	size_t hnd = 0;
@@ -2213,27 +2261,8 @@ INSTRUCTION_DEF op_add_rect(INSTRUCTION_PARAM_LIST)
 		UIRect *poly = (UIRect*) malloc(sizeof(UIRect));
 		UIObject *uio = (UIObject*) malloc(sizeof(UIObject));
 		memset(uio, '\0', sizeof(UIObject));
-
-		if (instance -> surfaceStack != NULL)
-			{
-			UISurface *surface = (UISurface*) instance -> surfaceStack -> object;
-
-			if (surface -> lastObject == NULL)
-				surface -> objects = uio;
-				else
-				surface -> lastObject -> next = uio;
-
-			surface -> lastObject = uio;
-			}
-			else
-			{
-			if (instance -> backBufferEnd == NULL)
-				instance -> backBuffer = uio;
-				else
-				instance -> backBufferEnd -> next = uio;
-
-			instance -> backBufferEnd = uio;
-			}
+		
+		addUIObject(instance, uio);
 
 		uio -> type = UI_TYPE_RECT;
 		uio -> object = poly;
@@ -2292,26 +2321,7 @@ INSTRUCTION_DEF op_add_line(INSTRUCTION_PARAM_LIST)
 		UIObject *uio = (UIObject*) malloc(sizeof(UIObject));
 		memset(uio, '\0', sizeof(UIObject));
 
-		if (instance -> surfaceStack != NULL)
-			{
-			UISurface *surface = (UISurface*) instance -> surfaceStack -> object;
-
-			if (surface -> lastObject == NULL)
-				surface -> objects = uio;
-				else
-				surface -> lastObject -> next = uio;
-
-			surface -> lastObject = uio;
-			}
-			else
-			{
-			if (instance -> backBufferEnd == NULL)
-				instance -> backBuffer = uio;
-				else
-				instance -> backBufferEnd -> next = uio;
-
-			instance -> backBufferEnd = uio;
-			}
+		addUIObject(instance, uio);
 
 		uio -> type = UI_TYPE_LINE;
 		uio -> object = poly;
@@ -2364,26 +2374,7 @@ INSTRUCTION_DEF op_add_point(INSTRUCTION_PARAM_LIST)
 		UIObject *uio = (UIObject*) malloc(sizeof(UIObject));
 		memset(uio, '\0', sizeof(UIObject));
 
-		if (instance -> surfaceStack != NULL)
-			{
-			UISurface *surface = (UISurface*) instance -> surfaceStack -> object;
-
-			if (surface -> lastObject == NULL)
-				surface -> objects = uio;
-				else
-				surface -> lastObject -> next = uio;
-
-			surface -> lastObject = uio;
-			}
-			else
-			{
-			if (instance -> backBufferEnd == NULL)
-				instance -> backBuffer = uio;
-				else
-				instance -> backBufferEnd -> next = uio;
-
-			instance -> backBufferEnd = uio;
-			}
+		addUIObject(instance, uio);
 
 		uio -> type = UI_TYPE_POINT;
 		uio -> object = poly;
@@ -2421,26 +2412,7 @@ INSTRUCTION_DEF op_add_bitmap(INSTRUCTION_PARAM_LIST)
 		UIObject *uio = (UIObject*) malloc(sizeof(UIObject));
 		memset(uio, '\0', sizeof(UIObject));
 
-		if (instance -> surfaceStack != NULL)
-			{
-			UISurface *surface = (UISurface*) instance -> surfaceStack -> object;
-
-			if (surface -> lastObject == NULL)
-				surface -> objects = uio;
-				else
-				surface -> lastObject -> next = uio;
-
-			surface -> lastObject = uio;
-			}
-			else
-			{
-			if (instance -> backBufferEnd == NULL)
-				instance -> backBuffer = uio;
-				else
-				instance -> backBufferEnd -> next = uio;
-
-			instance -> backBufferEnd = uio;
-			}
+		addUIObject(instance, uio);
 
 		uio -> type = UI_TYPE_BITMAP;
 		uio -> object = poly;
@@ -2543,26 +2515,7 @@ INSTRUCTION_DEF op_add_text(INSTRUCTION_PARAM_LIST)
 			UIObject *uio = (UIObject*) malloc(sizeof(UIObject));
 			memset(uio, '\0', sizeof(UIObject));
 
-			if (instance -> surfaceStack != NULL)
-				{
-				UISurface *surface = (UISurface*) instance -> surfaceStack -> object;
-
-				if (surface -> lastObject == NULL)
-					surface -> objects = uio;
-					else
-					surface -> lastObject -> next = uio;
-
-				surface -> lastObject = uio;
-				}
-				else
-				{
-				if (instance -> backBufferEnd == NULL)
-					instance -> backBuffer = uio;
-					else
-					instance -> backBufferEnd -> next = uio;
-
-				instance -> backBufferEnd = uio;
-				}
+			addUIObject(instance, uio);
 
 			//poly -> font = defaultFont;
 
@@ -2629,27 +2582,8 @@ INSTRUCTION_DEF op_add_text_with(INSTRUCTION_PARAM_LIST)
 			UIText *poly = (UIText*) malloc(sizeof(UIText));
 			UIObject *uio = (UIObject*) malloc(sizeof(UIObject));
 			memset(uio, '\0', sizeof(UIObject));
-
-			if (instance -> surfaceStack != NULL)
-				{
-				UISurface *surface = (UISurface*) instance -> surfaceStack -> object;
-
-				if (surface -> lastObject == NULL)
-					surface -> objects = uio;
-					else
-					surface -> lastObject -> next = uio;
-
-				surface -> lastObject = uio;
-				}
-				else
-				{
-				if (instance -> backBufferEnd == NULL)
-					instance -> backBuffer = uio;
-					else
-					instance -> backBufferEnd -> next = uio;
-
-				instance -> backBufferEnd = uio;
-				}
+			
+			addUIObject(instance, uio);
 
 			uio -> type = UI_TYPE_TEXT;
 			uio -> object = poly;
@@ -2772,17 +2706,8 @@ INSTRUCTION_DEF op_push_surface(INSTRUCTION_PARAM_LIST)
 
 		newObject -> object = newSurface;
 		newStackObject -> object = newSurface;
-
-		if (instance -> backBufferEnd == NULL)
-			{
-			instance -> backBuffer = newObject;
-			instance -> backBufferEnd = newObject;
-			}
-			else
-			{
-			instance -> backBufferEnd -> next = newObject;
-			instance -> backBufferEnd = newObject;
-			}
+		
+		addUIObject(instance, newObject);
 
 		newStackObject -> next = instance -> surfaceStack;
 		instance -> surfaceStack = newStackObject;
@@ -3046,6 +2971,79 @@ INSTRUCTION_DEF op_commit_buffer(INSTRUCTION_PARAM_LIST)
 	return RETURN_DIRECT;
 	}
 
+static void addEventItem(WindowInstance *w, size_t type, size_t button_id, size_t x, size_t y)
+	{
+	EventItem *nei = malloc(sizeof(EventItem));
+	memset(nei, '\0', sizeof(EventItem));
+	
+	nei -> type = type;
+	nei -> button_id = button_id;
+	nei -> x = x;
+	nei -> y = y;
+	
+	//add to queue
+	semaphore_wait(&w -> eventQueueLock);
+	
+	if (w -> eventQueueEnd != NULL)
+		w -> eventQueueEnd -> next = nei;
+		else
+		w -> eventQueue = nei;
+	w -> eventQueueEnd = nei;
+	
+	semaphore_post(&w -> eventQueueLock);
+	
+	//signal available event
+	semaphore_post(&w -> eventQueueSignal);
+	}
+
+static EventItem* getEvent(WindowInstance *w)
+	{
+	EventItem *r = NULL;
+	
+	semaphore_wait(&w -> eventQueueLock);
+	r = w -> eventQueue;
+	w -> eventQueue = w -> eventQueue -> next;
+	semaphore_post(&w -> eventQueueLock);
+	
+	if (w -> eventQueue == NULL)
+		w -> eventQueueEnd = NULL;
+	
+	return r;
+	}
+
+INSTRUCTION_DEF op_select_event(INSTRUCTION_PARAM_LIST)
+	{
+	size_t hnd = 0;
+	memcpy(&hnd, getVariableContent(cframe, 0), sizeof(size_t));
+
+	if (hnd != 0)
+		{
+		WindowInstance *instance = (WindowInstance*) hnd;
+		
+		//block until next event
+		int ev = semaphore_wait(&instance -> eventQueueSignal);
+		
+		#ifdef WINDOWS
+		if (ev != WAIT_OBJECT_0) return RETURN_DIRECT;
+		#endif
+		
+		//get event
+		EventItem *ei = getEvent(instance);
+		
+		//write to in/out param and return type
+		size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
+		copyHostInteger((unsigned char*) result, (unsigned char*) &ei -> type, sizeof(size_t));
+		
+		size_t *cnt = (size_t*) ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 1)) -> content) -> data;
+		
+		copyHostInteger((unsigned char*) (&cnt[0]), (unsigned char*) &ei -> button_id, sizeof(size_t));
+		copyHostInteger((unsigned char*) (&cnt[1]), (unsigned char*) &ei -> x, sizeof(size_t));
+		copyHostInteger((unsigned char*) (&cnt[2]), (unsigned char*) &ei -> y, sizeof(size_t));
+		}
+	
+	return RETURN_DIRECT;
+	}
+
 INSTRUCTION_DEF op_set_size(INSTRUCTION_PARAM_LIST)
 	{
 	size_t hnd = 0;
@@ -3282,6 +3280,8 @@ INSTRUCTION_DEF op_close_window(INSTRUCTION_PARAM_LIST)
 		sem_wait(&mwInfo -> sem);
 		#endif
 		#endif
+		
+		//semaphore_destroy();
 
 		#ifdef WINDOWS
 		CloseHandle(mwInfo -> sem);
@@ -3604,6 +3604,7 @@ Interface* load(CoreAPI *capi)
 	api -> incrementGTRefCount(integerGT);
 	
 	setInterfaceFunction("makeWindow", op_make_window);
+	setInterfaceFunction("selectEvent", op_select_event);
 	setInterfaceFunction("startPoly", op_start_poly);
 	setInterfaceFunction("addPolyPoint", op_add_poly_point);
 	setInterfaceFunction("endPoly", op_end_poly);

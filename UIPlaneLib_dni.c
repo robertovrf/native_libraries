@@ -20,11 +20,22 @@ static const DanaType data_char_array_map_def =
 static const DanaType function_Object_toString_def[] = {
 {TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}}};
 static const StructuredType function_Object_toString_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_Object_toString_def, NULL, 0, sizeof(function_Object_toString_def)}, 0};
+static const DanaType function_Object_getID_def[] = {
+{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}}};
+static const StructuredType function_Object_getID_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_Object_getID_def, NULL, 0, sizeof(function_Object_getID_def)}, 0};
 static const DanaType object_Object_spec[] = {
 {TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &function_Object_clone_spec}},
 {TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &function_Object_equals_spec}},
-{TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &function_Object_toString_spec}}};
+{TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &function_Object_toString_spec}},
+{TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &function_Object_getID_spec}}};
 static const StructuredType object_Object_def = {{NULL, NULL, 0, 0}, {(unsigned char*) object_Object_spec, NULL, 0, sizeof(object_Object_spec)}, sizeof(VVarLivePTR)};
+static const DanaType data_WindowEventData_spec[] = {
+{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
+{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
+{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0}};
+static const StructuredType data_WindowEventData_def = {{NULL, NULL, 0, 0}, {(unsigned char*) data_WindowEventData_spec, NULL, 0, sizeof(data_WindowEventData_spec)}, 0};
+static const DanaType data_WindowEventData_map_def = 
+{TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_WindowEventData_def}};
 static const DanaType data_WH_spec[] = {
 {TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
 {TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0}};
@@ -50,67 +61,6 @@ static const DanaType data_Bitmap_spec[] = {
 static const StructuredType data_Bitmap_def = {{NULL, NULL, 0, 0}, {(unsigned char*) data_Bitmap_spec, NULL, 0, sizeof(data_Bitmap_spec)}, 0};
 static const DanaType data_Bitmap_map_def = 
 {TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_Bitmap_def}};
-static const StructuredType object_XYClickListener_def;
-static const DanaType function_XYClickListener_clone_def[] = {
-{TYPE_LITERAL, X_FLAT, 0, 1, 1, 0},
-{TYPE_OBJECT, X_POINTER, 1, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &object_Object_def}}};
-static const StructuredType function_XYClickListener_clone_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_XYClickListener_clone_def, NULL, 0, sizeof(function_XYClickListener_clone_def)}, 0};
-static const DanaType function_XYClickListener_equals_def[] = {
-{TYPE_LITERAL, X_FLAT, 0, 1, 1, 0},
-{TYPE_OBJECT, X_POINTER, 1, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &object_Object_def}}};
-static const StructuredType function_XYClickListener_equals_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_XYClickListener_equals_def, NULL, 0, sizeof(function_XYClickListener_equals_def)}, 0};
-static const DanaType function_XYClickListener_toString_def[] = {
-{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}}};
-static const StructuredType function_XYClickListener_toString_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_XYClickListener_toString_def, NULL, 0, sizeof(function_XYClickListener_toString_def)}, 0};
-static const DanaType function_XYClickListener_click_def[] = {
-{TYPE_LITERAL, X_FLAT, 0, 0, 0, 0},
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0}};
-static const StructuredType function_XYClickListener_click_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_XYClickListener_click_def, NULL, 0, sizeof(function_XYClickListener_click_def)}, 0};
-static const DanaType object_XYClickListener_spec[] = {
-{TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &function_XYClickListener_clone_spec}},
-{TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &function_XYClickListener_equals_spec}},
-{TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &function_XYClickListener_toString_spec}},
-{TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &function_XYClickListener_click_spec}}};
-static const StructuredType object_XYClickListener_def = {{NULL, NULL, 0, 0}, {(unsigned char*) object_XYClickListener_spec, NULL, 0, sizeof(object_XYClickListener_spec)}, sizeof(VVarLivePTR)};
-static const StructuredType object_XYMouseListener_def;
-static const DanaType function_XYMouseListener_clone_def[] = {
-{TYPE_LITERAL, X_FLAT, 0, 1, 1, 0},
-{TYPE_OBJECT, X_POINTER, 1, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &object_Object_def}}};
-static const StructuredType function_XYMouseListener_clone_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_XYMouseListener_clone_def, NULL, 0, sizeof(function_XYMouseListener_clone_def)}, 0};
-static const DanaType function_XYMouseListener_equals_def[] = {
-{TYPE_LITERAL, X_FLAT, 0, 1, 1, 0},
-{TYPE_OBJECT, X_POINTER, 1, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &object_Object_def}}};
-static const StructuredType function_XYMouseListener_equals_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_XYMouseListener_equals_def, NULL, 0, sizeof(function_XYMouseListener_equals_def)}, 0};
-static const DanaType function_XYMouseListener_toString_def[] = {
-{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}}};
-static const StructuredType function_XYMouseListener_toString_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_XYMouseListener_toString_def, NULL, 0, sizeof(function_XYMouseListener_toString_def)}, 0};
-static const DanaType function_XYMouseListener_mouseDown_def[] = {
-{TYPE_LITERAL, X_FLAT, 0, 0, 0, 0},
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0}};
-static const StructuredType function_XYMouseListener_mouseDown_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_XYMouseListener_mouseDown_def, NULL, 0, sizeof(function_XYMouseListener_mouseDown_def)}, 0};
-static const DanaType function_XYMouseListener_mouseUp_def[] = {
-{TYPE_LITERAL, X_FLAT, 0, 0, 0, 0},
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0}};
-static const StructuredType function_XYMouseListener_mouseUp_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_XYMouseListener_mouseUp_def, NULL, 0, sizeof(function_XYMouseListener_mouseUp_def)}, 0};
-static const DanaType function_XYMouseListener_mouseMove_def[] = {
-{TYPE_LITERAL, X_FLAT, 0, 0, 0, 0},
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0}};
-static const StructuredType function_XYMouseListener_mouseMove_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_XYMouseListener_mouseMove_def, NULL, 0, sizeof(function_XYMouseListener_mouseMove_def)}, 0};
-static const DanaType object_XYMouseListener_spec[] = {
-{TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &function_XYMouseListener_clone_spec}},
-{TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &function_XYMouseListener_equals_spec}},
-{TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &function_XYMouseListener_toString_spec}},
-{TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &function_XYMouseListener_mouseDown_spec}},
-{TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &function_XYMouseListener_mouseUp_spec}},
-{TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &function_XYMouseListener_mouseMove_spec}}};
-static const StructuredType object_XYMouseListener_def = {{NULL, NULL, 0, 0}, {(unsigned char*) object_XYMouseListener_spec, NULL, 0, sizeof(object_XYMouseListener_spec)}, sizeof(VVarLivePTR)};
 static const DanaType data_Rect_spec[] = {
 {TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
 {TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
@@ -143,9 +93,17 @@ static const StructuredType function_UIPlaneLib_equals_spec = {{NULL, NULL, 0, 0
 static const DanaType function_UIPlaneLib_toString_def[] = {
 {TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}}};
 static const StructuredType function_UIPlaneLib_toString_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_toString_def, NULL, 0, sizeof(function_UIPlaneLib_toString_def)}, 0};
+static const DanaType function_UIPlaneLib_getID_def[] = {
+{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}}};
+static const StructuredType function_UIPlaneLib_getID_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_getID_def, NULL, 0, sizeof(function_UIPlaneLib_getID_def)}, 0};
 static const DanaType function_UIPlaneLib_makeWindow_def[] = {
 {TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0}};
 static const StructuredType function_UIPlaneLib_makeWindow_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_makeWindow_def, NULL, 0, sizeof(function_UIPlaneLib_makeWindow_def)}, 0};
+static const DanaType function_UIPlaneLib_selectEvent_def[] = {
+{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
+{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
+{TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_WindowEventData_def}}};
+static const StructuredType function_UIPlaneLib_selectEvent_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_selectEvent_def, NULL, 0, sizeof(function_UIPlaneLib_selectEvent_def)}, 0};
 static const DanaType function_UIPlaneLib_startPoly_def[] = {
 {TYPE_LITERAL, X_FLAT, 0, 0, 0, 0}};
 static const StructuredType function_UIPlaneLib_startPoly_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_startPoly_def, NULL, 0, sizeof(function_UIPlaneLib_startPoly_def)}, 0};
@@ -267,13 +225,11 @@ static const DanaType function_UIPlaneLib_commitBuffer_def[] = {
 static const StructuredType function_UIPlaneLib_commitBuffer_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_commitBuffer_def, NULL, 0, sizeof(function_UIPlaneLib_commitBuffer_def)}, 0};
 static const DanaType function_UIPlaneLib_registerClickListener_def[] = {
 {TYPE_LITERAL, X_FLAT, 0, 0, 0, 0},
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_OBJECT, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &object_XYClickListener_def}}};
+{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0}};
 static const StructuredType function_UIPlaneLib_registerClickListener_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_registerClickListener_def, NULL, 0, sizeof(function_UIPlaneLib_registerClickListener_def)}, 0};
 static const DanaType function_UIPlaneLib_registerMouseListener_def[] = {
 {TYPE_LITERAL, X_FLAT, 0, 0, 0, 0},
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_OBJECT, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &object_XYMouseListener_def}}};
+{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0}};
 static const StructuredType function_UIPlaneLib_registerMouseListener_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_registerMouseListener_def, NULL, 0, sizeof(function_UIPlaneLib_registerMouseListener_def)}, 0};
 static const DanaType function_UIPlaneLib_setBackgroundColor_def[] = {
 {TYPE_LITERAL, X_FLAT, 0, 0, 0, 0},
@@ -342,7 +298,9 @@ static const StructuredFunctionType intf_fnc[] = {
 {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_clone_def, NULL, 0, sizeof(function_UIPlaneLib_clone_def)}, 0},
 {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_equals_def, NULL, 0, sizeof(function_UIPlaneLib_equals_def)}, 0},
 {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_toString_def, NULL, 0, sizeof(function_UIPlaneLib_toString_def)}, 0},
+{{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_getID_def, NULL, 0, sizeof(function_UIPlaneLib_getID_def)}, 0},
 {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_makeWindow_def, NULL, 0, sizeof(function_UIPlaneLib_makeWindow_def)}, 0},
+{{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_selectEvent_def, NULL, 0, sizeof(function_UIPlaneLib_selectEvent_def)}, 0},
 {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_startPoly_def, NULL, 0, sizeof(function_UIPlaneLib_startPoly_def)}, 0},
 {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_addPolyPoint_def, NULL, 0, sizeof(function_UIPlaneLib_addPolyPoint_def)}, 0},
 {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_endPoly_def, NULL, 0, sizeof(function_UIPlaneLib_endPoly_def)}, 0},
@@ -407,7 +365,9 @@ static const DanaType intf_def[] = {
 {TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &intf_fnc[30]}},
 {TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &intf_fnc[31]}},
 {TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &intf_fnc[32]}},
-{TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &intf_fnc[33]}}};
+{TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &intf_fnc[33]}},
+{TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &intf_fnc[34]}},
+{TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &intf_fnc[35]}}};
 static StructuredInterfaceType ILib = {{(unsigned char*) "UIPlaneLib", NULL, 0, 10}, {(unsigned char*) intf_def, NULL, 0, sizeof(intf_def)}, 0};
 static DanaType cloneLocalsSpec[] = {
 {TYPE_LITERAL, X_FLAT, 0, 1, 1, 0},
@@ -420,9 +380,17 @@ static StructuredType equalsLocalsDef = {{}, {(unsigned char*) equalsLocalsSpec,
 static DanaType toStringLocalsSpec[] = {
 {TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}}};
 static StructuredType toStringLocalsDef = {{}, {(unsigned char*) toStringLocalsSpec, NULL, 0, sizeof(toStringLocalsSpec)}, 0};
+static DanaType getIDLocalsSpec[] = {
+{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}}};
+static StructuredType getIDLocalsDef = {{}, {(unsigned char*) getIDLocalsSpec, NULL, 0, sizeof(getIDLocalsSpec)}, 0};
 static DanaType makeWindowLocalsSpec[] = {
 {TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0}};
 static StructuredType makeWindowLocalsDef = {{}, {(unsigned char*) makeWindowLocalsSpec, NULL, 0, sizeof(makeWindowLocalsSpec)}, 0};
+static DanaType selectEventLocalsSpec[] = {
+{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
+{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
+{TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_WindowEventData_def}}};
+static StructuredType selectEventLocalsDef = {{}, {(unsigned char*) selectEventLocalsSpec, NULL, 0, sizeof(selectEventLocalsSpec)}, 0};
 static DanaType startPolyLocalsSpec[] = {
 {TYPE_LITERAL, X_FLAT, 0, 0, 0, 0}};
 static StructuredType startPolyLocalsDef = {{}, {(unsigned char*) startPolyLocalsSpec, NULL, 0, sizeof(startPolyLocalsSpec)}, 0};
@@ -544,13 +512,11 @@ static DanaType commitBufferLocalsSpec[] = {
 static StructuredType commitBufferLocalsDef = {{}, {(unsigned char*) commitBufferLocalsSpec, NULL, 0, sizeof(commitBufferLocalsSpec)}, 0};
 static DanaType registerClickListenerLocalsSpec[] = {
 {TYPE_LITERAL, X_FLAT, 0, 0, 0, 0},
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_OBJECT, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &object_XYClickListener_def}}};
+{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0}};
 static StructuredType registerClickListenerLocalsDef = {{}, {(unsigned char*) registerClickListenerLocalsSpec, NULL, 0, sizeof(registerClickListenerLocalsSpec)}, 0};
 static DanaType registerMouseListenerLocalsSpec[] = {
 {TYPE_LITERAL, X_FLAT, 0, 0, 0, 0},
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_OBJECT, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &object_XYMouseListener_def}}};
+{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0}};
 static StructuredType registerMouseListenerLocalsDef = {{}, {(unsigned char*) registerMouseListenerLocalsSpec, NULL, 0, sizeof(registerMouseListenerLocalsSpec)}, 0};
 static DanaType setBackgroundColorLocalsSpec[] = {
 {TYPE_LITERAL, X_FLAT, 0, 0, 0, 0},
@@ -618,7 +584,9 @@ static StructuredType unloadFontLocalsDef = {{}, {(unsigned char*) unloadFontLoc
 static unsigned char op_clone_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
 static unsigned char op_equals_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
 static unsigned char op_toString_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
+static unsigned char op_getID_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
 static unsigned char op_makeWindow_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
+static unsigned char op_selectEvent_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
 static unsigned char op_startPoly_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
 static unsigned char op_addPolyPoint_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
 static unsigned char op_endPoly_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
@@ -655,7 +623,9 @@ static size_t interfaceFunctions[] = {
 (size_t) op_clone_thread_spec,
 (size_t) op_equals_thread_spec,
 (size_t) op_toString_thread_spec,
+(size_t) op_getID_thread_spec,
 (size_t) op_makeWindow_thread_spec,
+(size_t) op_selectEvent_thread_spec,
 (size_t) op_startPoly_thread_spec,
 (size_t) op_addPolyPoint_thread_spec,
 (size_t) op_endPoly_thread_spec,
@@ -704,7 +674,9 @@ Interface* getPublicInterface(){
 populateOffsets(cloneLocalsSpec, sizeof(cloneLocalsSpec) / sizeof(DanaType), &cloneLocalsDef);
 populateOffsets(equalsLocalsSpec, sizeof(equalsLocalsSpec) / sizeof(DanaType), &equalsLocalsDef);
 populateOffsets(toStringLocalsSpec, sizeof(toStringLocalsSpec) / sizeof(DanaType), &toStringLocalsDef);
+populateOffsets(getIDLocalsSpec, sizeof(getIDLocalsSpec) / sizeof(DanaType), &getIDLocalsDef);
 populateOffsets(makeWindowLocalsSpec, sizeof(makeWindowLocalsSpec) / sizeof(DanaType), &makeWindowLocalsDef);
+populateOffsets(selectEventLocalsSpec, sizeof(selectEventLocalsSpec) / sizeof(DanaType), &selectEventLocalsDef);
 populateOffsets(startPolyLocalsSpec, sizeof(startPolyLocalsSpec) / sizeof(DanaType), &startPolyLocalsDef);
 populateOffsets(addPolyPointLocalsSpec, sizeof(addPolyPointLocalsSpec) / sizeof(DanaType), &addPolyPointLocalsDef);
 populateOffsets(endPolyLocalsSpec, sizeof(endPolyLocalsSpec) / sizeof(DanaType), &endPolyLocalsDef);
@@ -747,10 +719,18 @@ populateOffsets(unloadFontLocalsSpec, sizeof(unloadFontLocalsSpec) / sizeof(Dana
 ((VFrameHeader*) op_toString_thread_spec) -> formalParamsCount = (toStringLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
 ((size_t*) &((VFrameHeader*) op_toString_thread_spec)[1])[0] = (size_t) &toStringLocalsDef;
 ((VFrameHeader*) op_toString_thread_spec) -> functionName = "toString";
+((VFrameHeader*) op_getID_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + getIDLocalsDef.size;
+((VFrameHeader*) op_getID_thread_spec) -> formalParamsCount = (getIDLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
+((size_t*) &((VFrameHeader*) op_getID_thread_spec)[1])[0] = (size_t) &getIDLocalsDef;
+((VFrameHeader*) op_getID_thread_spec) -> functionName = "getID";
 ((VFrameHeader*) op_makeWindow_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + makeWindowLocalsDef.size;
 ((VFrameHeader*) op_makeWindow_thread_spec) -> formalParamsCount = (makeWindowLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
 ((size_t*) &((VFrameHeader*) op_makeWindow_thread_spec)[1])[0] = (size_t) &makeWindowLocalsDef;
 ((VFrameHeader*) op_makeWindow_thread_spec) -> functionName = "makeWindow";
+((VFrameHeader*) op_selectEvent_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + selectEventLocalsDef.size;
+((VFrameHeader*) op_selectEvent_thread_spec) -> formalParamsCount = (selectEventLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
+((size_t*) &((VFrameHeader*) op_selectEvent_thread_spec)[1])[0] = (size_t) &selectEventLocalsDef;
+((VFrameHeader*) op_selectEvent_thread_spec) -> functionName = "selectEvent";
 ((VFrameHeader*) op_startPoly_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + startPolyLocalsDef.size;
 ((VFrameHeader*) op_startPoly_thread_spec) -> formalParamsCount = (startPolyLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
 ((size_t*) &((VFrameHeader*) op_startPoly_thread_spec)[1])[0] = (size_t) &startPolyLocalsDef;
@@ -886,7 +866,9 @@ static Fable interfaceMappings[] = {
 {"clone", (VFrameHeader*) op_clone_thread_spec},
 {"equals", (VFrameHeader*) op_equals_thread_spec},
 {"toString", (VFrameHeader*) op_toString_thread_spec},
+{"getID", (VFrameHeader*) op_getID_thread_spec},
 {"makeWindow", (VFrameHeader*) op_makeWindow_thread_spec},
+{"selectEvent", (VFrameHeader*) op_selectEvent_thread_spec},
 {"startPoly", (VFrameHeader*) op_startPoly_thread_spec},
 {"addPolyPoint", (VFrameHeader*) op_addPolyPoint_thread_spec},
 {"endPoly", (VFrameHeader*) op_endPoly_thread_spec},
@@ -942,6 +924,7 @@ static Ex dataMappings[] = {
 {"Pixel[]", &data_Pixel_array_map_def},
 {"Pixel", &data_Pixel_map_def},
 {"WH", &data_WH_map_def},
+{"WindowEventData", &data_WindowEventData_map_def},
 {"char[]", &data_char_array_map_def}};
 const DanaType* getTypeDefinition(char *name){
 int i = 0;
