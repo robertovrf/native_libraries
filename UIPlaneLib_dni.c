@@ -29,13 +29,6 @@ static const DanaType object_Object_spec[] = {
 {TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &function_Object_toString_spec}},
 {TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &function_Object_getID_spec}}};
 static const StructuredType object_Object_def = {{NULL, NULL, 0, 0}, {(unsigned char*) object_Object_spec, NULL, 0, sizeof(object_Object_spec)}, sizeof(VVarLivePTR)};
-static const DanaType data_WindowEventData_spec[] = {
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0}};
-static const StructuredType data_WindowEventData_def = {{NULL, NULL, 0, 0}, {(unsigned char*) data_WindowEventData_spec, NULL, 0, sizeof(data_WindowEventData_spec)}, 0};
-static const DanaType data_WindowEventData_map_def = 
-{TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_WindowEventData_def}};
 static const DanaType data_WH_spec[] = {
 {TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
 {TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0}};
@@ -99,11 +92,6 @@ static const StructuredType function_UIPlaneLib_getID_spec = {{NULL, NULL, 0, 0}
 static const DanaType function_UIPlaneLib_makeWindow_def[] = {
 {TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0}};
 static const StructuredType function_UIPlaneLib_makeWindow_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_makeWindow_def, NULL, 0, sizeof(function_UIPlaneLib_makeWindow_def)}, 0};
-static const DanaType function_UIPlaneLib_selectEvent_def[] = {
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_WindowEventData_def}}};
-static const StructuredType function_UIPlaneLib_selectEvent_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_selectEvent_def, NULL, 0, sizeof(function_UIPlaneLib_selectEvent_def)}, 0};
 static const DanaType function_UIPlaneLib_startPoly_def[] = {
 {TYPE_LITERAL, X_FLAT, 0, 0, 0, 0}};
 static const StructuredType function_UIPlaneLib_startPoly_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_startPoly_def, NULL, 0, sizeof(function_UIPlaneLib_startPoly_def)}, 0};
@@ -300,7 +288,6 @@ static const StructuredFunctionType intf_fnc[] = {
 {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_toString_def, NULL, 0, sizeof(function_UIPlaneLib_toString_def)}, 0},
 {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_getID_def, NULL, 0, sizeof(function_UIPlaneLib_getID_def)}, 0},
 {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_makeWindow_def, NULL, 0, sizeof(function_UIPlaneLib_makeWindow_def)}, 0},
-{{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_selectEvent_def, NULL, 0, sizeof(function_UIPlaneLib_selectEvent_def)}, 0},
 {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_startPoly_def, NULL, 0, sizeof(function_UIPlaneLib_startPoly_def)}, 0},
 {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_addPolyPoint_def, NULL, 0, sizeof(function_UIPlaneLib_addPolyPoint_def)}, 0},
 {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_endPoly_def, NULL, 0, sizeof(function_UIPlaneLib_endPoly_def)}, 0},
@@ -366,8 +353,7 @@ static const DanaType intf_def[] = {
 {TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &intf_fnc[31]}},
 {TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &intf_fnc[32]}},
 {TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &intf_fnc[33]}},
-{TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &intf_fnc[34]}},
-{TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &intf_fnc[35]}}};
+{TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &intf_fnc[34]}}};
 static StructuredInterfaceType ILib = {{(unsigned char*) "UIPlaneLib", NULL, 0, 10}, {(unsigned char*) intf_def, NULL, 0, sizeof(intf_def)}, 0};
 static DanaType cloneLocalsSpec[] = {
 {TYPE_LITERAL, X_FLAT, 0, 1, 1, 0},
@@ -386,11 +372,6 @@ static StructuredType getIDLocalsDef = {{}, {(unsigned char*) getIDLocalsSpec, N
 static DanaType makeWindowLocalsSpec[] = {
 {TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0}};
 static StructuredType makeWindowLocalsDef = {{}, {(unsigned char*) makeWindowLocalsSpec, NULL, 0, sizeof(makeWindowLocalsSpec)}, 0};
-static DanaType selectEventLocalsSpec[] = {
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_WindowEventData_def}}};
-static StructuredType selectEventLocalsDef = {{}, {(unsigned char*) selectEventLocalsSpec, NULL, 0, sizeof(selectEventLocalsSpec)}, 0};
 static DanaType startPolyLocalsSpec[] = {
 {TYPE_LITERAL, X_FLAT, 0, 0, 0, 0}};
 static StructuredType startPolyLocalsDef = {{}, {(unsigned char*) startPolyLocalsSpec, NULL, 0, sizeof(startPolyLocalsSpec)}, 0};
@@ -586,7 +567,6 @@ static unsigned char op_equals_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
 static unsigned char op_toString_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
 static unsigned char op_getID_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
 static unsigned char op_makeWindow_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
-static unsigned char op_selectEvent_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
 static unsigned char op_startPoly_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
 static unsigned char op_addPolyPoint_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
 static unsigned char op_endPoly_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
@@ -625,7 +605,6 @@ static size_t interfaceFunctions[] = {
 (size_t) op_toString_thread_spec,
 (size_t) op_getID_thread_spec,
 (size_t) op_makeWindow_thread_spec,
-(size_t) op_selectEvent_thread_spec,
 (size_t) op_startPoly_thread_spec,
 (size_t) op_addPolyPoint_thread_spec,
 (size_t) op_endPoly_thread_spec,
@@ -676,7 +655,6 @@ populateOffsets(equalsLocalsSpec, sizeof(equalsLocalsSpec) / sizeof(DanaType), &
 populateOffsets(toStringLocalsSpec, sizeof(toStringLocalsSpec) / sizeof(DanaType), &toStringLocalsDef);
 populateOffsets(getIDLocalsSpec, sizeof(getIDLocalsSpec) / sizeof(DanaType), &getIDLocalsDef);
 populateOffsets(makeWindowLocalsSpec, sizeof(makeWindowLocalsSpec) / sizeof(DanaType), &makeWindowLocalsDef);
-populateOffsets(selectEventLocalsSpec, sizeof(selectEventLocalsSpec) / sizeof(DanaType), &selectEventLocalsDef);
 populateOffsets(startPolyLocalsSpec, sizeof(startPolyLocalsSpec) / sizeof(DanaType), &startPolyLocalsDef);
 populateOffsets(addPolyPointLocalsSpec, sizeof(addPolyPointLocalsSpec) / sizeof(DanaType), &addPolyPointLocalsDef);
 populateOffsets(endPolyLocalsSpec, sizeof(endPolyLocalsSpec) / sizeof(DanaType), &endPolyLocalsDef);
@@ -727,10 +705,6 @@ populateOffsets(unloadFontLocalsSpec, sizeof(unloadFontLocalsSpec) / sizeof(Dana
 ((VFrameHeader*) op_makeWindow_thread_spec) -> formalParamsCount = (makeWindowLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
 ((size_t*) &((VFrameHeader*) op_makeWindow_thread_spec)[1])[0] = (size_t) &makeWindowLocalsDef;
 ((VFrameHeader*) op_makeWindow_thread_spec) -> functionName = "makeWindow";
-((VFrameHeader*) op_selectEvent_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + selectEventLocalsDef.size;
-((VFrameHeader*) op_selectEvent_thread_spec) -> formalParamsCount = (selectEventLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_selectEvent_thread_spec)[1])[0] = (size_t) &selectEventLocalsDef;
-((VFrameHeader*) op_selectEvent_thread_spec) -> functionName = "selectEvent";
 ((VFrameHeader*) op_startPoly_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + startPolyLocalsDef.size;
 ((VFrameHeader*) op_startPoly_thread_spec) -> formalParamsCount = (startPolyLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
 ((size_t*) &((VFrameHeader*) op_startPoly_thread_spec)[1])[0] = (size_t) &startPolyLocalsDef;
@@ -868,7 +842,6 @@ static Fable interfaceMappings[] = {
 {"toString", (VFrameHeader*) op_toString_thread_spec},
 {"getID", (VFrameHeader*) op_getID_thread_spec},
 {"makeWindow", (VFrameHeader*) op_makeWindow_thread_spec},
-{"selectEvent", (VFrameHeader*) op_selectEvent_thread_spec},
 {"startPoly", (VFrameHeader*) op_startPoly_thread_spec},
 {"addPolyPoint", (VFrameHeader*) op_addPolyPoint_thread_spec},
 {"endPoly", (VFrameHeader*) op_endPoly_thread_spec},
@@ -924,7 +897,6 @@ static Ex dataMappings[] = {
 {"Pixel[]", &data_Pixel_array_map_def},
 {"Pixel", &data_Pixel_map_def},
 {"WH", &data_WH_map_def},
-{"WindowEventData", &data_WindowEventData_map_def},
 {"char[]", &data_char_array_map_def}};
 const DanaType* getTypeDefinition(char *name){
 int i = 0;

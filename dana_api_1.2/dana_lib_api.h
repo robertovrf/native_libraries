@@ -1,12 +1,12 @@
 #ifndef _DANA_LIB_API
 #define _DANA_LIB_API
 
-#define LIB_API_VERSION 11
+#define LIB_API_VERSION 12
 
 #define RETURN_DIRECT	0
 
 typedef struct _CoreAPI{
-	int (*callFunction)(void *object, unsigned int index, void *params, unsigned int paramCount);
+	int (*pushEvent)(void *object, size_t event_sink_index, size_t event_type, LiveData *event_details);
 	GlobalTypeLink* (*resolveGlobalTypeMapping)(const DanaType *d);
 	void (*decrementGTRefCount)(GlobalTypeLink *d);
 	void (*incrementGTRefCount)(GlobalTypeLink *d);

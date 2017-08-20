@@ -66,9 +66,21 @@ SDL_SetRenderTarget is another thing to render a texture as a whole...
 
 static CoreAPI *api;
 
+static const DanaType windowDataSpec[] = {
+			{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
+			{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), sizeof(size_t)},
+			{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), sizeof(size_t)+sizeof(size_t)}
+			};
+static const StructuredType windowDataDef = {{(unsigned char*) "WindowData", NULL, 0, 10}, {(unsigned char*) windowDataSpec, NULL, 0, sizeof(windowDataSpec)}, sizeof(size_t)+sizeof(size_t)+sizeof(size_t)};
+
+static const DanaType windowDataType = {
+	TYPE_DATA, X_POINTER, 0, sizeof(size_t)+sizeof(size_t)+sizeof(size_t), sizeof(size_t)+sizeof(size_t)+sizeof(size_t), 0, {(unsigned char*) &windowDataDef}
+	};
+
 static GlobalTypeLink *charArrayGT = NULL;
 static GlobalTypeLink *pixelArrayGT = NULL;
 static GlobalTypeLink *integerGT = NULL;
+static GlobalTypeLink *windowDataGT = NULL;
 
 #define TYPE_INT {TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0}
 static const DanaType integerType = TYPE_INT;
@@ -241,11 +253,10 @@ typedef struct{
 
 	size_t captureCount;
 	
-	Semaphore eventQueueSignal;
-	Semaphore eventQueueLock;
-	
 	EventItem *eventQueue;
 	EventItem *eventQueueEnd;
+	
+	void *eqObject;
 
 	long int sdlProc;
 	} WindowInstance;
@@ -334,7 +345,7 @@ void semaphore_destroy(Semaphore *s)
     #endif
 	}
 
-static void addEventItem(WindowInstance *w, size_t type, size_t button_id, size_t x, size_t y);
+static void pushEvent(WindowInstance *w, size_t type, size_t button_id, size_t x, size_t y);
 
 static ListItem* addListItem(ListItem **lst, ListItem **last, void *data)
 	{
@@ -912,7 +923,7 @@ long long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, 
 			size_t screenY = point.y;
 			size_t button = 1;
 			
-			addEventItem(myInstance, 2, button, screenX, screenY);
+			pushEvent(myInstance, 2, button, screenX, screenY);
 			
 			myInstance -> captureCount ++;
 
@@ -937,7 +948,7 @@ long long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, 
 			size_t screenY = point.y;
 			size_t button = 1;
 			
-			addEventItem(myInstance, 1, button, screenX, screenY);
+			pushEvent(myInstance, 1, button, screenX, screenY);
 			
 			myInstance -> captureCount --;
 
@@ -970,7 +981,7 @@ long long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, 
 				fillRegister(&myInstance -> mouseParams[1], (unsigned char*) &myInstance -> mouseDownY);
 				fillRegister(&myInstance -> mouseParams[2], (unsigned char*) &myInstance -> mouseDownButton);
 
-				api -> callFunction(myInstance -> mouseListenerObject, 4, myInstance -> mouseParams, 3);
+				//api -> callFunction(myInstance -> mouseListenerObject, 4, myInstance -> mouseParams, 3);
 				}
 
 			myInstance -> captureCount ++;
@@ -1012,7 +1023,7 @@ long long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, 
 					fillRegister(&myInstance -> clickParams[1], (unsigned char*) &myInstance -> clickY);
 					fillRegister(&myInstance -> clickParams[2], (unsigned char*) &myInstance -> clickButton);
 
-					api -> callFunction(myInstance -> clickListenerObject, 4, myInstance -> clickParams, 3);
+					//api -> callFunction(myInstance -> clickListenerObject, 4, myInstance -> clickParams, 3);
 					}
 				}
 
@@ -1026,7 +1037,7 @@ long long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, 
 				fillRegister(&myInstance -> mouseParams[1], (unsigned char*) &myInstance -> mouseUpY);
 				fillRegister(&myInstance -> mouseParams[2], (unsigned char*) &myInstance -> mouseUpButton);
 
-				api -> callFunction(myInstance -> mouseListenerObject, 5, myInstance -> mouseParams, 3);
+				//api -> callFunction(myInstance -> mouseListenerObject, 5, myInstance -> mouseParams, 3);
 				}
 
 			myInstance -> captureCount --;
@@ -1060,7 +1071,7 @@ long long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, 
 				fillRegister(&myInstance -> mouseParams[1], (unsigned char*) &myInstance -> mouseDownY);
 				fillRegister(&myInstance -> mouseParams[2], (unsigned char*) &myInstance -> mouseDownButton);
 
-				api -> callFunction(myInstance -> mouseListenerObject, 4, myInstance -> mouseParams, 3);
+				//api -> callFunction(myInstance -> mouseListenerObject, 4, myInstance -> mouseParams, 3);
 				}
 
 			myInstance -> captureCount ++;
@@ -1102,7 +1113,7 @@ long long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, 
 					fillRegister(&myInstance -> clickParams[1], (unsigned char*) &myInstance -> clickY);
 					fillRegister(&myInstance -> clickParams[2], (unsigned char*) &myInstance -> clickButton);
 
-					api -> callFunction(myInstance -> clickListenerObject, 4, myInstance -> clickParams, 3);
+					//api -> callFunction(myInstance -> clickListenerObject, 4, myInstance -> clickParams, 3);
 					}
 				}
 
@@ -1116,7 +1127,7 @@ long long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, 
 				fillRegister(&myInstance -> mouseParams[1], (unsigned char*) &myInstance -> mouseUpY);
 				fillRegister(&myInstance -> mouseParams[2], (unsigned char*) &myInstance -> mouseUpButton);
 
-				api -> callFunction(myInstance -> mouseListenerObject, 5, myInstance -> mouseParams, 3);
+				//api -> callFunction(myInstance -> mouseListenerObject, 5, myInstance -> mouseParams, 3);
 				}
 
 			myInstance -> captureCount --;
@@ -1148,7 +1159,7 @@ long long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, 
 			if ((screenX != myInstance -> lastMouseMoveX || screenY != myInstance -> lastMouseMoveY)
 				&& (myInstance -> windowX + x == screenX && myInstance -> windowY + y == screenY))
 				{
-				addEventItem(myInstance, 3, 1, screenX, screenY);
+				pushEvent(myInstance, 3, 1, screenX, screenY);
 				}
 			
 			myInstance -> lastMouseMoveX = screenX;
@@ -1251,10 +1262,6 @@ static WindowInstance* createNewWindow()
 	myInstance -> renderLock = CreateSemaphore(NULL, 1, 1, NULL);
 	#endif
 	
-	//event queue
-	semaphore_init(&myInstance -> eventQueueSignal, 0);
-	semaphore_init(&myInstance -> eventQueueLock, 1);
-
 	//temporary global variable:
 	//mainInstance = myInstance;
 
@@ -1561,7 +1568,7 @@ static void* render_thread(void *ptr)
 			XEvent xev;
 			while (XCheckWindowEvent(wi -> displayHandle, wi -> windowHandle, ButtonPressMask, &xev))
 				{
-				printf("beats\n");
+				printf("input_hq\n");
 			}
 
 			lw = lw -> next;
@@ -1680,8 +1687,6 @@ static void* render_thread(void *ptr)
 				SDL_DestroyRenderer(cwi -> wi -> renderer);
 				SDL_DestroyWindow(cwi -> wi -> win);
 				
-				semaphore_destroy(&cwi -> wi -> eventQueueSignal);
-
 				//TODO: cleanup wi -> frontBuffer / wi -> backBuffer ???
 				free(cwi -> wi);
 				
@@ -2083,6 +2088,9 @@ INSTRUCTION_DEF op_make_window(INSTRUCTION_PARAM_LIST)
 	size_t xs = (size_t) mwInfo -> instanceResult;
 	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
 	memcpy(result, &xs, sizeof(size_t));
+	
+	if (mwInfo -> instanceResult != NULL)
+		mwInfo -> instanceResult -> eqObject = cframe -> blocking -> io;
 	
 	free(mwInfo);
 	
@@ -2971,77 +2979,27 @@ INSTRUCTION_DEF op_commit_buffer(INSTRUCTION_PARAM_LIST)
 	return RETURN_DIRECT;
 	}
 
-static void addEventItem(WindowInstance *w, size_t type, size_t button_id, size_t x, size_t y)
+static void pushEvent(WindowInstance *w, size_t type, size_t button_id, size_t x, size_t y)
 	{
-	EventItem *nei = malloc(sizeof(EventItem));
-	memset(nei, '\0', sizeof(EventItem));
+	LiveData *nd = malloc(sizeof(LiveData));
+	memset(nd, '\0', sizeof(LiveData));
 	
-	nei -> type = type;
-	nei -> button_id = button_id;
-	nei -> x = x;
-	nei -> y = y;
+	size_t sz = sizeof(size_t) * 3;
+	nd -> data = malloc(sz);
+	memset(nd -> data, '\0', sz);
 	
-	//add to queue
-	semaphore_wait(&w -> eventQueueLock);
+	nd -> gtLink = windowDataGT;
+	api -> incrementGTRefCount(nd -> gtLink);
 	
-	if (w -> eventQueueEnd != NULL)
-		w -> eventQueueEnd -> next = nei;
-		else
-		w -> eventQueue = nei;
-	w -> eventQueueEnd = nei;
+	unsigned char *wd_bid = nd -> data;
+	unsigned char *wd_x = nd -> data + sizeof(size_t);
+	unsigned char *wd_y = nd -> data + sizeof(size_t) + sizeof(size_t);
 	
-	semaphore_post(&w -> eventQueueLock);
+	copyHostInteger(wd_bid, (unsigned char*) &button_id, sizeof(size_t));
+	copyHostInteger(wd_x, (unsigned char*) &x, sizeof(size_t));
+	copyHostInteger(wd_y, (unsigned char*) &y, sizeof(size_t));
 	
-	//signal available event
-	semaphore_post(&w -> eventQueueSignal);
-	}
-
-static EventItem* getEvent(WindowInstance *w)
-	{
-	EventItem *r = NULL;
-	
-	semaphore_wait(&w -> eventQueueLock);
-	r = w -> eventQueue;
-	w -> eventQueue = w -> eventQueue -> next;
-	semaphore_post(&w -> eventQueueLock);
-	
-	if (w -> eventQueue == NULL)
-		w -> eventQueueEnd = NULL;
-	
-	return r;
-	}
-
-INSTRUCTION_DEF op_select_event(INSTRUCTION_PARAM_LIST)
-	{
-	size_t hnd = 0;
-	memcpy(&hnd, getVariableContent(cframe, 0), sizeof(size_t));
-
-	if (hnd != 0)
-		{
-		WindowInstance *instance = (WindowInstance*) hnd;
-		
-		//block until next event
-		int ev = semaphore_wait(&instance -> eventQueueSignal);
-		
-		#ifdef WINDOWS
-		if (ev != WAIT_OBJECT_0) return RETURN_DIRECT;
-		#endif
-		
-		//get event
-		EventItem *ei = getEvent(instance);
-		
-		//write to in/out param and return type
-		size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
-		copyHostInteger((unsigned char*) result, (unsigned char*) &ei -> type, sizeof(size_t));
-		
-		size_t *cnt = (size_t*) ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 1)) -> content) -> data;
-		
-		copyHostInteger((unsigned char*) (&cnt[0]), (unsigned char*) &ei -> button_id, sizeof(size_t));
-		copyHostInteger((unsigned char*) (&cnt[1]), (unsigned char*) &ei -> x, sizeof(size_t));
-		copyHostInteger((unsigned char*) (&cnt[2]), (unsigned char*) &ei -> y, sizeof(size_t));
-		}
-	
-	return RETURN_DIRECT;
+	api -> pushEvent(w -> eqObject, 0, type, nd);
 	}
 
 INSTRUCTION_DEF op_set_size(INSTRUCTION_PARAM_LIST)
@@ -3603,8 +3561,10 @@ Interface* load(CoreAPI *capi)
 	integerGT = api -> resolveGlobalTypeMapping(&integerType);
 	api -> incrementGTRefCount(integerGT);
 	
+	windowDataGT = api -> resolveGlobalTypeMapping(&windowDataType);
+	api -> incrementGTRefCount(windowDataGT);
+	
 	setInterfaceFunction("makeWindow", op_make_window);
-	setInterfaceFunction("selectEvent", op_select_event);
 	setInterfaceFunction("startPoly", op_start_poly);
 	setInterfaceFunction("addPolyPoint", op_add_poly_point);
 	setInterfaceFunction("endPoly", op_end_poly);

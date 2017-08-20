@@ -1,6 +1,6 @@
 CC = gcc
 
-STD_INCLUDE = -I "dana_api_1.1"
+STD_INCLUDE = -I "dana_api_1.2"
 CCFLAGS = -Wall -fno-strict-aliasing
 OUTPUT_FILE=
 
