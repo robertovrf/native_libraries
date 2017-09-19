@@ -1,6 +1,7 @@
 CC = gcc
 
-STD_INCLUDE = -I "dana_api_1.2"
+API_PATH = "dana_api_1.2"
+STD_INCLUDE = -I $(API_PATH)
 CCFLAGS = -Wall -fno-strict-aliasing
 OUTPUT_FILE=
 
@@ -123,7 +124,7 @@ timer:
 	$(CP_CMD) timer[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
 
 uiplane:
-	$(CC) -Os -s UIPlaneLib_dni.c vmi_util.c dana_api_1.1/platform_utils.c uiplane.c -o uiplane[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS) $(SDL_FLAGS)
+	$(CC) -Os -s UIPlaneLib_dni.c vmi_util.c $(API_PATH)/platform_utils.c uiplane.c -o uiplane[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS) $(SDL_FLAGS)
 	$(CP_CMD) uiplane[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
 
 run:
