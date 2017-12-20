@@ -61,12 +61,6 @@ typedef struct scope{
 	size_t flags;
 	} LiveScope;
 
-typedef struct lvl{
-	unsigned char *content;
-	size_t vsize;
-	void *last;
-	} LiveVL;
-
 typedef struct lcntvl{
 	unsigned char *content;
 	struct vv *ptrs;
@@ -77,41 +71,22 @@ typedef struct lcntvl{
 
 typedef struct vvlptr{
 	unsigned char *content;
-	struct vv *next;
-	struct vv *prev;
 	size_t vsize;
-	size_t lsize;
-	LiveVL *vl;
-	void *vlf;
-	void *vlTop;
-	void *vlBot;
 	struct _s_danaType *typeLink;
 	struct component *owner;
 	unsigned char readOnly;
 	} VVarLivePTR;
 
-typedef struct _RPTR{
-	unsigned char *content;
-	struct vv *next;
-	struct vv *prev;
-	size_t vsize;
-	size_t lsize;
-	LiveVL *vl;
-	void *vlf;
-	void *vlTop;
-	void *vlBot;
-	struct component *owner;
-	} RPTR;
-
 struct _s_danaType;
 
 typedef struct rvv{
-	RPTR PR;
-	//unsigned char *content;
+	unsigned char *content;
+	size_t vsize;
+	struct component *owner;
 	unsigned char type; unsigned char xtype;
+	unsigned char readOnly;
 	size_t etype;
 	struct _s_danaType *typeLink;
-	unsigned char readOnly;
 	} VVarR;
 
 typedef struct oi{
@@ -192,7 +167,7 @@ typedef struct thrhdr{
 	size_t formalParamsCount;
 	unsigned char *pcLoc;
 	void *el;
-	size_t scopeCount;
+	size_t localsDef;
 	char *functionName;
 	} VFrameHeader;
 
@@ -201,28 +176,20 @@ typedef struct __est{
 	size_t result;
 	} ExitStatus;
 
-typedef struct __sc{
-	VVar scope;
-	struct __sc *next;
-	} ScopeContainer;
-
 typedef struct vthread{
 	unsigned char *pc;
 	unsigned char *eii;
+	size_t ln;
 	VFrameHeader *header;
 	struct component *instance;
 	struct component *host;
 	LiveObject *hostObject;
 	struct vthread *a;
-	struct vthread *b;
 	struct vthread *blocking;
 	struct vthread *c;
 	ExitStatus *exitStatus;
 	LiveThread liveThread;
-	VVarR *registers;
-	VVarR *registerPtr;
-	ScopeContainer *scopes;
-	ScopeContainer *scopeStack;
+	size_t localsDef;
 	unsigned char *localsData;
 	LiveObject *io;
 	void *pr;
@@ -238,7 +205,6 @@ typedef struct vthread{
 	VVarR *rr2;
 	unsigned char *pe;
 	unsigned char pec;
-	size_t ln;
 	unsigned char f;
 	unsigned char xf;
 	unsigned char inss;
@@ -285,7 +251,6 @@ typedef struct component{
 	VVar globalsRef;
 	unsigned char *globalsData;
 	SourceHeader *header;
-	LiveVL instanceList;
 	VVarLivePTR createdItems;
 	void *ho;
 	ObjectSpec *objects;

@@ -258,7 +258,7 @@ INSTRUCTION_DEF op_udp_bind(INSTRUCTION_PARAM_LIST)
 	size_t xs = master;
 	
 	//the return value is written to local variable 0
-	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
+	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> localsDef) -> structure.content)[0].offset];
 	memcpy(result, &xs, sizeof(size_t));
 	
 	free(addr);
@@ -396,7 +396,7 @@ INSTRUCTION_DEF op_udp_recv(INSTRUCTION_PARAM_LIST)
 	
 	
 	//the return value is written to local variable 0
-	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
+	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> localsDef) -> structure.content)[0].offset];
 	copyHostInteger((unsigned char*) result, (unsigned char*) &ok, sizeof(ok));
 	
 	return RETURN_DIRECT;
@@ -479,7 +479,7 @@ INSTRUCTION_DEF op_udp_send(INSTRUCTION_PARAM_LIST)
 	//printf("OK: %u\n", ok);
 	
 	//the return value is written to local variable 0
-	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
+	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> localsDef) -> structure.content)[0].offset];
 	copyHostInteger((unsigned char*) result, (unsigned char*) &ok, sizeof(ok));
 	
 	free(addr);

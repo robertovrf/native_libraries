@@ -21,6 +21,25 @@ static GlobalTypeLink *charArrayGT = NULL;
 
 #define MAX_BUF 32
 
+static void returnByteArray(VFrame *f, unsigned char *data, size_t len)
+	{
+	LiveArray *array = malloc(sizeof(LiveArray));
+	memset(array, '\0', sizeof(LiveArray));
+	
+	array -> data = data;
+	array -> length = len;
+	
+	array -> gtLink = charArrayGT;
+	api -> incrementGTRefCount(array -> gtLink);
+	array -> owner = f -> blocking -> instance;
+	
+	array -> refCount ++;
+	
+	VVarLivePTR *ptrh = (VVarLivePTR*) &f -> localsData[((DanaType*) ((StructuredType*) f -> localsDef) -> structure.content)[0].offset];
+	ptrh -> content = (unsigned char*) array;
+	ptrh -> typeLink = array -> gtLink -> typeLink;
+	}
+
 INSTRUCTION_DEF op_get_line(INSTRUCTION_PARAM_LIST)
 	{
 	char buf[MAX_BUF];
@@ -49,21 +68,7 @@ INSTRUCTION_DEF op_get_line(INSTRUCTION_PARAM_LIST)
 			memcpy(fullText + length, p, strlen(p));
 			length += strlen(p);
 			
-			LiveArray *newArray = malloc(sizeof(LiveArray));
-			memset(newArray, '\0', sizeof(LiveArray));
-			
-			newArray -> data = (unsigned char*) fullText;
-			newArray -> length = length;
-			
-			newArray -> gtLink = charArrayGT;
-			api -> incrementGTRefCount(newArray -> gtLink);
-			newArray -> owner = cframe -> blocking -> instance;
-			
-			VVarLivePTR *ptrh = (VVarLivePTR*) ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content) -> data;
-			
-			ptrh -> content = (unsigned char*) newArray;
-			newArray -> refCount ++;
-			ptrh -> typeLink = newArray -> gtLink -> typeLink;
+			returnByteArray(cframe, (unsigned char*) fullText, length);
 			}
 		}
 	

@@ -29,11 +29,6 @@ static const DanaType object_Object_spec[] = {
 {TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &function_Object_toString_spec}},
 {TYPE_FUNCTION, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &function_Object_getID_spec}}};
 static const StructuredType object_Object_def = {{NULL, NULL, 0, 0}, {(unsigned char*) object_Object_spec, NULL, 0, sizeof(object_Object_spec)}, sizeof(VVarLivePTR)};
-static const DanaType data_VC_spec[] = {
-{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}}};
-static const StructuredType data_VC_def = {{NULL, NULL, 0, 0}, {(unsigned char*) data_VC_spec, NULL, 0, sizeof(data_VC_spec)}, 0};
-static const DanaType data_VC_map_def = 
-{TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_VC_def}};
 static const DanaType function_SystemLib_clone_def[] = {
 {TYPE_LITERAL, X_FLAT, 0, 1, 1, 0},
 {TYPE_OBJECT, X_POINTER, 1, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &object_Object_def}}};
@@ -49,30 +44,24 @@ static const DanaType function_SystemLib_getID_def[] = {
 {TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}}};
 static const StructuredType function_SystemLib_getID_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_SystemLib_getID_def, NULL, 0, sizeof(function_SystemLib_getID_def)}, 0};
 static const DanaType function_SystemLib_getPlatformName_def[] = {
-{TYPE_LITERAL, X_FLAT, 0, 0, 0, 0},
-{TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_VC_def}}};
+{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}}};
 static const StructuredType function_SystemLib_getPlatformName_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_SystemLib_getPlatformName_def, NULL, 0, sizeof(function_SystemLib_getPlatformName_def)}, 0};
 static const DanaType function_SystemLib_getPlatformVersion_def[] = {
-{TYPE_LITERAL, X_FLAT, 0, 0, 0, 0},
-{TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_VC_def}}};
+{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}}};
 static const StructuredType function_SystemLib_getPlatformVersion_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_SystemLib_getPlatformVersion_def, NULL, 0, sizeof(function_SystemLib_getPlatformVersion_def)}, 0};
 static const DanaType function_SystemLib_getChipName_def[] = {
-{TYPE_LITERAL, X_FLAT, 0, 0, 0, 0},
-{TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_VC_def}}};
+{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}}};
 static const StructuredType function_SystemLib_getChipName_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_SystemLib_getChipName_def, NULL, 0, sizeof(function_SystemLib_getChipName_def)}, 0};
 static const DanaType function_SystemLib_getHostName_def[] = {
-{TYPE_LITERAL, X_FLAT, 0, 0, 0, 0},
-{TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_VC_def}}};
+{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}}};
 static const StructuredType function_SystemLib_getHostName_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_SystemLib_getHostName_def, NULL, 0, sizeof(function_SystemLib_getHostName_def)}, 0};
 static const DanaType function_SystemLib_getVar_def[] = {
-{TYPE_LITERAL, X_FLAT, 0, 1, 1, 0},
 {TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}},
-{TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_VC_def}}};
+{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}}};
 static const StructuredType function_SystemLib_getVar_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_SystemLib_getVar_def, NULL, 0, sizeof(function_SystemLib_getVar_def)}, 0};
 static const DanaType function_SystemLib_getSystemFont_def[] = {
-{TYPE_LITERAL, X_FLAT, 0, 0, 0, 0},
-{TYPE_LITERAL, X_FLAT, 0, 1, 1, 0},
-{TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_VC_def}}};
+{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}},
+{TYPE_LITERAL, X_FLAT, 0, 1, 1, 0}};
 static const StructuredType function_SystemLib_getSystemFont_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_SystemLib_getSystemFont_def, NULL, 0, sizeof(function_SystemLib_getSystemFont_def)}, 0};
 static const StructuredFunctionType intf_fnc[] = {
 {{NULL, NULL, 0, 0}, {(unsigned char*) function_SystemLib_clone_def, NULL, 0, sizeof(function_SystemLib_clone_def)}, 0},
@@ -112,30 +101,24 @@ static DanaType getIDLocalsSpec[] = {
 {TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}}};
 static StructuredType getIDLocalsDef = {{}, {(unsigned char*) getIDLocalsSpec, NULL, 0, sizeof(getIDLocalsSpec)}, 0};
 static DanaType getPlatformNameLocalsSpec[] = {
-{TYPE_LITERAL, X_FLAT, 0, 0, 0, 0},
-{TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_VC_def}}};
+{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}}};
 static StructuredType getPlatformNameLocalsDef = {{}, {(unsigned char*) getPlatformNameLocalsSpec, NULL, 0, sizeof(getPlatformNameLocalsSpec)}, 0};
 static DanaType getPlatformVersionLocalsSpec[] = {
-{TYPE_LITERAL, X_FLAT, 0, 0, 0, 0},
-{TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_VC_def}}};
+{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}}};
 static StructuredType getPlatformVersionLocalsDef = {{}, {(unsigned char*) getPlatformVersionLocalsSpec, NULL, 0, sizeof(getPlatformVersionLocalsSpec)}, 0};
 static DanaType getChipNameLocalsSpec[] = {
-{TYPE_LITERAL, X_FLAT, 0, 0, 0, 0},
-{TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_VC_def}}};
+{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}}};
 static StructuredType getChipNameLocalsDef = {{}, {(unsigned char*) getChipNameLocalsSpec, NULL, 0, sizeof(getChipNameLocalsSpec)}, 0};
 static DanaType getHostNameLocalsSpec[] = {
-{TYPE_LITERAL, X_FLAT, 0, 0, 0, 0},
-{TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_VC_def}}};
+{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}}};
 static StructuredType getHostNameLocalsDef = {{}, {(unsigned char*) getHostNameLocalsSpec, NULL, 0, sizeof(getHostNameLocalsSpec)}, 0};
 static DanaType getVarLocalsSpec[] = {
-{TYPE_LITERAL, X_FLAT, 0, 1, 1, 0},
 {TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}},
-{TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_VC_def}}};
+{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}}};
 static StructuredType getVarLocalsDef = {{}, {(unsigned char*) getVarLocalsSpec, NULL, 0, sizeof(getVarLocalsSpec)}, 0};
 static DanaType getSystemFontLocalsSpec[] = {
-{TYPE_LITERAL, X_FLAT, 0, 0, 0, 0},
-{TYPE_LITERAL, X_FLAT, 0, 1, 1, 0},
-{TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_VC_def}}};
+{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}},
+{TYPE_LITERAL, X_FLAT, 0, 1, 1, 0}};
 static StructuredType getSystemFontLocalsDef = {{}, {(unsigned char*) getSystemFontLocalsSpec, NULL, 0, sizeof(getSystemFontLocalsSpec)}, 0};
 static unsigned char op_clone_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
 static unsigned char op_equals_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
@@ -185,45 +168,45 @@ populateOffsets(getChipNameLocalsSpec, sizeof(getChipNameLocalsSpec) / sizeof(Da
 populateOffsets(getHostNameLocalsSpec, sizeof(getHostNameLocalsSpec) / sizeof(DanaType), &getHostNameLocalsDef);
 populateOffsets(getVarLocalsSpec, sizeof(getVarLocalsSpec) / sizeof(DanaType), &getVarLocalsDef);
 populateOffsets(getSystemFontLocalsSpec, sizeof(getSystemFontLocalsSpec) / sizeof(DanaType), &getSystemFontLocalsDef);
-((VFrameHeader*) op_clone_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + cloneLocalsDef.size;
+((VFrameHeader*) op_clone_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + cloneLocalsDef.size;
 ((VFrameHeader*) op_clone_thread_spec) -> formalParamsCount = (cloneLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_clone_thread_spec)[1])[0] = (size_t) &cloneLocalsDef;
+((VFrameHeader*) op_clone_thread_spec) -> localsDef = (size_t) &cloneLocalsDef;
 ((VFrameHeader*) op_clone_thread_spec) -> functionName = "clone";
-((VFrameHeader*) op_equals_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + equalsLocalsDef.size;
+((VFrameHeader*) op_equals_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + equalsLocalsDef.size;
 ((VFrameHeader*) op_equals_thread_spec) -> formalParamsCount = (equalsLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_equals_thread_spec)[1])[0] = (size_t) &equalsLocalsDef;
+((VFrameHeader*) op_equals_thread_spec) -> localsDef = (size_t) &equalsLocalsDef;
 ((VFrameHeader*) op_equals_thread_spec) -> functionName = "equals";
-((VFrameHeader*) op_toString_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + toStringLocalsDef.size;
+((VFrameHeader*) op_toString_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + toStringLocalsDef.size;
 ((VFrameHeader*) op_toString_thread_spec) -> formalParamsCount = (toStringLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_toString_thread_spec)[1])[0] = (size_t) &toStringLocalsDef;
+((VFrameHeader*) op_toString_thread_spec) -> localsDef = (size_t) &toStringLocalsDef;
 ((VFrameHeader*) op_toString_thread_spec) -> functionName = "toString";
-((VFrameHeader*) op_getID_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + getIDLocalsDef.size;
+((VFrameHeader*) op_getID_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + getIDLocalsDef.size;
 ((VFrameHeader*) op_getID_thread_spec) -> formalParamsCount = (getIDLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_getID_thread_spec)[1])[0] = (size_t) &getIDLocalsDef;
+((VFrameHeader*) op_getID_thread_spec) -> localsDef = (size_t) &getIDLocalsDef;
 ((VFrameHeader*) op_getID_thread_spec) -> functionName = "getID";
-((VFrameHeader*) op_getPlatformName_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + getPlatformNameLocalsDef.size;
+((VFrameHeader*) op_getPlatformName_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + getPlatformNameLocalsDef.size;
 ((VFrameHeader*) op_getPlatformName_thread_spec) -> formalParamsCount = (getPlatformNameLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_getPlatformName_thread_spec)[1])[0] = (size_t) &getPlatformNameLocalsDef;
+((VFrameHeader*) op_getPlatformName_thread_spec) -> localsDef = (size_t) &getPlatformNameLocalsDef;
 ((VFrameHeader*) op_getPlatformName_thread_spec) -> functionName = "getPlatformName";
-((VFrameHeader*) op_getPlatformVersion_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + getPlatformVersionLocalsDef.size;
+((VFrameHeader*) op_getPlatformVersion_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + getPlatformVersionLocalsDef.size;
 ((VFrameHeader*) op_getPlatformVersion_thread_spec) -> formalParamsCount = (getPlatformVersionLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_getPlatformVersion_thread_spec)[1])[0] = (size_t) &getPlatformVersionLocalsDef;
+((VFrameHeader*) op_getPlatformVersion_thread_spec) -> localsDef = (size_t) &getPlatformVersionLocalsDef;
 ((VFrameHeader*) op_getPlatformVersion_thread_spec) -> functionName = "getPlatformVersion";
-((VFrameHeader*) op_getChipName_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + getChipNameLocalsDef.size;
+((VFrameHeader*) op_getChipName_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + getChipNameLocalsDef.size;
 ((VFrameHeader*) op_getChipName_thread_spec) -> formalParamsCount = (getChipNameLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_getChipName_thread_spec)[1])[0] = (size_t) &getChipNameLocalsDef;
+((VFrameHeader*) op_getChipName_thread_spec) -> localsDef = (size_t) &getChipNameLocalsDef;
 ((VFrameHeader*) op_getChipName_thread_spec) -> functionName = "getChipName";
-((VFrameHeader*) op_getHostName_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + getHostNameLocalsDef.size;
+((VFrameHeader*) op_getHostName_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + getHostNameLocalsDef.size;
 ((VFrameHeader*) op_getHostName_thread_spec) -> formalParamsCount = (getHostNameLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_getHostName_thread_spec)[1])[0] = (size_t) &getHostNameLocalsDef;
+((VFrameHeader*) op_getHostName_thread_spec) -> localsDef = (size_t) &getHostNameLocalsDef;
 ((VFrameHeader*) op_getHostName_thread_spec) -> functionName = "getHostName";
-((VFrameHeader*) op_getVar_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + getVarLocalsDef.size;
+((VFrameHeader*) op_getVar_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + getVarLocalsDef.size;
 ((VFrameHeader*) op_getVar_thread_spec) -> formalParamsCount = (getVarLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_getVar_thread_spec)[1])[0] = (size_t) &getVarLocalsDef;
+((VFrameHeader*) op_getVar_thread_spec) -> localsDef = (size_t) &getVarLocalsDef;
 ((VFrameHeader*) op_getVar_thread_spec) -> functionName = "getVar";
-((VFrameHeader*) op_getSystemFont_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + getSystemFontLocalsDef.size;
+((VFrameHeader*) op_getSystemFont_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + getSystemFontLocalsDef.size;
 ((VFrameHeader*) op_getSystemFont_thread_spec) -> formalParamsCount = (getSystemFontLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_getSystemFont_thread_spec)[1])[0] = (size_t) &getSystemFontLocalsDef;
+((VFrameHeader*) op_getSystemFont_thread_spec) -> localsDef = (size_t) &getSystemFontLocalsDef;
 ((VFrameHeader*) op_getSystemFont_thread_spec) -> functionName = "getSystemFont";
 memset(&self, '\0', sizeof(self));
 self.objects = objects; self.header = &header; self.header -> objectsCount = sizeof(objects) / sizeof(ObjectSpec);
@@ -253,7 +236,7 @@ for (i = 0; i < sizeof(interfaceMappings) / sizeof(Fable); i ++){
 if (strcmp(interfaceMappings[i].name, name) == 0){
 interfaceMappings[i].hdr -> pcLoc = (unsigned char*) ptr;
 interfaceMappings[i].hdr -> registerCount = 1;
-interfaceMappings[i].hdr -> scopeCount = 1;
+interfaceMappings[i].hdr -> localsDef = 0;
 break;
 }
 }
@@ -265,7 +248,6 @@ const DanaType *dataType;
 } Ex;
 
 static Ex dataMappings[] = {
-{"VC", &data_VC_map_def},
 {"char[]", &data_char_array_map_def}};
 const DanaType* getTypeDefinition(char *name){
 int i = 0;

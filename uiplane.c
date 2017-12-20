@@ -287,6 +287,25 @@ typedef struct{
 static StatList stats;
 #endif
 
+static void returnByteArray(VFrame *f, unsigned char *data, size_t len)
+	{
+	LiveArray *array = malloc(sizeof(LiveArray));
+	memset(array, '\0', sizeof(LiveArray));
+	
+	array -> data = data;
+	array -> length = len;
+	
+	array -> gtLink = charArrayGT;
+	api -> incrementGTRefCount(array -> gtLink);
+	array -> owner = f -> blocking -> instance;
+	
+	array -> refCount ++;
+	
+	VVarLivePTR *ptrh = (VVarLivePTR*) &f -> localsData[((DanaType*) ((StructuredType*) f -> localsDef) -> structure.content)[0].offset];
+	ptrh -> content = (unsigned char*) array;
+	ptrh -> typeLink = array -> gtLink -> typeLink;
+	}
+
 void semaphore_init(Semaphore *s, unsigned int initialValue)
 	{
 	#ifdef WINDOWS
@@ -886,10 +905,10 @@ static WindowInstance* findWindowInstance(HWND window)
 
 static void fillRegister(VVarR *reg, unsigned char *val)
 	{
-	reg -> PR.content = val;
+	reg -> content = val;
 	reg -> type = TYPE_LITERAL;
 	reg -> etype = sizeof(size_t);
-	reg -> PR.vsize = sizeof(size_t);
+	reg -> vsize = sizeof(size_t);
 	
 	reg -> typeLink = integerGT -> typeLink;
 	}
@@ -1924,7 +1943,7 @@ static void* render_thread(void *ptr)
 				free(lfd -> fontPath);
 
 				size_t xs = (size_t) font;
-				size_t *result = (size_t*) &frame -> localsData[((DanaType*) ((StructuredType*) frame -> scopes[0].scope.etype) -> structure.content)[0].offset];
+				size_t *result = (size_t*) &frame -> localsData[((DanaType*) ((StructuredType*) frame -> localsDef) -> structure.content)[0].offset];
 				memcpy(result, &xs, sizeof(size_t));
 
 				#ifdef WINDOWS
@@ -1966,7 +1985,7 @@ static void* render_thread(void *ptr)
 				TTF_SizeText(gwi -> font, gwi -> text, &sdl_width, NULL);
 				width = sdl_width;
 
-				size_t *result = (size_t*) &frame -> localsData[((DanaType*) ((StructuredType*) frame -> scopes[0].scope.etype) -> structure.content)[0].offset];
+				size_t *result = (size_t*) &frame -> localsData[((DanaType*) ((StructuredType*) frame -> localsDef) -> structure.content)[0].offset];
 
 				copyHostInteger((unsigned char*) result, (unsigned char*) &width, sizeof(size_t));
 
@@ -2086,7 +2105,7 @@ INSTRUCTION_DEF op_make_window(INSTRUCTION_PARAM_LIST)
 	
 	//return "mwInfo -> instanceResult" as an unsigned int
 	size_t xs = (size_t) mwInfo -> instanceResult;
-	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
+	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> localsDef) -> structure.content)[0].offset];
 	memcpy(result, &xs, sizeof(size_t));
 	
 	if (mwInfo -> instanceResult != NULL)
@@ -2688,7 +2707,7 @@ INSTRUCTION_DEF op_get_text_width_with(INSTRUCTION_PARAM_LIST)
 		return RETURN_DIRECT;
 		}
 
-	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
+	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> localsDef) -> structure.content)[0].offset];
 	copyHostInteger((unsigned char*) result, (unsigned char*) &width, sizeof(size_t));
 
 	return RETURN_DIRECT;
@@ -2829,21 +2848,7 @@ INSTRUCTION_DEF op_get_font_name(INSTRUCTION_PARAM_LIST)
 
 	if (val != NULL)
 		{
-		LiveArray *newArray = malloc(sizeof(LiveArray));
-		memset(newArray, '\0', sizeof(LiveArray));
-
-		newArray -> data = (unsigned char*) strdup(val);
-		newArray -> length = strlen(val);
-
-		newArray -> gtLink = charArrayGT;
-		api -> incrementGTRefCount(newArray -> gtLink);
-		newArray -> owner = cframe -> blocking -> instance;
-
-		VVarLivePTR *ptrh = (VVarLivePTR*) ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 1)) -> content) -> data;
-
-		ptrh -> content = (unsigned char*) newArray;
-		newArray -> refCount ++;
-		ptrh -> typeLink = newArray -> gtLink -> typeLink;
+		returnByteArray(cframe, (unsigned char*) strdup(val), strlen(val));
     	}
 
 	return RETURN_DIRECT;
@@ -2856,7 +2861,7 @@ INSTRUCTION_DEF op_is_font_fixed_width(INSTRUCTION_PARAM_LIST)
 	TTF_Font *font = (TTF_Font*) font_hnd;
 
 	//TODO: don't use any TTF_ functions outside of the main rendering loop?
-	cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset] = TTF_FontFaceIsFixedWidth(font) == 0 ? 0 : 1;
+	cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> localsDef) -> structure.content)[0].offset] = TTF_FontFaceIsFixedWidth(font) == 0 ? 0 : 1;
 
 	return RETURN_DIRECT;
 	}

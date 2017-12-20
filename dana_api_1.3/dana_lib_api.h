@@ -1,7 +1,7 @@
 #ifndef _DANA_LIB_API
 #define _DANA_LIB_API
 
-#define LIB_API_VERSION 12
+#define LIB_API_VERSION 13
 
 #define RETURN_DIRECT	0
 

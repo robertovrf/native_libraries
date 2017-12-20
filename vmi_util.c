@@ -85,13 +85,13 @@ void copyToDanaInteger(unsigned char *dst, unsigned char *src, size_t srcsz)
 
 unsigned char* getVariableContent(VFrame *t, unsigned int index)
 	{
-	DanaType *spec = &((DanaType*)((StructuredType*) t -> scopes[0].scope.etype) -> structure.content)[index+1];
+	DanaType *spec = &((DanaType*)((StructuredType*) t -> localsDef) -> structure.content)[index+1];
 	return &t -> localsData[spec -> offset];
 	}
 
 void getVariableContentIn(VFrame *t, unsigned int index, VVarR *reg)
 	{
-	DanaType *spec = &((DanaType*) ((StructuredType*) t -> scopes[0].scope.etype) -> structure.content)[index+1];
+	DanaType *spec = &((DanaType*) ((StructuredType*) t -> localsDef) -> structure.content)[index+1];
 	unsigned char *data = &t -> localsData[spec -> offset];
 	
 	memset(reg, '\0', sizeof(VVarR));
@@ -100,12 +100,8 @@ void getVariableContentIn(VFrame *t, unsigned int index, VVarR *reg)
 		{
 		VVarLivePTR *ptr = (VVarLivePTR*) data;
 		
-		reg -> PR.content = ptr -> content;
-		reg -> PR.vsize = ptr -> vsize;
-		reg -> PR.lsize = ptr -> lsize;
-		reg -> PR.vlf = ptr -> vlf;
-		reg -> PR.vlTop = ptr -> vlTop;
-		reg -> PR.vlBot = ptr -> vlBot;
+		reg -> content = ptr -> content;
+		reg -> vsize = ptr -> vsize;
 		
 		reg -> type = spec -> typeClass;
 		reg -> etype = spec -> typeClass == TYPE_LITERAL ? ptr -> typeLink -> esize : (size_t) ptr -> typeLink -> definition.content;
@@ -121,6 +117,6 @@ void getVariableContentIn(VFrame *t, unsigned int index, VVarR *reg)
 		}
 		else
 		{
-		reg -> PR.content = data;
+		reg -> content = data;
 		}
 	}

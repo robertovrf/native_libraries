@@ -36,6 +36,25 @@ static CoreAPI *api;
 
 static GlobalTypeLink *charArrayGT = NULL;
 
+static void returnByteArray(VFrame *f, unsigned char *data, size_t len)
+	{
+	LiveArray *array = malloc(sizeof(LiveArray));
+	memset(array, '\0', sizeof(LiveArray));
+	
+	array -> data = data;
+	array -> length = len;
+	
+	array -> gtLink = charArrayGT;
+	api -> incrementGTRefCount(array -> gtLink);
+	array -> owner = f -> blocking -> instance;
+	
+	array -> refCount ++;
+	
+	VVarLivePTR *ptrh = (VVarLivePTR*) &f -> localsData[((DanaType*) ((StructuredType*) f -> localsDef) -> structure.content)[0].offset];
+	ptrh -> content = (unsigned char*) array;
+	ptrh -> typeLink = array -> gtLink -> typeLink;
+	}
+
 #ifdef WINDOWS
 static int initialise(void)
 {
@@ -109,33 +128,12 @@ INSTRUCTION_DEF op_get_host_by_name(INSTRUCTION_PARAM_LIST)
 	
 	char ip[100];
 	hostname_to_ip(vn , ip);
-	unsigned char ok = 0;
 	char *val = ip;
 	
 	if (val != NULL)
 	{
-		LiveArray *newArray = malloc(sizeof(LiveArray));
-		memset(newArray, '\0', sizeof(LiveArray));
-
-		newArray -> data = (unsigned char*) strdup(val);
-		newArray -> length = strlen(val);
-
-		newArray -> gtLink = charArrayGT;
-		newArray -> gtLink -> refCount ++;
-
-		newArray -> owner = cframe -> blocking -> instance;
-
-		VVarLivePTR *ptrh = (VVarLivePTR*) ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 1)) -> content) -> data;
-
-		ptrh -> content = (unsigned char*) newArray;
-		newArray -> refCount = 1;
-		ptrh -> typeLink = newArray -> gtLink -> typeLink;
-
-  	ok = 1;
+		returnByteArray(cframe, (unsigned char*) strdup(val), strlen(val));
 	}
-
-	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
-	copyHostInteger((unsigned char*) result, (unsigned char*) &ok, sizeof(ok));
 
 	free(vn);
 

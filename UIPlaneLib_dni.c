@@ -70,11 +70,6 @@ static const DanaType data_FontMetrics_spec[] = {
 static const StructuredType data_FontMetrics_def = {{NULL, NULL, 0, 0}, {(unsigned char*) data_FontMetrics_spec, NULL, 0, sizeof(data_FontMetrics_spec)}, 0};
 static const DanaType data_FontMetrics_map_def = 
 {TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_FontMetrics_def}};
-static const DanaType data_VC_spec[] = {
-{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}}};
-static const StructuredType data_VC_def = {{NULL, NULL, 0, 0}, {(unsigned char*) data_VC_spec, NULL, 0, sizeof(data_VC_spec)}, 0};
-static const DanaType data_VC_map_def = 
-{TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_VC_def}};
 static const DanaType function_UIPlaneLib_clone_def[] = {
 {TYPE_LITERAL, X_FLAT, 0, 1, 1, 0},
 {TYPE_OBJECT, X_POINTER, 1, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &object_Object_def}}};
@@ -260,9 +255,8 @@ static const DanaType function_UIPlaneLib_getFontMetrics_def[] = {
 {TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_FontMetrics_def}}};
 static const StructuredType function_UIPlaneLib_getFontMetrics_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_getFontMetrics_def, NULL, 0, sizeof(function_UIPlaneLib_getFontMetrics_def)}, 0};
 static const DanaType function_UIPlaneLib_getFontName_def[] = {
-{TYPE_LITERAL, X_FLAT, 0, 0, 0, 0},
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_VC_def}}};
+{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}},
+{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0}};
 static const StructuredType function_UIPlaneLib_getFontName_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_UIPlaneLib_getFontName_def, NULL, 0, sizeof(function_UIPlaneLib_getFontName_def)}, 0};
 static const DanaType function_UIPlaneLib_isFontFixedWidth_def[] = {
 {TYPE_LITERAL, X_FLAT, 0, 1, 1, 0},
@@ -540,9 +534,8 @@ static DanaType getFontMetricsLocalsSpec[] = {
 {TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_FontMetrics_def}}};
 static StructuredType getFontMetricsLocalsDef = {{}, {(unsigned char*) getFontMetricsLocalsSpec, NULL, 0, sizeof(getFontMetricsLocalsSpec)}, 0};
 static DanaType getFontNameLocalsSpec[] = {
-{TYPE_LITERAL, X_FLAT, 0, 0, 0, 0},
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_VC_def}}};
+{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}},
+{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0}};
 static StructuredType getFontNameLocalsDef = {{}, {(unsigned char*) getFontNameLocalsSpec, NULL, 0, sizeof(getFontNameLocalsSpec)}, 0};
 static DanaType isFontFixedWidthLocalsSpec[] = {
 {TYPE_LITERAL, X_FLAT, 0, 1, 1, 0},
@@ -685,145 +678,145 @@ populateOffsets(getFontNameLocalsSpec, sizeof(getFontNameLocalsSpec) / sizeof(Da
 populateOffsets(isFontFixedWidthLocalsSpec, sizeof(isFontFixedWidthLocalsSpec) / sizeof(DanaType), &isFontFixedWidthLocalsDef);
 populateOffsets(getTextBitmapWithLocalsSpec, sizeof(getTextBitmapWithLocalsSpec) / sizeof(DanaType), &getTextBitmapWithLocalsDef);
 populateOffsets(unloadFontLocalsSpec, sizeof(unloadFontLocalsSpec) / sizeof(DanaType), &unloadFontLocalsDef);
-((VFrameHeader*) op_clone_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + cloneLocalsDef.size;
+((VFrameHeader*) op_clone_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + cloneLocalsDef.size;
 ((VFrameHeader*) op_clone_thread_spec) -> formalParamsCount = (cloneLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_clone_thread_spec)[1])[0] = (size_t) &cloneLocalsDef;
+((VFrameHeader*) op_clone_thread_spec) -> localsDef = (size_t) &cloneLocalsDef;
 ((VFrameHeader*) op_clone_thread_spec) -> functionName = "clone";
-((VFrameHeader*) op_equals_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + equalsLocalsDef.size;
+((VFrameHeader*) op_equals_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + equalsLocalsDef.size;
 ((VFrameHeader*) op_equals_thread_spec) -> formalParamsCount = (equalsLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_equals_thread_spec)[1])[0] = (size_t) &equalsLocalsDef;
+((VFrameHeader*) op_equals_thread_spec) -> localsDef = (size_t) &equalsLocalsDef;
 ((VFrameHeader*) op_equals_thread_spec) -> functionName = "equals";
-((VFrameHeader*) op_toString_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + toStringLocalsDef.size;
+((VFrameHeader*) op_toString_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + toStringLocalsDef.size;
 ((VFrameHeader*) op_toString_thread_spec) -> formalParamsCount = (toStringLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_toString_thread_spec)[1])[0] = (size_t) &toStringLocalsDef;
+((VFrameHeader*) op_toString_thread_spec) -> localsDef = (size_t) &toStringLocalsDef;
 ((VFrameHeader*) op_toString_thread_spec) -> functionName = "toString";
-((VFrameHeader*) op_getID_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + getIDLocalsDef.size;
+((VFrameHeader*) op_getID_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + getIDLocalsDef.size;
 ((VFrameHeader*) op_getID_thread_spec) -> formalParamsCount = (getIDLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_getID_thread_spec)[1])[0] = (size_t) &getIDLocalsDef;
+((VFrameHeader*) op_getID_thread_spec) -> localsDef = (size_t) &getIDLocalsDef;
 ((VFrameHeader*) op_getID_thread_spec) -> functionName = "getID";
-((VFrameHeader*) op_makeWindow_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + makeWindowLocalsDef.size;
+((VFrameHeader*) op_makeWindow_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + makeWindowLocalsDef.size;
 ((VFrameHeader*) op_makeWindow_thread_spec) -> formalParamsCount = (makeWindowLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_makeWindow_thread_spec)[1])[0] = (size_t) &makeWindowLocalsDef;
+((VFrameHeader*) op_makeWindow_thread_spec) -> localsDef = (size_t) &makeWindowLocalsDef;
 ((VFrameHeader*) op_makeWindow_thread_spec) -> functionName = "makeWindow";
-((VFrameHeader*) op_startPoly_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + startPolyLocalsDef.size;
+((VFrameHeader*) op_startPoly_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + startPolyLocalsDef.size;
 ((VFrameHeader*) op_startPoly_thread_spec) -> formalParamsCount = (startPolyLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_startPoly_thread_spec)[1])[0] = (size_t) &startPolyLocalsDef;
+((VFrameHeader*) op_startPoly_thread_spec) -> localsDef = (size_t) &startPolyLocalsDef;
 ((VFrameHeader*) op_startPoly_thread_spec) -> functionName = "startPoly";
-((VFrameHeader*) op_addPolyPoint_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + addPolyPointLocalsDef.size;
+((VFrameHeader*) op_addPolyPoint_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + addPolyPointLocalsDef.size;
 ((VFrameHeader*) op_addPolyPoint_thread_spec) -> formalParamsCount = (addPolyPointLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_addPolyPoint_thread_spec)[1])[0] = (size_t) &addPolyPointLocalsDef;
+((VFrameHeader*) op_addPolyPoint_thread_spec) -> localsDef = (size_t) &addPolyPointLocalsDef;
 ((VFrameHeader*) op_addPolyPoint_thread_spec) -> functionName = "addPolyPoint";
-((VFrameHeader*) op_endPoly_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + endPolyLocalsDef.size;
+((VFrameHeader*) op_endPoly_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + endPolyLocalsDef.size;
 ((VFrameHeader*) op_endPoly_thread_spec) -> formalParamsCount = (endPolyLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_endPoly_thread_spec)[1])[0] = (size_t) &endPolyLocalsDef;
+((VFrameHeader*) op_endPoly_thread_spec) -> localsDef = (size_t) &endPolyLocalsDef;
 ((VFrameHeader*) op_endPoly_thread_spec) -> functionName = "endPoly";
-((VFrameHeader*) op_addRect_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + addRectLocalsDef.size;
+((VFrameHeader*) op_addRect_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + addRectLocalsDef.size;
 ((VFrameHeader*) op_addRect_thread_spec) -> formalParamsCount = (addRectLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_addRect_thread_spec)[1])[0] = (size_t) &addRectLocalsDef;
+((VFrameHeader*) op_addRect_thread_spec) -> localsDef = (size_t) &addRectLocalsDef;
 ((VFrameHeader*) op_addRect_thread_spec) -> functionName = "addRect";
-((VFrameHeader*) op_addLine_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + addLineLocalsDef.size;
+((VFrameHeader*) op_addLine_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + addLineLocalsDef.size;
 ((VFrameHeader*) op_addLine_thread_spec) -> formalParamsCount = (addLineLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_addLine_thread_spec)[1])[0] = (size_t) &addLineLocalsDef;
+((VFrameHeader*) op_addLine_thread_spec) -> localsDef = (size_t) &addLineLocalsDef;
 ((VFrameHeader*) op_addLine_thread_spec) -> functionName = "addLine";
-((VFrameHeader*) op_addPoint_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + addPointLocalsDef.size;
+((VFrameHeader*) op_addPoint_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + addPointLocalsDef.size;
 ((VFrameHeader*) op_addPoint_thread_spec) -> formalParamsCount = (addPointLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_addPoint_thread_spec)[1])[0] = (size_t) &addPointLocalsDef;
+((VFrameHeader*) op_addPoint_thread_spec) -> localsDef = (size_t) &addPointLocalsDef;
 ((VFrameHeader*) op_addPoint_thread_spec) -> functionName = "addPoint";
-((VFrameHeader*) op_addBitmap_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + addBitmapLocalsDef.size;
+((VFrameHeader*) op_addBitmap_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + addBitmapLocalsDef.size;
 ((VFrameHeader*) op_addBitmap_thread_spec) -> formalParamsCount = (addBitmapLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_addBitmap_thread_spec)[1])[0] = (size_t) &addBitmapLocalsDef;
+((VFrameHeader*) op_addBitmap_thread_spec) -> localsDef = (size_t) &addBitmapLocalsDef;
 ((VFrameHeader*) op_addBitmap_thread_spec) -> functionName = "addBitmap";
-((VFrameHeader*) op_addText_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + addTextLocalsDef.size;
+((VFrameHeader*) op_addText_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + addTextLocalsDef.size;
 ((VFrameHeader*) op_addText_thread_spec) -> formalParamsCount = (addTextLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_addText_thread_spec)[1])[0] = (size_t) &addTextLocalsDef;
+((VFrameHeader*) op_addText_thread_spec) -> localsDef = (size_t) &addTextLocalsDef;
 ((VFrameHeader*) op_addText_thread_spec) -> functionName = "addText";
-((VFrameHeader*) op_addTextWith_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + addTextWithLocalsDef.size;
+((VFrameHeader*) op_addTextWith_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + addTextWithLocalsDef.size;
 ((VFrameHeader*) op_addTextWith_thread_spec) -> formalParamsCount = (addTextWithLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_addTextWith_thread_spec)[1])[0] = (size_t) &addTextWithLocalsDef;
+((VFrameHeader*) op_addTextWith_thread_spec) -> localsDef = (size_t) &addTextWithLocalsDef;
 ((VFrameHeader*) op_addTextWith_thread_spec) -> functionName = "addTextWith";
-((VFrameHeader*) op_pushSurface_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + pushSurfaceLocalsDef.size;
+((VFrameHeader*) op_pushSurface_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + pushSurfaceLocalsDef.size;
 ((VFrameHeader*) op_pushSurface_thread_spec) -> formalParamsCount = (pushSurfaceLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_pushSurface_thread_spec)[1])[0] = (size_t) &pushSurfaceLocalsDef;
+((VFrameHeader*) op_pushSurface_thread_spec) -> localsDef = (size_t) &pushSurfaceLocalsDef;
 ((VFrameHeader*) op_pushSurface_thread_spec) -> functionName = "pushSurface";
-((VFrameHeader*) op_popSurface_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + popSurfaceLocalsDef.size;
+((VFrameHeader*) op_popSurface_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + popSurfaceLocalsDef.size;
 ((VFrameHeader*) op_popSurface_thread_spec) -> formalParamsCount = (popSurfaceLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_popSurface_thread_spec)[1])[0] = (size_t) &popSurfaceLocalsDef;
+((VFrameHeader*) op_popSurface_thread_spec) -> localsDef = (size_t) &popSurfaceLocalsDef;
 ((VFrameHeader*) op_popSurface_thread_spec) -> functionName = "popSurface";
-((VFrameHeader*) op_setSize_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + setSizeLocalsDef.size;
+((VFrameHeader*) op_setSize_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + setSizeLocalsDef.size;
 ((VFrameHeader*) op_setSize_thread_spec) -> formalParamsCount = (setSizeLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_setSize_thread_spec)[1])[0] = (size_t) &setSizeLocalsDef;
+((VFrameHeader*) op_setSize_thread_spec) -> localsDef = (size_t) &setSizeLocalsDef;
 ((VFrameHeader*) op_setSize_thread_spec) -> functionName = "setSize";
-((VFrameHeader*) op_setPosition_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + setPositionLocalsDef.size;
+((VFrameHeader*) op_setPosition_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + setPositionLocalsDef.size;
 ((VFrameHeader*) op_setPosition_thread_spec) -> formalParamsCount = (setPositionLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_setPosition_thread_spec)[1])[0] = (size_t) &setPositionLocalsDef;
+((VFrameHeader*) op_setPosition_thread_spec) -> localsDef = (size_t) &setPositionLocalsDef;
 ((VFrameHeader*) op_setPosition_thread_spec) -> functionName = "setPosition";
-((VFrameHeader*) op_setVisible_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + setVisibleLocalsDef.size;
+((VFrameHeader*) op_setVisible_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + setVisibleLocalsDef.size;
 ((VFrameHeader*) op_setVisible_thread_spec) -> formalParamsCount = (setVisibleLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_setVisible_thread_spec)[1])[0] = (size_t) &setVisibleLocalsDef;
+((VFrameHeader*) op_setVisible_thread_spec) -> localsDef = (size_t) &setVisibleLocalsDef;
 ((VFrameHeader*) op_setVisible_thread_spec) -> functionName = "setVisible";
-((VFrameHeader*) op_setTitle_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + setTitleLocalsDef.size;
+((VFrameHeader*) op_setTitle_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + setTitleLocalsDef.size;
 ((VFrameHeader*) op_setTitle_thread_spec) -> formalParamsCount = (setTitleLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_setTitle_thread_spec)[1])[0] = (size_t) &setTitleLocalsDef;
+((VFrameHeader*) op_setTitle_thread_spec) -> localsDef = (size_t) &setTitleLocalsDef;
 ((VFrameHeader*) op_setTitle_thread_spec) -> functionName = "setTitle";
-((VFrameHeader*) op_commitBuffer_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + commitBufferLocalsDef.size;
+((VFrameHeader*) op_commitBuffer_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + commitBufferLocalsDef.size;
 ((VFrameHeader*) op_commitBuffer_thread_spec) -> formalParamsCount = (commitBufferLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_commitBuffer_thread_spec)[1])[0] = (size_t) &commitBufferLocalsDef;
+((VFrameHeader*) op_commitBuffer_thread_spec) -> localsDef = (size_t) &commitBufferLocalsDef;
 ((VFrameHeader*) op_commitBuffer_thread_spec) -> functionName = "commitBuffer";
-((VFrameHeader*) op_registerClickListener_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + registerClickListenerLocalsDef.size;
+((VFrameHeader*) op_registerClickListener_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + registerClickListenerLocalsDef.size;
 ((VFrameHeader*) op_registerClickListener_thread_spec) -> formalParamsCount = (registerClickListenerLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_registerClickListener_thread_spec)[1])[0] = (size_t) &registerClickListenerLocalsDef;
+((VFrameHeader*) op_registerClickListener_thread_spec) -> localsDef = (size_t) &registerClickListenerLocalsDef;
 ((VFrameHeader*) op_registerClickListener_thread_spec) -> functionName = "registerClickListener";
-((VFrameHeader*) op_registerMouseListener_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + registerMouseListenerLocalsDef.size;
+((VFrameHeader*) op_registerMouseListener_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + registerMouseListenerLocalsDef.size;
 ((VFrameHeader*) op_registerMouseListener_thread_spec) -> formalParamsCount = (registerMouseListenerLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_registerMouseListener_thread_spec)[1])[0] = (size_t) &registerMouseListenerLocalsDef;
+((VFrameHeader*) op_registerMouseListener_thread_spec) -> localsDef = (size_t) &registerMouseListenerLocalsDef;
 ((VFrameHeader*) op_registerMouseListener_thread_spec) -> functionName = "registerMouseListener";
-((VFrameHeader*) op_setBackgroundColor_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + setBackgroundColorLocalsDef.size;
+((VFrameHeader*) op_setBackgroundColor_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + setBackgroundColorLocalsDef.size;
 ((VFrameHeader*) op_setBackgroundColor_thread_spec) -> formalParamsCount = (setBackgroundColorLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_setBackgroundColor_thread_spec)[1])[0] = (size_t) &setBackgroundColorLocalsDef;
+((VFrameHeader*) op_setBackgroundColor_thread_spec) -> localsDef = (size_t) &setBackgroundColorLocalsDef;
 ((VFrameHeader*) op_setBackgroundColor_thread_spec) -> functionName = "setBackgroundColor";
-((VFrameHeader*) op_maximiseWindow_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + maximiseWindowLocalsDef.size;
+((VFrameHeader*) op_maximiseWindow_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + maximiseWindowLocalsDef.size;
 ((VFrameHeader*) op_maximiseWindow_thread_spec) -> formalParamsCount = (maximiseWindowLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_maximiseWindow_thread_spec)[1])[0] = (size_t) &maximiseWindowLocalsDef;
+((VFrameHeader*) op_maximiseWindow_thread_spec) -> localsDef = (size_t) &maximiseWindowLocalsDef;
 ((VFrameHeader*) op_maximiseWindow_thread_spec) -> functionName = "maximiseWindow";
-((VFrameHeader*) op_minimiseWindow_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + minimiseWindowLocalsDef.size;
+((VFrameHeader*) op_minimiseWindow_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + minimiseWindowLocalsDef.size;
 ((VFrameHeader*) op_minimiseWindow_thread_spec) -> formalParamsCount = (minimiseWindowLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_minimiseWindow_thread_spec)[1])[0] = (size_t) &minimiseWindowLocalsDef;
+((VFrameHeader*) op_minimiseWindow_thread_spec) -> localsDef = (size_t) &minimiseWindowLocalsDef;
 ((VFrameHeader*) op_minimiseWindow_thread_spec) -> functionName = "minimiseWindow";
-((VFrameHeader*) op_getMaximisedScreenRect_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + getMaximisedScreenRectLocalsDef.size;
+((VFrameHeader*) op_getMaximisedScreenRect_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + getMaximisedScreenRectLocalsDef.size;
 ((VFrameHeader*) op_getMaximisedScreenRect_thread_spec) -> formalParamsCount = (getMaximisedScreenRectLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_getMaximisedScreenRect_thread_spec)[1])[0] = (size_t) &getMaximisedScreenRectLocalsDef;
+((VFrameHeader*) op_getMaximisedScreenRect_thread_spec) -> localsDef = (size_t) &getMaximisedScreenRectLocalsDef;
 ((VFrameHeader*) op_getMaximisedScreenRect_thread_spec) -> functionName = "getMaximisedScreenRect";
-((VFrameHeader*) op_closeWindow_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + closeWindowLocalsDef.size;
+((VFrameHeader*) op_closeWindow_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + closeWindowLocalsDef.size;
 ((VFrameHeader*) op_closeWindow_thread_spec) -> formalParamsCount = (closeWindowLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_closeWindow_thread_spec)[1])[0] = (size_t) &closeWindowLocalsDef;
+((VFrameHeader*) op_closeWindow_thread_spec) -> localsDef = (size_t) &closeWindowLocalsDef;
 ((VFrameHeader*) op_closeWindow_thread_spec) -> functionName = "closeWindow";
-((VFrameHeader*) op_loadFont_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + loadFontLocalsDef.size;
+((VFrameHeader*) op_loadFont_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + loadFontLocalsDef.size;
 ((VFrameHeader*) op_loadFont_thread_spec) -> formalParamsCount = (loadFontLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_loadFont_thread_spec)[1])[0] = (size_t) &loadFontLocalsDef;
+((VFrameHeader*) op_loadFont_thread_spec) -> localsDef = (size_t) &loadFontLocalsDef;
 ((VFrameHeader*) op_loadFont_thread_spec) -> functionName = "loadFont";
-((VFrameHeader*) op_getTextWidth_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + getTextWidthLocalsDef.size;
+((VFrameHeader*) op_getTextWidth_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + getTextWidthLocalsDef.size;
 ((VFrameHeader*) op_getTextWidth_thread_spec) -> formalParamsCount = (getTextWidthLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_getTextWidth_thread_spec)[1])[0] = (size_t) &getTextWidthLocalsDef;
+((VFrameHeader*) op_getTextWidth_thread_spec) -> localsDef = (size_t) &getTextWidthLocalsDef;
 ((VFrameHeader*) op_getTextWidth_thread_spec) -> functionName = "getTextWidth";
-((VFrameHeader*) op_getFontMetrics_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + getFontMetricsLocalsDef.size;
+((VFrameHeader*) op_getFontMetrics_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + getFontMetricsLocalsDef.size;
 ((VFrameHeader*) op_getFontMetrics_thread_spec) -> formalParamsCount = (getFontMetricsLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_getFontMetrics_thread_spec)[1])[0] = (size_t) &getFontMetricsLocalsDef;
+((VFrameHeader*) op_getFontMetrics_thread_spec) -> localsDef = (size_t) &getFontMetricsLocalsDef;
 ((VFrameHeader*) op_getFontMetrics_thread_spec) -> functionName = "getFontMetrics";
-((VFrameHeader*) op_getFontName_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + getFontNameLocalsDef.size;
+((VFrameHeader*) op_getFontName_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + getFontNameLocalsDef.size;
 ((VFrameHeader*) op_getFontName_thread_spec) -> formalParamsCount = (getFontNameLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_getFontName_thread_spec)[1])[0] = (size_t) &getFontNameLocalsDef;
+((VFrameHeader*) op_getFontName_thread_spec) -> localsDef = (size_t) &getFontNameLocalsDef;
 ((VFrameHeader*) op_getFontName_thread_spec) -> functionName = "getFontName";
-((VFrameHeader*) op_isFontFixedWidth_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + isFontFixedWidthLocalsDef.size;
+((VFrameHeader*) op_isFontFixedWidth_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + isFontFixedWidthLocalsDef.size;
 ((VFrameHeader*) op_isFontFixedWidth_thread_spec) -> formalParamsCount = (isFontFixedWidthLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_isFontFixedWidth_thread_spec)[1])[0] = (size_t) &isFontFixedWidthLocalsDef;
+((VFrameHeader*) op_isFontFixedWidth_thread_spec) -> localsDef = (size_t) &isFontFixedWidthLocalsDef;
 ((VFrameHeader*) op_isFontFixedWidth_thread_spec) -> functionName = "isFontFixedWidth";
-((VFrameHeader*) op_getTextBitmapWith_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + getTextBitmapWithLocalsDef.size;
+((VFrameHeader*) op_getTextBitmapWith_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + getTextBitmapWithLocalsDef.size;
 ((VFrameHeader*) op_getTextBitmapWith_thread_spec) -> formalParamsCount = (getTextBitmapWithLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_getTextBitmapWith_thread_spec)[1])[0] = (size_t) &getTextBitmapWithLocalsDef;
+((VFrameHeader*) op_getTextBitmapWith_thread_spec) -> localsDef = (size_t) &getTextBitmapWithLocalsDef;
 ((VFrameHeader*) op_getTextBitmapWith_thread_spec) -> functionName = "getTextBitmapWith";
-((VFrameHeader*) op_unloadFont_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + unloadFontLocalsDef.size;
+((VFrameHeader*) op_unloadFont_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + unloadFontLocalsDef.size;
 ((VFrameHeader*) op_unloadFont_thread_spec) -> formalParamsCount = (unloadFontLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_unloadFont_thread_spec)[1])[0] = (size_t) &unloadFontLocalsDef;
+((VFrameHeader*) op_unloadFont_thread_spec) -> localsDef = (size_t) &unloadFontLocalsDef;
 ((VFrameHeader*) op_unloadFont_thread_spec) -> functionName = "unloadFont";
 memset(&self, '\0', sizeof(self));
 self.objects = objects; self.header = &header; self.header -> objectsCount = sizeof(objects) / sizeof(ObjectSpec);
@@ -878,7 +871,7 @@ for (i = 0; i < sizeof(interfaceMappings) / sizeof(Fable); i ++){
 if (strcmp(interfaceMappings[i].name, name) == 0){
 interfaceMappings[i].hdr -> pcLoc = (unsigned char*) ptr;
 interfaceMappings[i].hdr -> registerCount = 1;
-interfaceMappings[i].hdr -> scopeCount = 1;
+interfaceMappings[i].hdr -> localsDef = 0;
 break;
 }
 }
@@ -890,7 +883,6 @@ const DanaType *dataType;
 } Ex;
 
 static Ex dataMappings[] = {
-{"VC", &data_VC_map_def},
 {"FontMetrics", &data_FontMetrics_map_def},
 {"Rect", &data_Rect_map_def},
 {"Bitmap", &data_Bitmap_map_def},

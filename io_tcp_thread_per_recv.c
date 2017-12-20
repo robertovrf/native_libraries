@@ -139,6 +139,25 @@ static char* getThreadError(int err)
 	}
 #endif
 
+static void returnByteArray(VFrame *f, unsigned char *data, size_t len)
+	{
+	LiveArray *array = malloc(sizeof(LiveArray));
+	memset(array, '\0', sizeof(LiveArray));
+	
+	array -> data = data;
+	array -> length = len;
+	
+	array -> gtLink = charArrayGT;
+	api -> incrementGTRefCount(array -> gtLink);
+	array -> owner = f -> blocking -> instance;
+	
+	array -> refCount ++;
+	
+	VVarLivePTR *ptrh = (VVarLivePTR*) &f -> localsData[((DanaType*) ((StructuredType*) f -> localsDef) -> structure.content)[0].offset];
+	ptrh -> content = (unsigned char*) array;
+	ptrh -> typeLink = array -> gtLink -> typeLink;
+	}
+
 #define MAX_ADDR 64
 INSTRUCTION_DEF op_tcp_bind(INSTRUCTION_PARAM_LIST)
 	{
@@ -304,7 +323,7 @@ INSTRUCTION_DEF op_tcp_bind(INSTRUCTION_PARAM_LIST)
 	size_t xs = connected ? newSocket : 0;
 	
 	//the return value is written to local variable 0
-	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
+	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> localsDef) -> structure.content)[0].offset];
 	memcpy(result, &xs, sizeof(size_t));
 	
 	free(addr);
@@ -408,7 +427,7 @@ INSTRUCTION_DEF op_tcp_connect(INSTRUCTION_PARAM_LIST)
 	size_t xs = connected ? newSocket : 0;
 	
 	//the return value is written to local variable 0
-	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
+	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> localsDef) -> structure.content)[0].offset];
 	memcpy(result, &xs, sizeof(size_t));
 	
 	free(addr);
@@ -465,7 +484,7 @@ INSTRUCTION_DEF op_tcp_accept(INSTRUCTION_PARAM_LIST)
 	xs = socket;
 	
 	//the return value is written to local variable 0
-	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
+	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> localsDef) -> structure.content)[0].offset];
 	memcpy(result, &xs, sizeof(size_t));
 	
 	return RETURN_DIRECT;
@@ -475,8 +494,6 @@ INSTRUCTION_DEF op_tcp_accept(INSTRUCTION_PARAM_LIST)
 
 INSTRUCTION_DEF op_tcp_recv(INSTRUCTION_PARAM_LIST)
 	{
-	Component *dataOwner = ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 2)) -> content) -> owner;
-	
 	size_t xs = 0;
 	memcpy(&xs, getVariableContent(cframe, 0), sizeof(size_t));
 	
@@ -514,30 +531,12 @@ INSTRUCTION_DEF op_tcp_recv(INSTRUCTION_PARAM_LIST)
 	
 	if (totalAmt > 0)
 		{
-		LiveArray *newArray = malloc(sizeof(LiveArray));
-		memset(newArray, '\0', sizeof(LiveArray));
-		
-		newArray -> data = pbuf;
-		newArray -> length = totalAmt;
-		
-		newArray -> gtLink = charArrayGT;
-		api -> incrementGTRefCount(newArray -> gtLink);
-		newArray -> owner = dataOwner;
-		
-		VVarLivePTR *ptrh = (VVarLivePTR*) ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 2)) -> content) -> data;
-		
-		ptrh -> content = (unsigned char*) newArray;
-		newArray -> refCount ++;
-		((VVarLivePTR*) ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 2)) -> content) -> data) -> typeLink = newArray -> gtLink -> typeLink;
+		returnByteArray(cframe, pbuf, totalAmt);
 		}
 		else
 		{
 		free(pbuf);
 		}
-	
-	//the return value is written to local variable 0
-	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
-	copyHostInteger((unsigned char*) result, (unsigned char*) &totalAmt, sizeof(size_t));
 	
 	return RETURN_DIRECT;
 	}
@@ -557,7 +556,7 @@ INSTRUCTION_DEF op_tcp_send(INSTRUCTION_PARAM_LIST)
 		totalAmt = send(socket, (char*) array -> data, array -> length, 0);
 	
 	//the return value is written to local variable 0
-	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
+	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> localsDef) -> structure.content)[0].offset];
 	copyHostInteger((unsigned char*) result, (unsigned char*) &totalAmt, sizeof(size_t));
 	
 	return RETURN_DIRECT;

@@ -34,11 +34,6 @@ static const DanaType array_byte_spec[] = {
 static const StructuredType array_byte_def = {{NULL, NULL, 0, 0}, {(unsigned char*) array_byte_spec, NULL, 0, sizeof(array_byte_spec)}, sizeof(VVarLivePTR)};
 static const DanaType data_byte_array_map_def = 
 {TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_byte_def}};
-static const DanaType data_BC_spec[] = {
-{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_byte_def}}};
-static const StructuredType data_BC_def = {{NULL, NULL, 0, 0}, {(unsigned char*) data_BC_spec, NULL, 0, sizeof(data_BC_spec)}, 0};
-static const DanaType data_BC_map_def = 
-{TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_BC_def}};
 static const DanaType data_FileEntry_spec[] = {
 {TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}}};
 static const StructuredType data_FileEntry_def = {{NULL, NULL, 0, 0}, {(unsigned char*) data_FileEntry_spec, NULL, 0, sizeof(data_FileEntry_spec)}, 0};
@@ -97,10 +92,9 @@ static const DanaType function_IIOFileLib_write_def[] = {
 {TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_byte_def}}};
 static const StructuredType function_IIOFileLib_write_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_IIOFileLib_write_def, NULL, 0, sizeof(function_IIOFileLib_write_def)}, 0};
 static const DanaType function_IIOFileLib_read_def[] = {
+{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_byte_def}},
 {TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_BC_def}}};
+{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0}};
 static const StructuredType function_IIOFileLib_read_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_IIOFileLib_read_def, NULL, 0, sizeof(function_IIOFileLib_read_def)}, 0};
 static const DanaType function_IIOFileLib_setPos_def[] = {
 {TYPE_LITERAL, X_FLAT, 0, 1, 1, 0},
@@ -222,10 +216,9 @@ static DanaType writeLocalsSpec[] = {
 {TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_byte_def}}};
 static StructuredType writeLocalsDef = {{}, {(unsigned char*) writeLocalsSpec, NULL, 0, sizeof(writeLocalsSpec)}, 0};
 static DanaType readLocalsSpec[] = {
+{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_byte_def}},
 {TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_BC_def}}};
+{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0}};
 static StructuredType readLocalsDef = {{}, {(unsigned char*) readLocalsSpec, NULL, 0, sizeof(readLocalsSpec)}, 0};
 static DanaType setPosLocalsSpec[] = {
 {TYPE_LITERAL, X_FLAT, 0, 1, 1, 0},
@@ -356,81 +349,81 @@ populateOffsets(moveLocalsSpec, sizeof(moveLocalsSpec) / sizeof(DanaType), &move
 populateOffsets(copyLocalsSpec, sizeof(copyLocalsSpec) / sizeof(DanaType), &copyLocalsDef);
 populateOffsets(createDirectoryLocalsSpec, sizeof(createDirectoryLocalsSpec) / sizeof(DanaType), &createDirectoryLocalsDef);
 populateOffsets(deleteDirectoryLocalsSpec, sizeof(deleteDirectoryLocalsSpec) / sizeof(DanaType), &deleteDirectoryLocalsDef);
-((VFrameHeader*) op_clone_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + cloneLocalsDef.size;
+((VFrameHeader*) op_clone_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + cloneLocalsDef.size;
 ((VFrameHeader*) op_clone_thread_spec) -> formalParamsCount = (cloneLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_clone_thread_spec)[1])[0] = (size_t) &cloneLocalsDef;
+((VFrameHeader*) op_clone_thread_spec) -> localsDef = (size_t) &cloneLocalsDef;
 ((VFrameHeader*) op_clone_thread_spec) -> functionName = "clone";
-((VFrameHeader*) op_equals_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + equalsLocalsDef.size;
+((VFrameHeader*) op_equals_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + equalsLocalsDef.size;
 ((VFrameHeader*) op_equals_thread_spec) -> formalParamsCount = (equalsLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_equals_thread_spec)[1])[0] = (size_t) &equalsLocalsDef;
+((VFrameHeader*) op_equals_thread_spec) -> localsDef = (size_t) &equalsLocalsDef;
 ((VFrameHeader*) op_equals_thread_spec) -> functionName = "equals";
-((VFrameHeader*) op_toString_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + toStringLocalsDef.size;
+((VFrameHeader*) op_toString_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + toStringLocalsDef.size;
 ((VFrameHeader*) op_toString_thread_spec) -> formalParamsCount = (toStringLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_toString_thread_spec)[1])[0] = (size_t) &toStringLocalsDef;
+((VFrameHeader*) op_toString_thread_spec) -> localsDef = (size_t) &toStringLocalsDef;
 ((VFrameHeader*) op_toString_thread_spec) -> functionName = "toString";
-((VFrameHeader*) op_getID_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + getIDLocalsDef.size;
+((VFrameHeader*) op_getID_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + getIDLocalsDef.size;
 ((VFrameHeader*) op_getID_thread_spec) -> formalParamsCount = (getIDLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_getID_thread_spec)[1])[0] = (size_t) &getIDLocalsDef;
+((VFrameHeader*) op_getID_thread_spec) -> localsDef = (size_t) &getIDLocalsDef;
 ((VFrameHeader*) op_getID_thread_spec) -> functionName = "getID";
-((VFrameHeader*) op_open_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + openLocalsDef.size;
+((VFrameHeader*) op_open_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + openLocalsDef.size;
 ((VFrameHeader*) op_open_thread_spec) -> formalParamsCount = (openLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_open_thread_spec)[1])[0] = (size_t) &openLocalsDef;
+((VFrameHeader*) op_open_thread_spec) -> localsDef = (size_t) &openLocalsDef;
 ((VFrameHeader*) op_open_thread_spec) -> functionName = "open";
-((VFrameHeader*) op_write_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + writeLocalsDef.size;
+((VFrameHeader*) op_write_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + writeLocalsDef.size;
 ((VFrameHeader*) op_write_thread_spec) -> formalParamsCount = (writeLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_write_thread_spec)[1])[0] = (size_t) &writeLocalsDef;
+((VFrameHeader*) op_write_thread_spec) -> localsDef = (size_t) &writeLocalsDef;
 ((VFrameHeader*) op_write_thread_spec) -> functionName = "write";
-((VFrameHeader*) op_read_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + readLocalsDef.size;
+((VFrameHeader*) op_read_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + readLocalsDef.size;
 ((VFrameHeader*) op_read_thread_spec) -> formalParamsCount = (readLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_read_thread_spec)[1])[0] = (size_t) &readLocalsDef;
+((VFrameHeader*) op_read_thread_spec) -> localsDef = (size_t) &readLocalsDef;
 ((VFrameHeader*) op_read_thread_spec) -> functionName = "read";
-((VFrameHeader*) op_setPos_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + setPosLocalsDef.size;
+((VFrameHeader*) op_setPos_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + setPosLocalsDef.size;
 ((VFrameHeader*) op_setPos_thread_spec) -> formalParamsCount = (setPosLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_setPos_thread_spec)[1])[0] = (size_t) &setPosLocalsDef;
+((VFrameHeader*) op_setPos_thread_spec) -> localsDef = (size_t) &setPosLocalsDef;
 ((VFrameHeader*) op_setPos_thread_spec) -> functionName = "setPos";
-((VFrameHeader*) op_getSize_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + getSizeLocalsDef.size;
+((VFrameHeader*) op_getSize_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + getSizeLocalsDef.size;
 ((VFrameHeader*) op_getSize_thread_spec) -> formalParamsCount = (getSizeLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_getSize_thread_spec)[1])[0] = (size_t) &getSizeLocalsDef;
+((VFrameHeader*) op_getSize_thread_spec) -> localsDef = (size_t) &getSizeLocalsDef;
 ((VFrameHeader*) op_getSize_thread_spec) -> functionName = "getSize";
-((VFrameHeader*) op_eof_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + eofLocalsDef.size;
+((VFrameHeader*) op_eof_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + eofLocalsDef.size;
 ((VFrameHeader*) op_eof_thread_spec) -> formalParamsCount = (eofLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_eof_thread_spec)[1])[0] = (size_t) &eofLocalsDef;
+((VFrameHeader*) op_eof_thread_spec) -> localsDef = (size_t) &eofLocalsDef;
 ((VFrameHeader*) op_eof_thread_spec) -> functionName = "eof";
-((VFrameHeader*) op_close_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + closeLocalsDef.size;
+((VFrameHeader*) op_close_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + closeLocalsDef.size;
 ((VFrameHeader*) op_close_thread_spec) -> formalParamsCount = (closeLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_close_thread_spec)[1])[0] = (size_t) &closeLocalsDef;
+((VFrameHeader*) op_close_thread_spec) -> localsDef = (size_t) &closeLocalsDef;
 ((VFrameHeader*) op_close_thread_spec) -> functionName = "close";
-((VFrameHeader*) op_getDirectoryContents_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + getDirectoryContentsLocalsDef.size;
+((VFrameHeader*) op_getDirectoryContents_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + getDirectoryContentsLocalsDef.size;
 ((VFrameHeader*) op_getDirectoryContents_thread_spec) -> formalParamsCount = (getDirectoryContentsLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_getDirectoryContents_thread_spec)[1])[0] = (size_t) &getDirectoryContentsLocalsDef;
+((VFrameHeader*) op_getDirectoryContents_thread_spec) -> localsDef = (size_t) &getDirectoryContentsLocalsDef;
 ((VFrameHeader*) op_getDirectoryContents_thread_spec) -> functionName = "getDirectoryContents";
-((VFrameHeader*) op_getInfo_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + getInfoLocalsDef.size;
+((VFrameHeader*) op_getInfo_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + getInfoLocalsDef.size;
 ((VFrameHeader*) op_getInfo_thread_spec) -> formalParamsCount = (getInfoLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_getInfo_thread_spec)[1])[0] = (size_t) &getInfoLocalsDef;
+((VFrameHeader*) op_getInfo_thread_spec) -> localsDef = (size_t) &getInfoLocalsDef;
 ((VFrameHeader*) op_getInfo_thread_spec) -> functionName = "getInfo";
-((VFrameHeader*) op_exists_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + existsLocalsDef.size;
+((VFrameHeader*) op_exists_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + existsLocalsDef.size;
 ((VFrameHeader*) op_exists_thread_spec) -> formalParamsCount = (existsLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_exists_thread_spec)[1])[0] = (size_t) &existsLocalsDef;
+((VFrameHeader*) op_exists_thread_spec) -> localsDef = (size_t) &existsLocalsDef;
 ((VFrameHeader*) op_exists_thread_spec) -> functionName = "exists";
-((VFrameHeader*) op_delete_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + deleteLocalsDef.size;
+((VFrameHeader*) op_delete_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + deleteLocalsDef.size;
 ((VFrameHeader*) op_delete_thread_spec) -> formalParamsCount = (deleteLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_delete_thread_spec)[1])[0] = (size_t) &deleteLocalsDef;
+((VFrameHeader*) op_delete_thread_spec) -> localsDef = (size_t) &deleteLocalsDef;
 ((VFrameHeader*) op_delete_thread_spec) -> functionName = "delete";
-((VFrameHeader*) op_move_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + moveLocalsDef.size;
+((VFrameHeader*) op_move_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + moveLocalsDef.size;
 ((VFrameHeader*) op_move_thread_spec) -> formalParamsCount = (moveLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_move_thread_spec)[1])[0] = (size_t) &moveLocalsDef;
+((VFrameHeader*) op_move_thread_spec) -> localsDef = (size_t) &moveLocalsDef;
 ((VFrameHeader*) op_move_thread_spec) -> functionName = "move";
-((VFrameHeader*) op_copy_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + copyLocalsDef.size;
+((VFrameHeader*) op_copy_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + copyLocalsDef.size;
 ((VFrameHeader*) op_copy_thread_spec) -> formalParamsCount = (copyLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_copy_thread_spec)[1])[0] = (size_t) &copyLocalsDef;
+((VFrameHeader*) op_copy_thread_spec) -> localsDef = (size_t) &copyLocalsDef;
 ((VFrameHeader*) op_copy_thread_spec) -> functionName = "copy";
-((VFrameHeader*) op_createDirectory_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + createDirectoryLocalsDef.size;
+((VFrameHeader*) op_createDirectory_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + createDirectoryLocalsDef.size;
 ((VFrameHeader*) op_createDirectory_thread_spec) -> formalParamsCount = (createDirectoryLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_createDirectory_thread_spec)[1])[0] = (size_t) &createDirectoryLocalsDef;
+((VFrameHeader*) op_createDirectory_thread_spec) -> localsDef = (size_t) &createDirectoryLocalsDef;
 ((VFrameHeader*) op_createDirectory_thread_spec) -> functionName = "createDirectory";
-((VFrameHeader*) op_deleteDirectory_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + deleteDirectoryLocalsDef.size;
+((VFrameHeader*) op_deleteDirectory_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + deleteDirectoryLocalsDef.size;
 ((VFrameHeader*) op_deleteDirectory_thread_spec) -> formalParamsCount = (deleteDirectoryLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_deleteDirectory_thread_spec)[1])[0] = (size_t) &deleteDirectoryLocalsDef;
+((VFrameHeader*) op_deleteDirectory_thread_spec) -> localsDef = (size_t) &deleteDirectoryLocalsDef;
 ((VFrameHeader*) op_deleteDirectory_thread_spec) -> functionName = "deleteDirectory";
 memset(&self, '\0', sizeof(self));
 self.objects = objects; self.header = &header; self.header -> objectsCount = sizeof(objects) / sizeof(ObjectSpec);
@@ -469,7 +462,7 @@ for (i = 0; i < sizeof(interfaceMappings) / sizeof(Fable); i ++){
 if (strcmp(interfaceMappings[i].name, name) == 0){
 interfaceMappings[i].hdr -> pcLoc = (unsigned char*) ptr;
 interfaceMappings[i].hdr -> registerCount = 1;
-interfaceMappings[i].hdr -> scopeCount = 1;
+interfaceMappings[i].hdr -> localsDef = 0;
 break;
 }
 }
@@ -486,7 +479,6 @@ static Ex dataMappings[] = {
 {"DCQ", &data_DCQ_map_def},
 {"FileEntry[]", &data_FileEntry_array_map_def},
 {"FileEntry", &data_FileEntry_map_def},
-{"BC", &data_BC_map_def},
 {"byte[]", &data_byte_array_map_def},
 {"char[]", &data_char_array_map_def}};
 const DanaType* getTypeDefinition(char *name){

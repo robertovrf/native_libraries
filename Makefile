@@ -1,6 +1,6 @@
 CC = gcc
 
-API_PATH = "dana_api_1.2"
+API_PATH = "dana_api_1.3"
 STD_INCLUDE = -I $(API_PATH)
 CCFLAGS = -Wall -fno-strict-aliasing
 OUTPUT_FILE=

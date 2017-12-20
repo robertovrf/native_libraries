@@ -34,11 +34,6 @@ static const DanaType array_byte_spec[] = {
 static const StructuredType array_byte_def = {{NULL, NULL, 0, 0}, {(unsigned char*) array_byte_spec, NULL, 0, sizeof(array_byte_spec)}, sizeof(VVarLivePTR)};
 static const DanaType data_byte_array_map_def = 
 {TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_byte_def}};
-static const DanaType data_BC_spec[] = {
-{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_byte_def}}};
-static const StructuredType data_BC_def = {{NULL, NULL, 0, 0}, {(unsigned char*) data_BC_spec, NULL, 0, sizeof(data_BC_spec)}, 0};
-static const DanaType data_BC_map_def = 
-{TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_BC_def}};
 static const DanaType data_NetworkEndpoint_spec[] = {
 {TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_char_def}},
 {TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0}};
@@ -74,10 +69,9 @@ static const DanaType function_IOTCPLib_send_def[] = {
 {TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_byte_def}}};
 static const StructuredType function_IOTCPLib_send_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_IOTCPLib_send_def, NULL, 0, sizeof(function_IOTCPLib_send_def)}, 0};
 static const DanaType function_IOTCPLib_recv_def[] = {
+{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_byte_def}},
 {TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_BC_def}}};
+{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0}};
 static const StructuredType function_IOTCPLib_recv_spec = {{NULL, NULL, 0, 0}, {(unsigned char*) function_IOTCPLib_recv_def, NULL, 0, sizeof(function_IOTCPLib_recv_def)}, 0};
 static const DanaType function_IOTCPLib_accept_def[] = {
 {TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
@@ -160,10 +154,9 @@ static DanaType sendLocalsSpec[] = {
 {TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_byte_def}}};
 static StructuredType sendLocalsDef = {{}, {(unsigned char*) sendLocalsSpec, NULL, 0, sizeof(sendLocalsSpec)}, 0};
 static DanaType recvLocalsSpec[] = {
+{TYPE_ARRAY, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &array_byte_def}},
 {TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-{TYPE_DATA, X_POINTER, 0, sizeof(VVarLivePTR), sizeof(VVarLivePTR), 0, {(unsigned char*) &data_BC_def}}};
+{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0}};
 static StructuredType recvLocalsDef = {{}, {(unsigned char*) recvLocalsSpec, NULL, 0, sizeof(recvLocalsSpec)}, 0};
 static DanaType acceptLocalsSpec[] = {
 {TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
@@ -245,57 +238,57 @@ populateOffsets(bindLocalsSpec, sizeof(bindLocalsSpec) / sizeof(DanaType), &bind
 populateOffsets(unbindLocalsSpec, sizeof(unbindLocalsSpec) / sizeof(DanaType), &unbindLocalsDef);
 populateOffsets(getLocalAddressLocalsSpec, sizeof(getLocalAddressLocalsSpec) / sizeof(DanaType), &getLocalAddressLocalsDef);
 populateOffsets(getRemoteAddressLocalsSpec, sizeof(getRemoteAddressLocalsSpec) / sizeof(DanaType), &getRemoteAddressLocalsDef);
-((VFrameHeader*) op_clone_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + cloneLocalsDef.size;
+((VFrameHeader*) op_clone_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + cloneLocalsDef.size;
 ((VFrameHeader*) op_clone_thread_spec) -> formalParamsCount = (cloneLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_clone_thread_spec)[1])[0] = (size_t) &cloneLocalsDef;
+((VFrameHeader*) op_clone_thread_spec) -> localsDef = (size_t) &cloneLocalsDef;
 ((VFrameHeader*) op_clone_thread_spec) -> functionName = "clone";
-((VFrameHeader*) op_equals_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + equalsLocalsDef.size;
+((VFrameHeader*) op_equals_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + equalsLocalsDef.size;
 ((VFrameHeader*) op_equals_thread_spec) -> formalParamsCount = (equalsLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_equals_thread_spec)[1])[0] = (size_t) &equalsLocalsDef;
+((VFrameHeader*) op_equals_thread_spec) -> localsDef = (size_t) &equalsLocalsDef;
 ((VFrameHeader*) op_equals_thread_spec) -> functionName = "equals";
-((VFrameHeader*) op_toString_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + toStringLocalsDef.size;
+((VFrameHeader*) op_toString_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + toStringLocalsDef.size;
 ((VFrameHeader*) op_toString_thread_spec) -> formalParamsCount = (toStringLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_toString_thread_spec)[1])[0] = (size_t) &toStringLocalsDef;
+((VFrameHeader*) op_toString_thread_spec) -> localsDef = (size_t) &toStringLocalsDef;
 ((VFrameHeader*) op_toString_thread_spec) -> functionName = "toString";
-((VFrameHeader*) op_getID_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + getIDLocalsDef.size;
+((VFrameHeader*) op_getID_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + getIDLocalsDef.size;
 ((VFrameHeader*) op_getID_thread_spec) -> formalParamsCount = (getIDLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_getID_thread_spec)[1])[0] = (size_t) &getIDLocalsDef;
+((VFrameHeader*) op_getID_thread_spec) -> localsDef = (size_t) &getIDLocalsDef;
 ((VFrameHeader*) op_getID_thread_spec) -> functionName = "getID";
-((VFrameHeader*) op_connect_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + connectLocalsDef.size;
+((VFrameHeader*) op_connect_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + connectLocalsDef.size;
 ((VFrameHeader*) op_connect_thread_spec) -> formalParamsCount = (connectLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_connect_thread_spec)[1])[0] = (size_t) &connectLocalsDef;
+((VFrameHeader*) op_connect_thread_spec) -> localsDef = (size_t) &connectLocalsDef;
 ((VFrameHeader*) op_connect_thread_spec) -> functionName = "connect";
-((VFrameHeader*) op_disconnect_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + disconnectLocalsDef.size;
+((VFrameHeader*) op_disconnect_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + disconnectLocalsDef.size;
 ((VFrameHeader*) op_disconnect_thread_spec) -> formalParamsCount = (disconnectLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_disconnect_thread_spec)[1])[0] = (size_t) &disconnectLocalsDef;
+((VFrameHeader*) op_disconnect_thread_spec) -> localsDef = (size_t) &disconnectLocalsDef;
 ((VFrameHeader*) op_disconnect_thread_spec) -> functionName = "disconnect";
-((VFrameHeader*) op_send_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + sendLocalsDef.size;
+((VFrameHeader*) op_send_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + sendLocalsDef.size;
 ((VFrameHeader*) op_send_thread_spec) -> formalParamsCount = (sendLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_send_thread_spec)[1])[0] = (size_t) &sendLocalsDef;
+((VFrameHeader*) op_send_thread_spec) -> localsDef = (size_t) &sendLocalsDef;
 ((VFrameHeader*) op_send_thread_spec) -> functionName = "send";
-((VFrameHeader*) op_recv_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + recvLocalsDef.size;
+((VFrameHeader*) op_recv_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + recvLocalsDef.size;
 ((VFrameHeader*) op_recv_thread_spec) -> formalParamsCount = (recvLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_recv_thread_spec)[1])[0] = (size_t) &recvLocalsDef;
+((VFrameHeader*) op_recv_thread_spec) -> localsDef = (size_t) &recvLocalsDef;
 ((VFrameHeader*) op_recv_thread_spec) -> functionName = "recv";
-((VFrameHeader*) op_accept_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + acceptLocalsDef.size;
+((VFrameHeader*) op_accept_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + acceptLocalsDef.size;
 ((VFrameHeader*) op_accept_thread_spec) -> formalParamsCount = (acceptLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_accept_thread_spec)[1])[0] = (size_t) &acceptLocalsDef;
+((VFrameHeader*) op_accept_thread_spec) -> localsDef = (size_t) &acceptLocalsDef;
 ((VFrameHeader*) op_accept_thread_spec) -> functionName = "accept";
-((VFrameHeader*) op_bind_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + bindLocalsDef.size;
+((VFrameHeader*) op_bind_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + bindLocalsDef.size;
 ((VFrameHeader*) op_bind_thread_spec) -> formalParamsCount = (bindLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_bind_thread_spec)[1])[0] = (size_t) &bindLocalsDef;
+((VFrameHeader*) op_bind_thread_spec) -> localsDef = (size_t) &bindLocalsDef;
 ((VFrameHeader*) op_bind_thread_spec) -> functionName = "bind";
-((VFrameHeader*) op_unbind_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + unbindLocalsDef.size;
+((VFrameHeader*) op_unbind_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + unbindLocalsDef.size;
 ((VFrameHeader*) op_unbind_thread_spec) -> formalParamsCount = (unbindLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_unbind_thread_spec)[1])[0] = (size_t) &unbindLocalsDef;
+((VFrameHeader*) op_unbind_thread_spec) -> localsDef = (size_t) &unbindLocalsDef;
 ((VFrameHeader*) op_unbind_thread_spec) -> functionName = "unbind";
-((VFrameHeader*) op_getLocalAddress_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + getLocalAddressLocalsDef.size;
+((VFrameHeader*) op_getLocalAddress_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + getLocalAddressLocalsDef.size;
 ((VFrameHeader*) op_getLocalAddress_thread_spec) -> formalParamsCount = (getLocalAddressLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_getLocalAddress_thread_spec)[1])[0] = (size_t) &getLocalAddressLocalsDef;
+((VFrameHeader*) op_getLocalAddress_thread_spec) -> localsDef = (size_t) &getLocalAddressLocalsDef;
 ((VFrameHeader*) op_getLocalAddress_thread_spec) -> functionName = "getLocalAddress";
-((VFrameHeader*) op_getRemoteAddress_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(ScopeContainer) + sizeof(VVarR) + getRemoteAddressLocalsDef.size;
+((VFrameHeader*) op_getRemoteAddress_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + getRemoteAddressLocalsDef.size;
 ((VFrameHeader*) op_getRemoteAddress_thread_spec) -> formalParamsCount = (getRemoteAddressLocalsDef.structure.vsize / sizeof(DanaType)) - 1;
-((size_t*) &((VFrameHeader*) op_getRemoteAddress_thread_spec)[1])[0] = (size_t) &getRemoteAddressLocalsDef;
+((VFrameHeader*) op_getRemoteAddress_thread_spec) -> localsDef = (size_t) &getRemoteAddressLocalsDef;
 ((VFrameHeader*) op_getRemoteAddress_thread_spec) -> functionName = "getRemoteAddress";
 memset(&self, '\0', sizeof(self));
 self.objects = objects; self.header = &header; self.header -> objectsCount = sizeof(objects) / sizeof(ObjectSpec);
@@ -328,7 +321,7 @@ for (i = 0; i < sizeof(interfaceMappings) / sizeof(Fable); i ++){
 if (strcmp(interfaceMappings[i].name, name) == 0){
 interfaceMappings[i].hdr -> pcLoc = (unsigned char*) ptr;
 interfaceMappings[i].hdr -> registerCount = 1;
-interfaceMappings[i].hdr -> scopeCount = 1;
+interfaceMappings[i].hdr -> localsDef = 0;
 break;
 }
 }
@@ -341,7 +334,6 @@ const DanaType *dataType;
 
 static Ex dataMappings[] = {
 {"NetworkEndpoint", &data_NetworkEndpoint_map_def},
-{"BC", &data_BC_map_def},
 {"byte[]", &data_byte_array_map_def},
 {"char[]", &data_char_array_map_def}};
 const DanaType* getTypeDefinition(char *name){

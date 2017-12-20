@@ -27,6 +27,25 @@ static GlobalTypeLink *charArrayGT = NULL;
 
 #define MAX_VAR_NAME 2048
 
+static void returnByteArray(VFrame *f, unsigned char *data, size_t len)
+	{
+	LiveArray *array = malloc(sizeof(LiveArray));
+	memset(array, '\0', sizeof(LiveArray));
+	
+	array -> data = data;
+	array -> length = len;
+	
+	array -> gtLink = charArrayGT;
+	api -> incrementGTRefCount(array -> gtLink);
+	array -> owner = f -> blocking -> instance;
+	
+	array -> refCount ++;
+	
+	VVarLivePTR *ptrh = (VVarLivePTR*) &f -> localsData[((DanaType*) ((StructuredType*) f -> localsDef) -> structure.content)[0].offset];
+	ptrh -> content = (unsigned char*) array;
+	ptrh -> typeLink = array -> gtLink -> typeLink;
+	}
+
 INSTRUCTION_DEF op_get_platform_name(INSTRUCTION_PARAM_LIST)
 	{
 	char *name = "Unknown";
@@ -43,22 +62,7 @@ INSTRUCTION_DEF op_get_platform_name(INSTRUCTION_PARAM_LIST)
 		}
 	#endif
 	
-	LiveArray *newArray = malloc(sizeof(LiveArray));
-	memset(newArray, '\0', sizeof(LiveArray));
-	
-	newArray -> data = (unsigned char*) strdup(name);
-	newArray -> length = strlen(name);
-	
-	newArray -> gtLink = charArrayGT;
-	api -> incrementGTRefCount(newArray -> gtLink);
-	
-	newArray -> owner = cframe -> blocking -> instance;
-	
-	VVarLivePTR *ptrh = (VVarLivePTR*) ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content) -> data;
-	
-	ptrh -> content = (unsigned char*) newArray;
-	newArray -> refCount = 1;
-	ptrh -> typeLink = newArray -> gtLink -> typeLink;
+	returnByteArray(cframe, (unsigned char*) strdup(name), strlen(name));
 	
 	return RETURN_DIRECT;
 	}
@@ -107,44 +111,14 @@ INSTRUCTION_DEF op_get_platform_version(INSTRUCTION_PARAM_LIST)
 		}
 	#endif
 	
-	LiveArray *newArray = malloc(sizeof(LiveArray));
-	memset(newArray, '\0', sizeof(LiveArray));
-	
-	newArray -> data = (unsigned char*) strdup(sres);
-	newArray -> length = strlen(sres);
-	
-	newArray -> gtLink = charArrayGT;
-	api -> incrementGTRefCount(newArray -> gtLink);
-	
-	newArray -> owner = cframe -> blocking -> instance;
-	
-	VVarLivePTR *ptrh = (VVarLivePTR*) ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content) -> data;
-	
-	ptrh -> content = (unsigned char*) newArray;
-	newArray -> refCount = 1;
-	ptrh -> typeLink = newArray -> gtLink -> typeLink;
+	returnByteArray(cframe, (unsigned char*) strdup(sres), strlen(sres));
 	
 	return RETURN_DIRECT;
 	}
 
 INSTRUCTION_DEF op_get_chip_name(INSTRUCTION_PARAM_LIST)
 	{
-	LiveArray *newArray = malloc(sizeof(LiveArray));
-	memset(newArray, '\0', sizeof(LiveArray));
-	
-	newArray -> data = (unsigned char*) strdup(CHIP_NAME);
-	newArray -> length = strlen(CHIP_NAME);
-	
-	newArray -> gtLink = charArrayGT;
-	api -> incrementGTRefCount(newArray -> gtLink);
-	
-	newArray -> owner = cframe -> blocking -> instance;
-	
-	VVarLivePTR *ptrh = (VVarLivePTR*) ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content) -> data;
-	
-	ptrh -> content = (unsigned char*) newArray;
-	newArray -> refCount = 1;
-	ptrh -> typeLink = newArray -> gtLink -> typeLink;
+	returnByteArray(cframe, (unsigned char*) strdup(CHIP_NAME), strlen(CHIP_NAME));
 	
 	return RETURN_DIRECT;
 	}
@@ -163,22 +137,7 @@ INSTRUCTION_DEF op_get_host_name(INSTRUCTION_PARAM_LIST)
 	gethostname(sres, MAX_VAR_NAME);
 	#endif
 	
-	LiveArray *newArray = malloc(sizeof(LiveArray));
-	memset(newArray, '\0', sizeof(LiveArray));
-	
-	newArray -> data = (unsigned char*) strdup(sres);
-	newArray -> length = strlen(sres);
-	
-	newArray -> gtLink = charArrayGT;
-	api -> incrementGTRefCount(newArray -> gtLink);
-	
-	newArray -> owner = cframe -> blocking -> instance;
-	
-	VVarLivePTR *ptrh = (VVarLivePTR*) ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content) -> data;
-	
-	ptrh -> content = (unsigned char*) newArray;
-	newArray -> refCount = 1;
-	ptrh -> typeLink = newArray -> gtLink -> typeLink;
+	returnByteArray(cframe, (unsigned char*) strdup(sres), strlen(sres));
 	
 	return RETURN_DIRECT;
 	}
@@ -202,33 +161,11 @@ INSTRUCTION_DEF op_get_variable(INSTRUCTION_PARAM_LIST)
 	
 	char *val = getenv(vn);
 	
-	unsigned char ok = 0;
-	
 	if (val != NULL)
 		{
-		LiveArray *newArray = malloc(sizeof(LiveArray));
-		memset(newArray, '\0', sizeof(LiveArray));
-		
-		newArray -> data = (unsigned char*) strdup(val);
-		newArray -> length = strlen(val);
-		
-		newArray -> gtLink = charArrayGT;
-		api -> incrementGTRefCount(newArray -> gtLink);
-		
-		newArray -> owner = cframe -> blocking -> instance;
-		
-		VVarLivePTR *ptrh = (VVarLivePTR*) ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 1)) -> content) -> data;
-		
-		ptrh -> content = (unsigned char*) newArray;
-		newArray -> refCount = 1;
-		ptrh -> typeLink = newArray -> gtLink -> typeLink;
-		
-	    ok = 1;
+		returnByteArray(cframe, (unsigned char*) strdup(val), strlen(val));
     	}
     
-	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> scopes[0].scope.etype) -> structure.content)[0].offset];
-	copyHostInteger((unsigned char*) result, (unsigned char*) &ok, sizeof(ok));
-	
 	free(vn);
 	
 	return RETURN_DIRECT;
@@ -262,22 +199,7 @@ INSTRUCTION_DEF op_get_system_font(INSTRUCTION_PARAM_LIST)
 		struct stat st;
 		if (stat(fontPath, &st) == 0)
 			{
-			LiveArray *newArray = malloc(sizeof(LiveArray));
-			memset(newArray, '\0', sizeof(LiveArray));
-			
-			newArray -> data = (unsigned char*) strdup(fontPath);
-			newArray -> length = strlen(fontPath);
-			
-			newArray -> gtLink = charArrayGT;
-			api -> incrementGTRefCount(newArray -> gtLink);
-			
-			newArray -> owner = cframe -> blocking -> instance;
-			
-			VVarLivePTR *ptrh = (VVarLivePTR*) ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 1)) -> content) -> data;
-			
-			ptrh -> content = (unsigned char*) newArray;
-			newArray -> refCount = 1;
-			ptrh -> typeLink = newArray -> gtLink -> typeLink;
+			returnByteArray(cframe, (unsigned char*) strdup(fontPath), strlen(fontPath));
 			}
 		
 		free(fontPath);
