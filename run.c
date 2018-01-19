@@ -54,7 +54,7 @@ INSTRUCTION_DEF op_execute(INSTRUCTION_PARAM_LIST)
 	    ok = 1;
     	}
     
-	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> localsDef) -> structure.content)[0].offset];
+	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) cframe -> localsDef) -> fields[0].offset];
 	copyHostInteger((unsigned char*) result, (unsigned char*) &ok, sizeof(ok));
 	
 	free(vn);

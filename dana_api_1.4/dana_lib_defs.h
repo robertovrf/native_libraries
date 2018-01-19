@@ -9,11 +9,9 @@
 #include "dana_types.h"
 #include "dana_lib_api.h"
 
-static const StructuredInterfaceType IDCIF = {{(unsigned char*) "IDC", NULL, 0, 3}, {NULL, NULL, 0, 0}, 0, 0};
+static const DanaType IDCDT = {TYPE_OBJECT, 0, sizeof(LiveBindpoint), NULL, 0};
 
-static const DanaType IDCDT = {TYPE_OBJECT, X_FLAT, 0, 0, 0, 0, {(unsigned char*) &IDCIF}};
-
-static const InterfaceDetails IDCID = {(size_t) &IDCDT, 0, 0, NULL};
+static const InterfaceDetails IDCID = {"IDC", 3, NULL};
 
 #define IDC (size_t) &IDCDT, 0, 0, NULL
 

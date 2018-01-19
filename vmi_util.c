@@ -85,38 +85,5 @@ void copyToDanaInteger(unsigned char *dst, unsigned char *src, size_t srcsz)
 
 unsigned char* getVariableContent(VFrame *t, unsigned int index)
 	{
-	DanaType *spec = &((DanaType*)((StructuredType*) t -> localsDef) -> structure.content)[index+1];
-	return &t -> localsData[spec -> offset];
-	}
-
-void getVariableContentIn(VFrame *t, unsigned int index, VVarR *reg)
-	{
-	DanaType *spec = &((DanaType*) ((StructuredType*) t -> localsDef) -> structure.content)[index+1];
-	unsigned char *data = &t -> localsData[spec -> offset];
-	
-	memset(reg, '\0', sizeof(VVarR));
-	
-	if (spec -> container == X_POINTER)
-		{
-		VVarLivePTR *ptr = (VVarLivePTR*) data;
-		
-		reg -> content = ptr -> content;
-		reg -> vsize = ptr -> vsize;
-		
-		reg -> type = spec -> typeClass;
-		reg -> etype = spec -> typeClass == TYPE_LITERAL ? ptr -> typeLink -> esize : (size_t) ptr -> typeLink -> definition.content;
-		reg -> xtype = ptr -> typeLink -> container;
-		}
-		else if (spec -> container == X_VLIST_CNT)
-		{
-		
-		}
-		else if (spec -> container == X_VLIST_LNK)
-		{
-		
-		}
-		else
-		{
-		reg -> content = data;
-		}
+	return &t -> localsData[((DanaType*) t -> localsDef) -> fields[index+1].offset];
 	}

@@ -119,10 +119,7 @@ typedef struct _live_data{
 	struct __globalTypeLink *gtLink;
 	size_t flags;
 	size_t refCount;
-	size_t orc;
-	void *gce;
 	struct component *owner;
-	LiveScope scope;
 	
 	size_t csa;
 	size_t csb;
@@ -144,22 +141,25 @@ typedef struct{
 	struct __globalTypeLink *gtLink;
 	size_t flags;
 	size_t refCount;
-	size_t orc;
-	void *gce;
 	struct component *owner;
-	LiveScope scope;
 	size_t length;
 	} LiveArray;
 
 typedef struct _s_danaType{
 	uint8 typeClass;
-	uint8 container;
 	uint8 flags;
 	size_t esize;
-	size_t length;
-	size_t offset;
-	VVarLivePTR definition;
+	struct _p_danaField *fields;
+	size_t fieldCount;
 	} DanaType;
+
+typedef struct _p_danaField{
+	DanaType *type;
+	char *fieldName;
+	size_t fieldNameLength;
+	uint8 flags;
+	size_t offset;
+} DanaTypeField;
 
 typedef struct thrhdr{
 	size_t frameSize;
@@ -248,7 +248,7 @@ typedef struct __globalTypeLink{
 	} GlobalTypeLink;
 
 typedef struct component{
-	VVar globalsRef;
+	void *gref;
 	unsigned char *globalsData;
 	SourceHeader *header;
 	VVarLivePTR createdItems;
@@ -266,28 +266,10 @@ typedef struct component{
 	unsigned char fg;
 	} Component;
 
-typedef struct{
-	LiveCntVL name;
-	LiveCntVL structure;
-	size_t size;
-	} StructuredType;
-
-typedef struct{
-	LiveCntVL name;
-	LiveCntVL structure;
-	size_t size;
-	size_t flags;
-	} StructuredInterfaceType;
-
-typedef struct{
-	LiveCntVL name;
-	LiveCntVL structure;
-	size_t size;
-	} StructuredFunctionType;
-
 typedef struct intfdet{
-	size_t interfaceDefinitionAddr;
-	size_t objectDefinitionAddr;
+	char *name;
+	size_t nameLength;
+	DanaType *type;
 	size_t variantNameLen;
 	char *variantName;
 	size_t *functionBindings;

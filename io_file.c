@@ -40,16 +40,13 @@ static void returnByteArray(VFrame *f, unsigned char *data, size_t len)
 	
 	array -> refCount ++;
 	
-	VVarLivePTR *ptrh = (VVarLivePTR*) &f -> localsData[((DanaType*) ((StructuredType*) f -> localsDef) -> structure.content)[0].offset];
+	VVarLivePTR *ptrh = (VVarLivePTR*) &f -> localsData[((DanaType*) f -> localsDef) -> fields[0].offset];
 	ptrh -> content = (unsigned char*) array;
 	ptrh -> typeLink = array -> gtLink -> typeLink;
 	}
 
 INSTRUCTION_DEF op_file_open(INSTRUCTION_PARAM_LIST)
 	{
-	VVarR reg;
-	getVariableContentIn(cframe, 0, &reg);
-	
 	size_t xs = 0;
 	copyHostInteger((unsigned char*) &xs, getVariableContent(cframe, 1), 1);
 	
@@ -103,7 +100,7 @@ INSTRUCTION_DEF op_file_open(INSTRUCTION_PARAM_LIST)
 		api -> throwException(cframe, strerror(errno));
 	
 	//the return value is written to local variable 0
-	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> localsDef) -> structure.content)[0].offset];
+	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) cframe -> localsDef) -> fields[0].offset];
 	memcpy(result, &fd, sizeof(size_t));
 	
 	free(path);
@@ -129,7 +126,7 @@ INSTRUCTION_DEF op_file_write(INSTRUCTION_PARAM_LIST)
 		amt += fwrite(array -> data, sizeof(unsigned char), array -> length, fd);
 	
 	//the return value is written to local variable 0
-	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> localsDef) -> structure.content)[0].offset];
+	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) cframe -> localsDef) -> fields[0].offset];
 	copyHostInteger((unsigned char*) result, (unsigned char*) &amt, sizeof(size_t));
 	
 	return RETURN_DIRECT;
@@ -195,7 +192,7 @@ INSTRUCTION_DEF op_file_seek(INSTRUCTION_PARAM_LIST)
 		}
 	
 	//the return value is written to local variable 0
-	unsigned char *result = (unsigned char*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> localsDef) -> structure.content)[0].offset];
+	unsigned char *result = (unsigned char*) &cframe -> localsData[((DanaType*) cframe -> localsDef) -> fields[0].offset];
 	memcpy(result, &res, sizeof(unsigned char));
 	
 	return RETURN_DIRECT;
@@ -215,7 +212,7 @@ INSTRUCTION_DEF op_file_size(INSTRUCTION_PARAM_LIST)
 	fseek(fd, fpos, SEEK_SET);
 	
 	//the return value is written to local variable 0
-	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> localsDef) -> structure.content)[0].offset];
+	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) cframe -> localsDef) -> fields[0].offset];
 	copyHostInteger((unsigned char*) result, (unsigned char*) &sz, sizeof(size_t));
 	
 	return RETURN_DIRECT;
@@ -234,7 +231,7 @@ INSTRUCTION_DEF op_file_eof(INSTRUCTION_PARAM_LIST)
 	unsigned char res = fpos == sz;
 	
 	//the return value is written to local variable 0
-	unsigned char *result = (unsigned char*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> localsDef) -> structure.content)[0].offset];
+	unsigned char *result = (unsigned char*) &cframe -> localsData[((DanaType*) cframe -> localsDef) -> fields[0].offset];
 	memcpy(result, &res, sizeof(unsigned char));
 	
 	return RETURN_DIRECT;
@@ -286,7 +283,7 @@ INSTRUCTION_DEF op_file_exists(INSTRUCTION_PARAM_LIST)
 	if (stat(path, &st) == 0) res = 1;
 	
 	//the return value is written to local variable 0
-	unsigned char *result = (unsigned char*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> localsDef) -> structure.content)[0].offset];
+	unsigned char *result = (unsigned char*) &cframe -> localsData[((DanaType*) cframe -> localsDef) -> fields[0].offset];
 	memcpy(result, &res, sizeof(unsigned char));
 	
 	free(path);
@@ -318,7 +315,7 @@ INSTRUCTION_DEF op_file_delete(INSTRUCTION_PARAM_LIST)
 	unsigned char ok = 1;
 	
 	//the return value is written to local variable 0
-	unsigned char *result = (unsigned char*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> localsDef) -> structure.content)[0].offset];
+	unsigned char *result = (unsigned char*) &cframe -> localsData[((DanaType*) cframe -> localsDef) -> fields[0].offset];
 	memcpy(result, &ok, sizeof(unsigned char));
 	
 	free(path);
@@ -373,7 +370,7 @@ INSTRUCTION_DEF op_file_move(INSTRUCTION_PARAM_LIST)
 	unsigned char ok = 1;
 	
 	//the return value is written to local variable 0
-	unsigned char *result = (unsigned char*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> localsDef) -> structure.content)[0].offset];
+	unsigned char *result = (unsigned char*) &cframe -> localsData[((DanaType*) cframe -> localsDef) -> fields[0].offset];
 	memcpy(result, &ok, sizeof(unsigned char));
 	
 	free(path);
@@ -450,7 +447,7 @@ INSTRUCTION_DEF op_file_copy(INSTRUCTION_PARAM_LIST)
 	copyfile(path, newPath);
 	
 	//the return value is written to local variable 0
-	unsigned char *result = (unsigned char*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> localsDef) -> structure.content)[0].offset];
+	unsigned char *result = (unsigned char*) &cframe -> localsData[((DanaType*) cframe -> localsDef) -> fields[0].offset];
 	memcpy(result, &ok, sizeof(unsigned char));
 	
 	free(path);
@@ -672,7 +669,7 @@ INSTRUCTION_DEF op_make_dir(INSTRUCTION_PARAM_LIST)
 	#endif
 	
 	//the return value is written to local variable 0
-	unsigned char *result = (unsigned char*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> localsDef) -> structure.content)[0].offset];
+	unsigned char *result = (unsigned char*) &cframe -> localsData[((DanaType*) cframe -> localsDef) -> fields[0].offset];
 	memcpy(result, &ok, sizeof(unsigned char));
 	
 	free(path);
@@ -716,7 +713,7 @@ INSTRUCTION_DEF op_delete_dir(INSTRUCTION_PARAM_LIST)
 		}
 	
 	//the return value is written to local variable 0
-	unsigned char *result = (unsigned char*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> localsDef) -> structure.content)[0].offset];
+	unsigned char *result = (unsigned char*) &cframe -> localsData[((DanaType*) cframe -> localsDef) -> fields[0].offset];
 	memcpy(result, &ok, sizeof(unsigned char));
 	
 	free(path);

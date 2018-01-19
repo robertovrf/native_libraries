@@ -35,7 +35,7 @@ static void returnByteArray(VFrame *f, unsigned char *data, size_t len)
 	
 	array -> refCount ++;
 	
-	VVarLivePTR *ptrh = (VVarLivePTR*) &f -> localsData[((DanaType*) ((StructuredType*) f -> localsDef) -> structure.content)[0].offset];
+	VVarLivePTR *ptrh = (VVarLivePTR*) &f -> localsData[((DanaType*) f -> localsDef) -> fields[0].offset];
 	ptrh -> content = (unsigned char*) array;
 	ptrh -> typeLink = array -> gtLink -> typeLink;
 	}

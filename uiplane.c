@@ -66,24 +66,19 @@ SDL_SetRenderTarget is another thing to render a texture as a whole...
 
 static CoreAPI *api;
 
-static const DanaType windowDataSpec[] = {
-			{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0},
-			{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), sizeof(size_t)},
-			{TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), sizeof(size_t)+sizeof(size_t)}
-			};
-static const StructuredType windowDataDef = {{(unsigned char*) "WindowData", NULL, 0, 10}, {(unsigned char*) windowDataSpec, NULL, 0, sizeof(windowDataSpec)}, sizeof(size_t)+sizeof(size_t)+sizeof(size_t)};
+static DanaType intType = {TYPE_LITERAL, 0, sizeof(size_t)};
 
-static const DanaType windowDataType = {
-	TYPE_DATA, X_POINTER, 0, sizeof(size_t)+sizeof(size_t)+sizeof(size_t), sizeof(size_t)+sizeof(size_t)+sizeof(size_t), 0, {(unsigned char*) &windowDataDef}
-	};
+static const DanaTypeField windowDataTypeFields[] = {
+			{&intType, NULL, 0, 0, 0},
+			{&intType, NULL, 0, 0, sizeof(size_t)},
+			{&intType, NULL, 0, 0, sizeof(size_t)*2}
+			};
+
+static DanaType windowDataType = {TYPE_DATA, 0, sizeof(VVarLivePTR), (DanaTypeField*) windowDataTypeFields, 3};
 
 static GlobalTypeLink *charArrayGT = NULL;
-static GlobalTypeLink *pixelArrayGT = NULL;
 static GlobalTypeLink *integerGT = NULL;
 static GlobalTypeLink *windowDataGT = NULL;
-
-#define TYPE_INT {TYPE_LITERAL, X_FLAT, 0, sizeof(size_t), sizeof(size_t), 0}
-static const DanaType integerType = TYPE_INT;
 
 //the graphics buffer:
 typedef struct _point{
@@ -301,7 +296,7 @@ static void returnByteArray(VFrame *f, unsigned char *data, size_t len)
 	
 	array -> refCount ++;
 	
-	VVarLivePTR *ptrh = (VVarLivePTR*) &f -> localsData[((DanaType*) ((StructuredType*) f -> localsDef) -> structure.content)[0].offset];
+	VVarLivePTR *ptrh = (VVarLivePTR*) &f -> localsData[((DanaType*) f -> localsDef) -> fields[0].offset];
 	ptrh -> content = (unsigned char*) array;
 	ptrh -> typeLink = array -> gtLink -> typeLink;
 	}
@@ -1761,7 +1756,7 @@ static void* render_thread(void *ptr)
 				pixelArrayH -> length = totalPixels;
 				// - there are two possibilities: either we can't copy arrays of records in general; or the way in which this array in initialised is wrong...
 
-				pixelArrayH -> gtLink = pixelArrayGT;
+				pixelArrayH -> gtLink = charArrayGT;
 				api -> incrementGTRefCount(pixelArrayH -> gtLink);
 
 				pixelArrayH -> owner = frame -> blocking -> instance;
@@ -1943,7 +1938,7 @@ static void* render_thread(void *ptr)
 				free(lfd -> fontPath);
 
 				size_t xs = (size_t) font;
-				size_t *result = (size_t*) &frame -> localsData[((DanaType*) ((StructuredType*) frame -> localsDef) -> structure.content)[0].offset];
+				size_t *result = (size_t*) &frame -> localsData[((DanaType*) frame -> localsDef) -> fields[0].offset];
 				memcpy(result, &xs, sizeof(size_t));
 
 				#ifdef WINDOWS
@@ -1985,7 +1980,7 @@ static void* render_thread(void *ptr)
 				TTF_SizeText(gwi -> font, gwi -> text, &sdl_width, NULL);
 				width = sdl_width;
 
-				size_t *result = (size_t*) &frame -> localsData[((DanaType*) ((StructuredType*) frame -> localsDef) -> structure.content)[0].offset];
+				size_t *result = (size_t*) &frame -> localsData[((DanaType*) frame -> localsDef) -> fields[0].offset];
 
 				copyHostInteger((unsigned char*) result, (unsigned char*) &width, sizeof(size_t));
 
@@ -2105,7 +2100,7 @@ INSTRUCTION_DEF op_make_window(INSTRUCTION_PARAM_LIST)
 	
 	//return "mwInfo -> instanceResult" as an unsigned int
 	size_t xs = (size_t) mwInfo -> instanceResult;
-	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> localsDef) -> structure.content)[0].offset];
+	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) cframe -> localsDef) -> fields[0].offset];
 	memcpy(result, &xs, sizeof(size_t));
 	
 	if (mwInfo -> instanceResult != NULL)
@@ -2707,7 +2702,7 @@ INSTRUCTION_DEF op_get_text_width_with(INSTRUCTION_PARAM_LIST)
 		return RETURN_DIRECT;
 		}
 
-	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> localsDef) -> structure.content)[0].offset];
+	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) cframe -> localsDef) -> fields[0].offset];
 	copyHostInteger((unsigned char*) result, (unsigned char*) &width, sizeof(size_t));
 
 	return RETURN_DIRECT;
@@ -2861,7 +2856,7 @@ INSTRUCTION_DEF op_is_font_fixed_width(INSTRUCTION_PARAM_LIST)
 	TTF_Font *font = (TTF_Font*) font_hnd;
 
 	//TODO: don't use any TTF_ functions outside of the main rendering loop?
-	cframe -> localsData[((DanaType*) ((StructuredType*) cframe -> localsDef) -> structure.content)[0].offset] = TTF_FontFaceIsFixedWidth(font) == 0 ? 0 : 1;
+	cframe -> localsData[((DanaType*) cframe -> localsDef) -> fields[0].offset] = TTF_FontFaceIsFixedWidth(font) == 0 ? 0 : 1;
 
 	return RETURN_DIRECT;
 	}
@@ -3560,10 +3555,7 @@ Interface* load(CoreAPI *capi)
 	charArrayGT = api -> resolveGlobalTypeMapping(getTypeDefinition("char[]"));
 	api -> incrementGTRefCount(charArrayGT);
 	
-	pixelArrayGT = api -> resolveGlobalTypeMapping(getTypeDefinition("Pixel[]"));
-	api -> incrementGTRefCount(pixelArrayGT);
-	
-	integerGT = api -> resolveGlobalTypeMapping(&integerType);
+	integerGT = api -> resolveGlobalTypeMapping(&intType);
 	api -> incrementGTRefCount(integerGT);
 	
 	windowDataGT = api -> resolveGlobalTypeMapping(&windowDataType);
@@ -3630,5 +3622,4 @@ void unload()
 	SDL_Quit();
 	
 	api -> decrementGTRefCount(charArrayGT);
-	api -> decrementGTRefCount(pixelArrayGT);
 	}
