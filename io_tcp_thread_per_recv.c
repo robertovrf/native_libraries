@@ -754,7 +754,6 @@ Interface* load(CoreAPI *capi)
 	
 	// grab global type mappings for anything that we generate here
 	charArrayGT = api -> resolveGlobalTypeMapping(getTypeDefinition("char[]"));
-	api -> incrementGTRefCount(charArrayGT);
 	
 	setInterfaceFunction("connect", op_tcp_connect);
 	setInterfaceFunction("disconnect", op_tcp_disconnect);

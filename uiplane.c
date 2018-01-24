@@ -3553,13 +3553,10 @@ Interface* load(CoreAPI *capi)
 	
 	// grab global type mappings for anything that we generate here
 	charArrayGT = api -> resolveGlobalTypeMapping(getTypeDefinition("char[]"));
-	api -> incrementGTRefCount(charArrayGT);
 	
 	integerGT = api -> resolveGlobalTypeMapping(&intType);
-	api -> incrementGTRefCount(integerGT);
 	
 	windowDataGT = api -> resolveGlobalTypeMapping(&windowDataType);
-	api -> incrementGTRefCount(windowDataGT);
 	
 	setInterfaceFunction("makeWindow", op_make_window);
 	setInterfaceFunction("startPoly", op_start_poly);

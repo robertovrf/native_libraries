@@ -507,7 +507,6 @@ Interface* load(CoreAPI *capi)
 	
 	// grab global type mappings for anything that we generate here
 	charArrayGT = api -> resolveGlobalTypeMapping(getTypeDefinition("char[]"));
-	api -> incrementGTRefCount(charArrayGT);
 	
 	setInterfaceFunction("send", op_udp_send);
 	setInterfaceFunction("recv", op_udp_recv);

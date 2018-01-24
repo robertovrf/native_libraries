@@ -214,7 +214,6 @@ Interface* load(CoreAPI *capi)
 	
 	// grab global type mappings for anything that we generate here
 	charArrayGT = api -> resolveGlobalTypeMapping(getTypeDefinition("char[]"));
-	api -> incrementGTRefCount(charArrayGT);
 	
 	setInterfaceFunction("getPlatformName", op_get_platform_name);
 	setInterfaceFunction("getPlatformVersion", op_get_platform_version);

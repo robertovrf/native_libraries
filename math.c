@@ -310,7 +310,6 @@ Interface* load(CoreAPI *capi)
 	setInterfaceFunction("atanh", op_arc_tangent_hyp);
 	
 	charArrayGT = api -> resolveGlobalTypeMapping(getTypeDefinition("char[]"));
-	api -> incrementGTRefCount(charArrayGT);
 	
 	return getPublicInterface();
 	}

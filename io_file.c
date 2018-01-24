@@ -860,13 +860,10 @@ Interface* load(CoreAPI *capi)
 	
 	// grab global type mappings for anything that we generate here
 	charArrayGT = api -> resolveGlobalTypeMapping(getTypeDefinition("char[]"));
-	api -> incrementGTRefCount(charArrayGT);
 	
 	fileEntryGT = api -> resolveGlobalTypeMapping(getTypeDefinition("FileEntry"));
-	api -> incrementGTRefCount(fileEntryGT);
 	
 	fileEntryArrayGT = api -> resolveGlobalTypeMapping(getTypeDefinition("FileEntry[]"));
-	api -> incrementGTRefCount(fileEntryArrayGT);
 	
 	setInterfaceFunction("open", op_file_open);
 	setInterfaceFunction("write", op_file_write);
