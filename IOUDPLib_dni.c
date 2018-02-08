@@ -15,7 +15,7 @@ static const DanaType char_def =
 static const DanaTypeField char_array_fields[] = {
 {(DanaType*) &char_def, NULL, 0, 0, 0}};
 static const DanaType char_array_def = 
-{TYPE_ARRAY, 0, sizeof(VVarLivePTR), (DanaTypeField*) char_array_fields, 1};
+{TYPE_ARRAY, 0, 0, (DanaTypeField*) char_array_fields, 1};
 static const DanaTypeField function_Object_toString_fields[] = {
 {(DanaType*) &char_array_def, NULL, 0, 0, 0}};
 static const DanaTypeField function_Object_getID_fields[] = {
@@ -38,13 +38,13 @@ static const DanaType byte_def =
 static const DanaTypeField byte_array_fields[] = {
 {(DanaType*) &byte_def, NULL, 0, 0, 0}};
 static const DanaType byte_array_def = 
-{TYPE_ARRAY, 0, sizeof(VVarLivePTR), (DanaTypeField*) byte_array_fields, 1};
+{TYPE_ARRAY, 0, 0, (DanaTypeField*) byte_array_fields, 1};
 static const DanaTypeField Datagram_fields[] = {
 {(DanaType*) &char_array_def, NULL, 0, 0, 0},
 {(DanaType*) &int_def, NULL, 0, 0, 0},
 {(DanaType*) &byte_array_def, NULL, 0, 0, 0}};
 static const DanaType Datagram_def = 
-{TYPE_DATA, 0, sizeof(VVarLivePTR), (DanaTypeField*) Datagram_fields, 3};
+{TYPE_DATA, 0, 88, (DanaTypeField*) Datagram_fields, 3};
 static const DanaType void_def = 
 {TYPE_LITERAL, 0, 0, NULL, 0};
 static const DanaTypeField function_IOUDPLib_clone_fields[] = {

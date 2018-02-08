@@ -3260,40 +3260,6 @@ INSTRUCTION_DEF op_close_window(INSTRUCTION_PARAM_LIST)
 	return RETURN_DIRECT;
 	}
 
-INSTRUCTION_DEF op_register_click_listener(INSTRUCTION_PARAM_LIST)
-	{
-	size_t hnd = 0;
-	memcpy(&hnd, getVariableContent(cframe, 0), sizeof(size_t));
-
-	if (hnd != 0)
-		{
-		WindowInstance *instance = (WindowInstance*) hnd;
-
-		unsigned char *vc = getVariableContent(cframe, 1);
-		instance -> clickListenerObject = ((VVarLivePTR*) vc) -> content;
-		instance -> clickListener.content = ((VVarLivePTR*) vc) -> content;
-		}
-
-	return RETURN_DIRECT;
-	}
-
-INSTRUCTION_DEF op_register_mouse_listener(INSTRUCTION_PARAM_LIST)
-	{
-	size_t hnd = 0;
-	memcpy(&hnd, getVariableContent(cframe, 0), sizeof(size_t));
-
-	if (hnd != 0)
-		{
-		WindowInstance *instance = (WindowInstance*) hnd;
-
-		unsigned char *vc = getVariableContent(cframe, 1);
-		instance -> mouseListenerObject = ((VVarLivePTR*) vc) -> content;
-		instance -> mouseListener.content = ((VVarLivePTR*) vc) -> content;
-		}
-
-	return RETURN_DIRECT;
-	}
-
 INSTRUCTION_DEF op_set_background_colour(INSTRUCTION_PARAM_LIST)
 	{
 	size_t hnd = 0;
@@ -3575,8 +3541,6 @@ Interface* load(CoreAPI *capi)
 	setInterfaceFunction("setVisible", op_set_visible);
 	setInterfaceFunction("setTitle", op_set_title);
 	setInterfaceFunction("commitBuffer", op_commit_buffer);
-	setInterfaceFunction("registerClickListener", op_register_click_listener);
-	setInterfaceFunction("registerMouseListener", op_register_mouse_listener);
 	setInterfaceFunction("setBackgroundColor", op_set_background_colour);
 	setInterfaceFunction("maximiseWindow", op_maximise_window);
 	setInterfaceFunction("minimiseWindow", op_minimise_window);

@@ -15,7 +15,7 @@ static const DanaType char_def =
 static const DanaTypeField char_array_fields[] = {
 {(DanaType*) &char_def, NULL, 0, 0, 0}};
 static const DanaType char_array_def = 
-{TYPE_ARRAY, 0, sizeof(VVarLivePTR), (DanaTypeField*) char_array_fields, 1};
+{TYPE_ARRAY, 0, 0, (DanaTypeField*) char_array_fields, 1};
 static const DanaTypeField function_Object_toString_fields[] = {
 {(DanaType*) &char_array_def, NULL, 0, 0, 0}};
 static const DanaTypeField function_Object_getID_fields[] = {
@@ -40,12 +40,12 @@ static const DanaType byte_def =
 static const DanaTypeField byte_array_fields[] = {
 {(DanaType*) &byte_def, NULL, 0, 0, 0}};
 static const DanaType byte_array_def = 
-{TYPE_ARRAY, 0, sizeof(VVarLivePTR), (DanaTypeField*) byte_array_fields, 1};
+{TYPE_ARRAY, 0, 0, (DanaTypeField*) byte_array_fields, 1};
 static const DanaTypeField NetworkEndpoint_fields[] = {
 {(DanaType*) &char_array_def, NULL, 0, 0, 0},
 {(DanaType*) &int_def, NULL, 0, 0, 0}};
 static const DanaType NetworkEndpoint_def = 
-{TYPE_DATA, 0, sizeof(VVarLivePTR), (DanaTypeField*) NetworkEndpoint_fields, 2};
+{TYPE_DATA, 0, 48, (DanaTypeField*) NetworkEndpoint_fields, 2};
 static const DanaTypeField function_IOTCPLib_clone_fields[] = {
 {(DanaType*) &bool_def, NULL, 0, 0, 0},{(DanaType*) &Object_def, NULL, 0, 1, 8}};
 static const DanaTypeField function_IOTCPLib_equals_fields[] = {
