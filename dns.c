@@ -77,63 +77,61 @@ static void uninitialise (void)
 
 #define MAX_VAR_NAME 2048
 
-int hostname_to_ip(char *hostname , char *ip)
-{
-    //int sockfd;
+INSTRUCTION_DEF op_get_host_by_name(INSTRUCTION_PARAM_LIST)
+	{
+	LiveArray *array = (LiveArray*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content;
+
+	char *vn = NULL;
+
+	if (array != NULL)
+		{
+		vn = malloc(array -> length + 1);
+		memset(vn, '\0', array -> length + 1);
+		memcpy(vn, array -> data, array -> length);
+		}
+		else
+		{
+		vn = strdup("");
+		}
+	
+	char ip[100];
+	
     struct addrinfo hints, *servinfo, *p;
     struct sockaddr_in *h;
     int rv;
     memset(&hints, '\0', sizeof(hints));
     hints.ai_family = AF_INET; // use AF_INET6 to force IPv6
     hints.ai_socktype = SOCK_STREAM;
-		hints.ai_protocol = IPPROTO_TCP;
-		#ifdef WINDOWS
-			initialise();
-		#endif
-    if ( (rv = getaddrinfo( hostname , "http" , &hints , &servinfo)) != 0)
-    {
-        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
-        return 1;
-    }
-		#ifdef WINDOWS
-			uninitialise();
-		#endif
+	hints.ai_protocol = IPPROTO_TCP;
+	#ifdef WINDOWS
+	initialise();
+	#endif
+	
+    if ((rv = getaddrinfo( vn , NULL , &hints , &servinfo)) != 0)
+		{
+		api -> throwException(cframe, gai_strerror(rv));
+        return RETURN_DIRECT;
+		}
+	
+	#ifdef WINDOWS
+	uninitialise();
+	#endif
+	
     //loop through all the results and connect to the first we can
-    for(p = servinfo; p != NULL; p = p->ai_next)
-    {
+    for (p = servinfo; p != NULL; p = p->ai_next)
+		{
         h = (struct sockaddr_in *) p->ai_addr;
-        strcpy(ip , inet_ntoa( h->sin_addr ) );
-    }
+        strcpy(ip, inet_ntoa(h->sin_addr));
+		}
 
     freeaddrinfo(servinfo); // all done with this structure
-    return 0;
-}
-
-INSTRUCTION_DEF op_get_host_by_name(INSTRUCTION_PARAM_LIST)
-{
-	LiveArray *array = (LiveArray*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content;
-
-	char *vn = NULL;
-
-	if (array != NULL)
-	{
-		vn = malloc(array -> length + 1);
-		memset(vn, '\0', array -> length + 1);
-		memcpy(vn, array -> data, array -> length);
-	}
-	else
-	{
-		vn = strdup("");
-	}
 	
-	char ip[100];
-	hostname_to_ip(vn , ip);
 	char *val = ip;
 	
 	if (val != NULL)
-	{
+		{
 		returnByteArray(cframe, (unsigned char*) strdup(val), strlen(val));
-	}
+		}
 
 	free(vn);
 
