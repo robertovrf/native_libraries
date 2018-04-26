@@ -70,6 +70,10 @@ INSTRUCTION_DEF op_get_line(INSTRUCTION_PARAM_LIST)
 			
 			returnByteArray(cframe, (unsigned char*) fullText, length);
 			}
+			else if (length != 0)
+			{
+			returnByteArray(cframe, (unsigned char*) fullText, length);
+			}
 		}
 	
 	return RETURN_DIRECT;
