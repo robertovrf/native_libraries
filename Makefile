@@ -4,6 +4,7 @@ API_PATH = "dana_api_1.4"
 STD_INCLUDE = -I $(API_PATH)
 CCFLAGS = -Wall -fno-strict-aliasing
 OUTPUT_FILE=
+MYSQL_INCLUDE = `mysql_config --cflags --libs`
 
 INSTALL_PATH=
 CP_CMD=
@@ -134,5 +135,9 @@ run:
 math:
 	$(CC) -Os -s MathLib_dni.c vmi_util.c alu.c int_util.c math.c -o math[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS) $(MATH_FLAGS)
 	$(CP_CMD) math[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
+
+mysql_lib:
+	$(CC) -Os -s MySQLLib_dni.c vmi_util.c mysqllib.c -o mysqllib[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(MYSQL_INCLUDE) $(CCFLAGS)
+	$(CP_CMD) mysqllib[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
 
 all: $(ALL_RULES)
