@@ -32,13 +32,13 @@ ifeq ($(OS),Windows_NT)
         CCFLAGS += -DMACHINE_64
 		CCFLAGS += -DLIB_CHIP_NAME=\"x64\"
 		CHIP = x64
-		SDL_FLAGS = -L"C:/SDL/x86_64-w64-mingw32/lib" -lSDL2main -lSDL2 -lSDL2_ttf -I "C:/SDL/i686-w64-mingw32/include" -lmingw32 -mwindows -I . -I ../../compiler/ -static-libgcc"
+		SDL_FLAGS = -L"C:/SDL/SDL2-2.0.8/x86_64-w64-mingw32/lib" -L"C:/SDL/SDL2_ttf-2.0.14/x86_64-w64-mingw32/lib" -lSDL2main -lSDL2 -lSDL2_ttf -I "C:/SDL/SDL2-2.0.8/i686-w64-mingw32/include/SDL2" -I "C:/SDL/SDL2_ttf-2.0.14/i686-w64-mingw32/include/SDL2" -lmingw32 -mwindows -I . -I ../../compiler/ -static-libgcc"
     endif
     ifeq ($(PROCESSOR_ARCHITECTURE),x86)
         CCFLAGS += -DMACHINE_32
 		CCFLAGS += -DLIB_CHIP_NAME=\"x86\"
 		CHIP = x86
-		SDL_FLAGS = -L"C:/SDL/i686-w64-mingw32/lib" -lSDL2main -lSDL2 -lSDL2_ttf -I "C:/SDL/i686-w64-mingw32/include" -lmingw32 -mwindows -I . -I ../../compiler/ -static-libgcc
+		SDL_FLAGS = -L"C:/SDL/SDL2-2.0.8/i686-w64-mingw32/lib" -L"C:/SDL/SDL2_ttf-2.0.14/i686-w64-mingw32/lib" -lSDL2main -lSDL2 -lSDL2_ttf -I "C:/SDL/SDL2-2.0.8/i686-w64-mingw32/include/SDL2" -I "C:/SDL/SDL2_ttf-2.0.14/i686-w64-mingw32/include/SDL2" -lmingw32 -mwindows -I . -I ../../compiler/ -static-libgcc
     endif
 else
     UNAME_S := $(shell uname -s)
@@ -61,11 +61,13 @@ else
         PLATFORM = osx
 		CCFLAGS += -DLIB_PLATFORM_NAME=\"osx\"
         CCFLAGS += -DMACHINE_64
-		SDL_FLAGS = -lSDL2main -lSDL2 -lSDL2_ttf
+		SDL_FLAGS = -framework SDL2 -framework SDL2_ttf
 		CCFLAGS += -DLIB_CHIP_NAME=\"x64\"
 		CHIP = x64
     endif
     ifneq ($(UNAME_S),Darwin)
+		ALL_RULES += uiplane
+		
         UNAME_P := $(shell uname -p)
         ifeq ($(UNAME_P),x86_64)
             CCFLAGS += -DMACHINE_64

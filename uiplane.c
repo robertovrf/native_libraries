@@ -1,28 +1,23 @@
-//Written by Barry Porter, 2016
+//Written by Barry Porter, 2016, last updated 2018
 
-//NOTE: this component is incomplete - it doesn't work on Ubuntu or OS X (I'm not sure how to match the Windows behaviour on those platforms)
+//NOTE: this component does not work on Mac OS X due to a "non main thread" exception
+// - this is really hard to fix; the render/event loop can't be guaranteed to run in the main thread by the language
+// - we seem to have two options:
+//    1. We make Canvas such that it must be run from the main thread, and all render calls come directly from Canvas in that thread...except we need to run the event loop somewhere, and so Canvas would have to somehow integrate into that event loop in its main thread. This would probably work, but then Canvas itself would have to be documented as only being runnable from the main thread, and would cause an immediate uncatchable whole-system-crash if it was called from any other thread. In other words, the language itself cannot defend against this unless we had some sort of runtime dana.isMainThread() check for Canvas to call before proceeding.
+//   2. We require a special case in the Dana interpreter for a graphics library such that, if loaded at all, it has a special function that can take over the main interpreter thread. Only one library (the first to ask??) could do this from all those that are loaded. This works around the special documentation issue above, since any language-level thread could spawn windows without errors. However, presumably the interpreter would have to yield program flow control to the native library's special function.
+//   - it's also worth noting that, unfortunately, there are OTHER OS X APIs that have the same "main thread" requirement, which perhaps precludes option (2) above from being workable as multiple different libraries might need this "privilege"
+//   - this would leave us only with option (1), which has the undesirable side-effect of (assuming you want platform-independent code) forcing all platforms into this documentation-based corner for the sake of a peculiarity in OS X
+//   - a third option might be to mark libraries as main-thread-only, and actually launch them in their own process and then set up IPC channels to those libraries (or I suppose the library itself might be able to arrange this without needing interpreter support); this would need an IPC abstraction layer which makes all processes look the same from Dana-land
+//   - there's a good discussion of the OS X issues here: https://www.mikeash.com/pyblog/friday-qa-2009-01-09.html
 
 /*
 SDL rendering plane for graphics
-
-// http://devcry.heiho.net/2009/09/dragging-sdlnoframe-borderless-window.html
 
 // http://lazyfoo.net/tutorials/SDL/
 
 // http://wiki.libsdl.org/CategoryAPI
 
 // http://www.willusher.io/pages/sdl2/
-
-NOTE: setting up an event filter may be a quicker way to handle text width calculation? (i.e. a filter for that specific event)
- - hm; I don't think so - event filter functions run in different threads so rendering code is not stable there
- - is it possible to set up an entirely new rendering context in a different thread, which is purely used for text width calculations? :-/
-
-NOTE: SDL_SetEventFilter for a proper way to do interception??? (instead of forcing an override on the wndproc)
-
-NOTE: using vsync is questionable
- - if we don't use it, may want to look at a technique of rendering everything to a texture (i.e. a surface) then pushing that texture to the screen in one hit
-
-SDL_SetRenderTarget is another thing to render a texture as a whole...
 
  ----- ----- -----
 
@@ -32,9 +27,24 @@ SDL_SetRenderTarget is another thing to render a texture as a whole...
 #include "nli_util.h"
 #include "vmi_util.h"
 
+#ifdef WINDOWS
+#include <SDL.h>
+#include <SDL_ttf.h>
+#include <SDL_syswm.h>
+#endif
+
+#ifdef LINUX
+#ifndef OSX
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_syswm.h>
+#endif
+#ifdef OSX
+#include <SDL2/SDL.h>
+#include <SDL2_ttf/SDL_ttf.h>
+#include <SDL2/SDL_syswm.h>
+#endif
+#endif
 
 #include <limits.h>
 
@@ -252,6 +262,8 @@ typedef struct{
 	EventItem *eventQueueEnd;
 	
 	void *eqObject;
+	
+	unsigned int ID;
 
 	long int sdlProc;
 	} WindowInstance;
@@ -323,10 +335,10 @@ int semaphore_wait(Semaphore *s)
 	return WaitForSingleObject(s -> sem, INFINITE);
 	#endif
 	#ifdef OSX
-	dispatch_semaphore_wait(s -> sem, DISPATCH_TIME_FOREVER);
+	return dispatch_semaphore_wait(s -> sem, DISPATCH_TIME_FOREVER);
 	#else
 	#ifdef LINUX
-	sem_wait(&s -> sem);
+	return sem_wait(&s -> sem);
 	#endif
 	#endif
 	}
@@ -359,7 +371,8 @@ void semaphore_destroy(Semaphore *s)
     #endif
 	}
 
-static void pushEvent(WindowInstance *w, size_t type, size_t button_id, size_t x, size_t y);
+static void pushMouseEvent(WindowInstance *w, size_t type, size_t button_id, size_t x, size_t y);
+static void pushEvent(WindowInstance *w, size_t type);
 
 static ListItem* addListItem(ListItem **lst, ListItem **last, void *data)
 	{
@@ -882,378 +895,18 @@ int DrawScene(WindowInstance *instance)
 	return true; // Everything Went OK
 	}
 
-#ifdef WINDOWS
-static WindowInstance* findWindowInstance(HWND window)
+static WindowInstance* findWindow(unsigned int ID)
 	{
 	ListItem *lw = instances;
 	while (lw != NULL)
 		{
-		if (((WindowInstance*) lw -> data) -> windowHandle == window)
+		if (((WindowInstance*) lw -> data) -> ID == ID)
 			return (WindowInstance*) lw -> data;
 
 		lw = lw -> next;
 		}
 
 	return NULL;
-	}
-#endif
-
-static void fillRegister(VVarR *reg, unsigned char *val)
-	{
-	reg -> content = val;
-	reg -> type = TYPE_LITERAL;
-	reg -> etype = sizeof(size_t);
-	reg -> vsize = sizeof(size_t);
-	
-	reg -> typeLink = integerGT -> typeLink;
-	}
-
-#ifdef WINDOWS
-#ifdef MACHINE_32
-long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, LPARAM lp )
-#endif
-#ifdef MACHINE_64
-long long __stdcall WindowProcedureX( HWND window, unsigned int msg, WPARAM wp, LPARAM lp )
-#endif
-	{
-	//WindowInstance *myInstance = mainInstance;
-	//TODO: the below is ***HORRIBLE***, find a better way!
-	WindowInstance *myInstance = findWindowInstance(window);
-
-	if (myInstance == NULL)
-		{
-		//printf("error: no window!\n");
-		return DefWindowProc( window, msg, wp, lp );
-		}
-
-    switch(msg)
-		{
-        case WM_LBUTTONDOWN:
-        	{
-			POINT point;
-			GetCursorPos(&point);
-
-			size_t screenX = point.x;
-			size_t screenY = point.y;
-			size_t button = 1;
-			
-			pushEvent(myInstance, 2, button, screenX, screenY);
-			
-			myInstance -> captureCount ++;
-
-			if (myInstance -> captureCount == 1)
-				SetCapture(window);
-
-			//return CallWindowProc((WNDPROC) sdlProc, window, msg, wp, lp);
-			return 0;
-        	}
-
-        case WM_LBUTTONUP:
-        	{
-            //fire a click message
-
-			//unsigned int x = GET_X_LPARAM(lp);
-			//unsigned int y = GET_Y_LPARAM(lp);
-
-			POINT point;
-			GetCursorPos(&point);
-
-			size_t screenX = point.x;
-			size_t screenY = point.y;
-			size_t button = 1;
-			
-			pushEvent(myInstance, 1, button, screenX, screenY);
-			
-			myInstance -> captureCount --;
-
-			if (myInstance -> captureCount == 0)
-				ReleaseCapture();
-
-			//return CallWindowProc((WNDPROC) sdlProc, window, msg, wp, lp);
-        	return 0;
-    		}
-
-        case WM_RBUTTONDOWN:
-        	{
-	        if (myInstance -> mouseListenerObject != NULL)
-	        	{
-				//unsigned int x = GET_X_LPARAM(lp);
-				//unsigned int y = GET_Y_LPARAM(lp);
-
-				POINT point;
-				GetCursorPos(&point);
-
-				size_t screenX = point.x;
-				size_t screenY = point.y;
-				size_t button = 2;
-
-				copyHostInteger((unsigned char*) &myInstance -> mouseDownX, (unsigned char*) &screenX, sizeof(size_t));
-				copyHostInteger((unsigned char*) &myInstance -> mouseDownY, (unsigned char*) &screenY, sizeof(size_t));
-				copyHostInteger((unsigned char*) &myInstance -> mouseDownButton, (unsigned char*) &button, sizeof(size_t));
-
-				fillRegister(&myInstance -> mouseParams[0], (unsigned char*) &myInstance -> mouseDownX);
-				fillRegister(&myInstance -> mouseParams[1], (unsigned char*) &myInstance -> mouseDownY);
-				fillRegister(&myInstance -> mouseParams[2], (unsigned char*) &myInstance -> mouseDownButton);
-
-				//api -> callFunction(myInstance -> mouseListenerObject, 4, myInstance -> mouseParams, 3);
-				}
-
-			myInstance -> captureCount ++;
-
-			if (myInstance -> captureCount == 1)
-				SetCapture(window);
-
-			//return CallWindowProc((WNDPROC) sdlProc, window, msg, wp, lp);
-			return 0;
-        	}
-
-        case WM_RBUTTONUP:
-        	{
-            //fire a click message
-
-			//unsigned int x = GET_X_LPARAM(lp);
-			//unsigned int y = GET_Y_LPARAM(lp);
-
-			POINT point;
-			GetCursorPos(&point);
-
-			size_t screenX = point.x;
-			size_t screenY = point.y;
-			size_t button = 2;
-
-			if (myInstance -> clickListenerObject != NULL)
-				{
-	            //our registers etc. are static/singletons, so we don't launch a 2nd thread until the first one has finished...
-	            if (screenX >= myInstance -> windowX && screenX <= myInstance -> windowX + myInstance -> windowWidth && screenY >= myInstance -> windowY && screenY <= myInstance -> windowY + myInstance -> windowHeight)
-	            	{
-		            size_t x = screenX - myInstance -> windowX;
-		            size_t y = screenY - myInstance -> windowY;
-
-					copyHostInteger((unsigned char*) &myInstance -> clickX, (unsigned char*) &x, sizeof(size_t));
-					copyHostInteger((unsigned char*) &myInstance -> clickY, (unsigned char*) &y, sizeof(size_t));
-					copyHostInteger((unsigned char*) &myInstance -> clickButton, (unsigned char*) &button, sizeof(size_t));
-
-					fillRegister(&myInstance -> clickParams[0], (unsigned char*) &myInstance -> clickX);
-					fillRegister(&myInstance -> clickParams[1], (unsigned char*) &myInstance -> clickY);
-					fillRegister(&myInstance -> clickParams[2], (unsigned char*) &myInstance -> clickButton);
-
-					//api -> callFunction(myInstance -> clickListenerObject, 4, myInstance -> clickParams, 3);
-					}
-				}
-
-			if (myInstance -> mouseListenerObject != NULL)
-				{
-				copyHostInteger((unsigned char*) &myInstance -> mouseUpX, (unsigned char*) &screenX, sizeof(size_t));
-				copyHostInteger((unsigned char*) &myInstance -> mouseUpY, (unsigned char*) &screenY, sizeof(size_t));
-				copyHostInteger((unsigned char*) &myInstance -> mouseUpButton, (unsigned char*) &button, sizeof(size_t));
-
-				fillRegister(&myInstance -> mouseParams[0], (unsigned char*) &myInstance -> mouseUpX);
-				fillRegister(&myInstance -> mouseParams[1], (unsigned char*) &myInstance -> mouseUpY);
-				fillRegister(&myInstance -> mouseParams[2], (unsigned char*) &myInstance -> mouseUpButton);
-
-				//api -> callFunction(myInstance -> mouseListenerObject, 5, myInstance -> mouseParams, 3);
-				}
-
-			myInstance -> captureCount --;
-
-			if (myInstance -> captureCount == 0)
-				ReleaseCapture();
-
-			//return CallWindowProc((WNDPROC) sdlProc, window, msg, wp, lp);
-        	return 0;
-    		}
-
-        case WM_MBUTTONDOWN:
-        	{
-	        if (myInstance -> mouseListenerObject != NULL)
-	        	{
-				//unsigned int x = GET_X_LPARAM(lp);
-				//unsigned int y = GET_Y_LPARAM(lp);
-
-				POINT point;
-				GetCursorPos(&point);
-
-				size_t screenX = point.x;
-				size_t screenY = point.y;
-				size_t button = 3;
-
-				copyHostInteger((unsigned char*) &myInstance -> mouseDownX, (unsigned char*) &screenX, sizeof(size_t));
-				copyHostInteger((unsigned char*) &myInstance -> mouseDownY, (unsigned char*) &screenY, sizeof(size_t));
-				copyHostInteger((unsigned char*) &myInstance -> mouseDownButton, (unsigned char*) &button, sizeof(size_t));
-
-				fillRegister(&myInstance -> mouseParams[0], (unsigned char*) &myInstance -> mouseDownX);
-				fillRegister(&myInstance -> mouseParams[1], (unsigned char*) &myInstance -> mouseDownY);
-				fillRegister(&myInstance -> mouseParams[2], (unsigned char*) &myInstance -> mouseDownButton);
-
-				//api -> callFunction(myInstance -> mouseListenerObject, 4, myInstance -> mouseParams, 3);
-				}
-
-			myInstance -> captureCount ++;
-
-			if (myInstance -> captureCount == 1)
-				SetCapture(window);
-
-			//return CallWindowProc((WNDPROC) sdlProc, window, msg, wp, lp);
-			return 0;
-        	}
-
-        case WM_MBUTTONUP:
-        	{
-            //fire a click message
-
-			//unsigned int x = GET_X_LPARAM(lp);
-			//unsigned int y = GET_Y_LPARAM(lp);
-
-			POINT point;
-			GetCursorPos(&point);
-
-			size_t screenX = point.x;
-			size_t screenY = point.y;
-			size_t button = 3;
-
-			if (myInstance -> clickListenerObject != NULL)
-				{
-	            //our registers etc. are static/singletons, so we don't launch a 2nd thread until the first one has finished...
-	            if (screenX >= myInstance -> windowX && screenX <= myInstance -> windowX + myInstance -> windowWidth && screenY >= myInstance -> windowY && screenY <= myInstance -> windowY + myInstance -> windowHeight)
-	            	{
-		            size_t x = screenX - myInstance -> windowX;
-		            size_t y = screenY - myInstance -> windowY;
-
-					copyHostInteger((unsigned char*) &myInstance -> clickX, (unsigned char*) &x, sizeof(size_t));
-					copyHostInteger((unsigned char*) &myInstance -> clickY, (unsigned char*) &y, sizeof(size_t));
-					copyHostInteger((unsigned char*) &myInstance -> clickButton, (unsigned char*) &button, sizeof(size_t));
-
-					fillRegister(&myInstance -> clickParams[0], (unsigned char*) &myInstance -> clickX);
-					fillRegister(&myInstance -> clickParams[1], (unsigned char*) &myInstance -> clickY);
-					fillRegister(&myInstance -> clickParams[2], (unsigned char*) &myInstance -> clickButton);
-
-					//api -> callFunction(myInstance -> clickListenerObject, 4, myInstance -> clickParams, 3);
-					}
-				}
-
-			if (myInstance -> mouseListenerObject != NULL)
-				{
-				copyHostInteger((unsigned char*) &myInstance -> mouseUpX, (unsigned char*) &screenX, sizeof(size_t));
-				copyHostInteger((unsigned char*) &myInstance -> mouseUpY, (unsigned char*) &screenY, sizeof(size_t));
-				copyHostInteger((unsigned char*) &myInstance -> mouseUpButton, (unsigned char*) &button, sizeof(size_t));
-
-				fillRegister(&myInstance -> mouseParams[0], (unsigned char*) &myInstance -> mouseUpX);
-				fillRegister(&myInstance -> mouseParams[1], (unsigned char*) &myInstance -> mouseUpY);
-				fillRegister(&myInstance -> mouseParams[2], (unsigned char*) &myInstance -> mouseUpButton);
-
-				//api -> callFunction(myInstance -> mouseListenerObject, 5, myInstance -> mouseParams, 3);
-				}
-
-			myInstance -> captureCount --;
-
-			if (myInstance -> captureCount == 0)
-				ReleaseCapture();
-
-			//return CallWindowProc((WNDPROC) sdlProc, window, msg, wp, lp);
-        	return 0;
-    		}
-
-    	//TODO: mouse capture outside the window: http://msdn.microsoft.com/en-gb/library/windows/desktop/gg153550(v=vs.85).aspx
-        case WM_MOUSEMOVE:
-        	{
-	        //NOTE: for all of these cases, instead of ignoring additional events that happen before the current one finishes, it might be better to queue them up in a (probably fixed-size) buffer so that they get delivered still when the currently-executing handler finishes...
-
-			size_t x = GET_X_LPARAM(lp);
-			size_t y = GET_Y_LPARAM(lp);
-
-			POINT point;
-			GetCursorPos(&point);
-
-			size_t screenX = point.x;
-			size_t screenY = point.y;
-			
-			//check if the x and y from the lparam are the same as the global x/y; if not discard the event
-			// - this is a performance-boosting filter which avoids spurious mouse move events caused by the window itself being repositioned
-			
-			if ((screenX != myInstance -> lastMouseMoveX || screenY != myInstance -> lastMouseMoveY)
-				&& (myInstance -> windowX + x == screenX && myInstance -> windowY + y == screenY))
-				{
-				pushEvent(myInstance, 3, 1, screenX, screenY);
-				}
-			
-			myInstance -> lastMouseMoveX = screenX;
-			myInstance -> lastMouseMoveY = screenY;
-
-			return 0;
-        	}
-
-		default:
-			//call SDL's window proc
-			//return CallWindowProc((WNDPROC) myInstance -> sdlProc, window, msg, wp, lp);
-			return DefWindowProc( window, msg, wp, lp );
-		}
-
-	return 0;
-	}
-#endif
-
-#ifdef WINDOWS
-unsigned int windowNumber = 0;
-#endif
-
-static void* CreateWindowNative(int w, int h, unsigned int x, unsigned int y)
-	{
-
-#ifdef WINDOWS
-    HWND hwnd;
-    WNDCLASS wc;
-
-	windowNumber ++;
-
-	char *cn = malloc(1024);
-	memset(cn, '\0', 1024);
-	//snprintf(cn, 1024, "DX-UI-%u", windowNumber);
-	//snprintf(cn, 1024, "DX-UI-");
-	strcat(cn, "DX-UI-");
-	itoa(windowNumber, &cn[strlen(cn)], 10);
-
-    wc.style = 0;
-    wc.lpfnWndProc = WindowProcedureX;
-    wc.cbClsExtra = 0;
-    wc.cbWndExtra = 0;
-    wc.hInstance = GetModuleHandle(NULL);
-    wc.hIcon = LoadIcon(0, IDI_APPLICATION);
-    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wc.hbrBackground = (HBRUSH) (COLOR_WINDOW + 1);
-    wc.lpszMenuName = NULL;
-    wc.lpszClassName = cn;
-
-    if (!RegisterClass(&wc)) {
-        return 0;
-    }
-
-    hwnd = CreateWindow(cn, "", WS_POPUP, x, y, w, h, NULL, NULL, GetModuleHandle(NULL), NULL);
-
-    if (hwnd == NULL) {
-        return 0;
-    }
-
-    ShowWindow(hwnd, SW_HIDE);
-
-    return hwnd;
-#endif
-#ifdef OSX
-
-#else
-#ifdef LINUX
-	Window window = 0;
-	Display *dpy = XOpenDisplay(NULL);
-
-	if (dpy != NULL)
-		{
-		window = XCreateSimpleWindow(dpy, DefaultRootWindow(dpy), x, y, w, h, 0, 0, 0);
-		XMapRaised(dpy, window);
-		XSync(dpy, false);
-		}
-
-	return (void*) window;
-#endif
-#endif
 	}
 
 static WindowInstance* createNewWindow()
@@ -1282,20 +935,10 @@ static WindowInstance* createNewWindow()
 	//ListItem *myInstanceItem =
 	addListItem(&instances, &lastInstance, myInstance);
 
-	#ifdef WINDOWS
-	#define CREATE_NATIVE
-	#endif
-	#ifdef LINUX
-	#define CREATE_SDL //TODO: bug in Linux where createNative causes a hang on SDL_CreateRenderer
-	#endif
-	#ifdef OSX
-	#define CREATE_SDL //TODO: bug in Linux where createNative causes a hang on SDL_CreateRenderer
-	#endif
-
-	#ifdef CREATE_SDL
 	SDL_SysWMinfo info;
 	SDL_VERSION(&info.version);
-	myInstance -> win = SDL_CreateWindow("Dana UI", myInstance -> windowX, myInstance -> windowY, myInstance -> windowWidth, myInstance -> windowHeight, SDL_WINDOW_HIDDEN | SDL_WINDOW_BORDERLESS);
+	myInstance -> win = SDL_CreateWindow("Dana UI", myInstance -> windowX, myInstance -> windowY, myInstance -> windowWidth, myInstance -> windowHeight, SDL_WINDOW_HIDDEN);
+	myInstance -> ID = SDL_GetWindowID(myInstance -> win);
 
 	if(SDL_GetWindowWMInfo(myInstance -> win, &info)) {
 		switch(info.subsystem) {
@@ -1327,24 +970,6 @@ static WindowInstance* createNewWindow()
 		//SDL_GetError()
 		return NULL;
 	}
-
-	#ifdef LINUX
-	//XSelectInput(myInstance -> displayHandle, myInstance -> windowHandle, ButtonMotionMask);
-	#endif
-
-	#endif
-
-	#ifdef CREATE_NATIVE
-	myInstance -> windowHandle = CreateWindowNative(myInstance -> windowWidth, myInstance -> windowHeight, myInstance -> windowX, myInstance -> windowY);
-
-	myInstance -> win = SDL_CreateWindowFrom(myInstance -> windowHandle);
-	if (myInstance -> win == NULL){
-		printf("Critical error in GUI rendering subsystem: WCE 001 [%s]\n", SDL_GetError());
-		return NULL;
-	}
-
-	SDL_SetWindowTitle(myInstance -> win, "Dana UI");
-	#endif
 
 	//attempt to create our preferred renderer
 	myInstance -> renderer = SDL_CreateRenderer(myInstance -> win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
@@ -1485,12 +1110,20 @@ static unsigned int DX_MAXIMISE_WINDOW = 0;
 static unsigned int DX_MINIMISE_WINDOW = 0;
 static unsigned int DX_SHOW_WINDOW = 0;
 static unsigned int DX_HIDE_WINDOW = 0;
+static unsigned int DX_RESIZABLE_WINDOW = 0;
+static unsigned int DX_FIXED_SIZE_WINDOW = 0;
+static unsigned int DX_FULLSCREEN_WINDOW = 0;
+static unsigned int DX_WINDOWED_WINDOW = 0;
 static unsigned int DX_CLOSE_WINDOW = 0;
 static unsigned int DX_GENERATE_TEXT_BITMAP = 0;
 static unsigned int DX_GENERATE_BITMAP_SURFACE = 0;
 static unsigned int DX_LOAD_FONT = 0;
 static unsigned int DX_UNLOAD_FONT = 0;
 static unsigned int DX_GET_TEXT_WIDTH = 0;
+
+static bool shutdown_event_loop = false;
+
+static bool resizeAvailable = true;
 
 #ifdef WINDOWS
 DWORD WINAPI render_thread(LPVOID ptr)
@@ -1521,6 +1154,10 @@ static void* render_thread(void *ptr)
 	DX_MINIMISE_WINDOW = SDL_RegisterEvents(1);
 	DX_SHOW_WINDOW = SDL_RegisterEvents(1);
 	DX_HIDE_WINDOW = SDL_RegisterEvents(1);
+	DX_RESIZABLE_WINDOW = SDL_RegisterEvents(1);
+	DX_FIXED_SIZE_WINDOW = SDL_RegisterEvents(1);
+	DX_FULLSCREEN_WINDOW = SDL_RegisterEvents(1);
+	DX_WINDOWED_WINDOW = SDL_RegisterEvents(1);
 	DX_CLOSE_WINDOW = SDL_RegisterEvents(1);
 	DX_GENERATE_TEXT_BITMAP = SDL_RegisterEvents(1);
 	DX_GENERATE_BITMAP_SURFACE = SDL_RegisterEvents(1);
@@ -1558,56 +1195,96 @@ static void* render_thread(void *ptr)
 	//we draw a frame the first time round the loop, even if no frame has been passed in, just to clear the screen with the background colour
 	bool newFrame = true;
 
-	#ifdef STATS
-	stats.font = TTF_OpenFont("C:\\ProgramFiles\\Dana\\resources-ext\\fonts\\LiberationMono.ttf", 14);
-	if (stats.font == NULL)
-		{
-		printf("open font error: %s [%s]\n", SDL_GetError(), TTF_GetError());
-		}
-	#endif
-
 	fflush(stdout);
 
 	while (!quit)
 		{
 		//Read user input & handle it
-		#ifdef OSX
-		#else
-		#ifdef LINUX
-		ListItem *lw = instances;
-		while (lw != NULL)
-			{
-			WindowInstance *wi = (WindowInstance*) lw -> data;
-
-			XEvent xev;
-			while (XCheckWindowEvent(wi -> displayHandle, wi -> windowHandle, ButtonPressMask, &xev))
-				{
-				printf("input_hq\n");
-			}
-
-			lw = lw -> next;
-		}
-		#endif
-		#endif
-
+		
 		if (SDL_WaitEvent(&e)) //does this make things more jittery?
 		{
 		do
 			{
 			if (e.type == SDL_QUIT)
 				{
-				quit = true;
+				if (shutdown_event_loop) quit = true;
 				}
 				else if (e.type == SDL_WINDOWEVENT)
 				{
 				if (e.window.event == SDL_WINDOWEVENT_MAXIMIZED ||
-					e.window.event == SDL_WINDOWEVENT_RESTORED)
+					e.window.event == SDL_WINDOWEVENT_RESTORED ||
+					e.window.event == SDL_WINDOWEVENT_EXPOSED)
 					{
 					newFrame = true;
+					}
+					else if (e.window.event == SDL_WINDOWEVENT_CLOSE)
+					{
+					WindowInstance *myInstance = findWindow(e.window.windowID);
+					pushEvent(myInstance, 5);
+					}
+					else if (e.window.event == SDL_WINDOWEVENT_RESIZED)
+					{
+					WindowInstance *myInstance = findWindow(e.window.windowID);
+					//pushEvent(myInstance, 4);
+					
+					if (myInstance != NULL)
+						{
+						pushMouseEvent(myInstance, 4, 0, e.window.data1, e.window.data2);
+						}
 					}
 					//for active / inactive notifications (?):
 					//SDL_WINDOWEVENT_FOCUS_GAINED
 					//SDL_WINDOWEVENT_FOCUS_LOST
+				}
+				else if (e.type == SDL_MOUSEBUTTONDOWN)
+				{
+				size_t screenX = e.button.x;
+				size_t screenY = e.button.y;
+				
+				size_t button = 0;
+				
+				if (e.button.button == SDL_BUTTON_LEFT)
+					button = 1;
+					else if (e.button.button == SDL_BUTTON_RIGHT)
+					button = 2;
+				
+				WindowInstance *myInstance = findWindow(e.button.windowID);
+				
+				if (myInstance != NULL)
+					{
+					pushMouseEvent(myInstance, 2, button, screenX, screenY);
+					}
+				}
+				else if (e.type == SDL_MOUSEBUTTONUP)
+				{
+				size_t screenX = e.button.x;
+				size_t screenY = e.button.y;
+				
+				size_t button = 0;
+				
+				if (e.button.button == SDL_BUTTON_LEFT)
+					button = 1;
+					else if (e.button.button == SDL_BUTTON_RIGHT)
+					button = 2;
+				
+				WindowInstance *myInstance = findWindow(e.button.windowID);
+				
+				if (myInstance != NULL)
+					{
+					pushMouseEvent(myInstance, 1, button, screenX, screenY);
+					}
+				}
+				else if (e.type == SDL_MOUSEMOTION)
+				{
+				size_t screenX = e.motion.x;
+				size_t screenY = e.motion.y;
+				
+				WindowInstance *myInstance = findWindow(e.motion.windowID);
+				
+				if (myInstance != NULL)
+					{
+					pushMouseEvent(myInstance, 3, 0, screenX, screenY);
+					}
 				}
 				else if (e.type == DX_NEW_WINDOW_EVENT)
 				{
@@ -1676,6 +1353,26 @@ static void* render_thread(void *ptr)
 				{
 				WindowInstance *wi = (WindowInstance*) e.user.data1;
 				SDL_HideWindow(wi -> win);
+				}
+				else if (e.type == DX_RESIZABLE_WINDOW)
+				{
+				WindowInstance *wi = (WindowInstance*) e.user.data1;
+				SDL_SetWindowResizable(wi -> win, true);
+				}
+				else if (e.type == DX_FIXED_SIZE_WINDOW)
+				{
+				WindowInstance *wi = (WindowInstance*) e.user.data1;
+				SDL_SetWindowResizable(wi -> win, false);
+				}
+				else if (e.type == DX_FULLSCREEN_WINDOW)
+				{
+				WindowInstance *wi = (WindowInstance*) e.user.data1;
+				SDL_SetWindowFullscreen(wi -> win, SDL_WINDOW_FULLSCREEN_DESKTOP );
+				}
+				else if (e.type == DX_WINDOWED_WINDOW)
+				{
+				WindowInstance *wi = (WindowInstance*) e.user.data1;
+				SDL_SetWindowFullscreen(wi -> win, 0 );
 				}
 				else if (e.type == DX_CLOSE_WINDOW)
 				{
@@ -2019,7 +1716,7 @@ static void* render_thread(void *ptr)
 
 		newFrame = false;
 		}
-
+	
 	//destroy all remaining windows...
 	ListItem *lw = instances;
 	while (lw != NULL)
@@ -2979,7 +2676,7 @@ INSTRUCTION_DEF op_commit_buffer(INSTRUCTION_PARAM_LIST)
 	return RETURN_DIRECT;
 	}
 
-static void pushEvent(WindowInstance *w, size_t type, size_t button_id, size_t x, size_t y)
+static void pushMouseEvent(WindowInstance *w, size_t type, size_t button_id, size_t x, size_t y)
 	{
 	LiveData *nd = malloc(sizeof(LiveData));
 	memset(nd, '\0', sizeof(LiveData));
@@ -3000,6 +2697,11 @@ static void pushEvent(WindowInstance *w, size_t type, size_t button_id, size_t x
 	copyHostInteger(wd_y, (unsigned char*) &y, sizeof(size_t));
 	
 	api -> pushEvent(w -> eqObject, 0, type, nd);
+	}
+
+static void pushEvent(WindowInstance *w, size_t type)
+	{
+	api -> pushEvent(w -> eqObject, 0, type, NULL);
 	}
 
 INSTRUCTION_DEF op_set_size(INSTRUCTION_PARAM_LIST)
@@ -3070,6 +2772,56 @@ INSTRUCTION_DEF op_set_visible(INSTRUCTION_PARAM_LIST)
 		SDL_Event newEvent;
 		SDL_zero(newEvent);
 		newEvent.type = v ? DX_SHOW_WINDOW : DX_HIDE_WINDOW;
+		newEvent.user.data1 = instance;
+
+		SDL_PushEvent(&newEvent);
+		}
+
+	return RETURN_DIRECT;
+	}
+
+INSTRUCTION_DEF op_set_resizable(INSTRUCTION_PARAM_LIST)
+	{
+	if (!resizeAvailable)
+		{
+		api -> throwException(cframe, "function unavailable on installed version of SDL");
+		return RETURN_DIRECT;
+		}
+	
+	size_t hnd = 0;
+	memcpy(&hnd, getVariableContent(cframe, 0), sizeof(size_t));
+
+	if (hnd != 0)
+		{
+		WindowInstance *instance = (WindowInstance*) hnd;
+
+		unsigned char v = getVariableContent(cframe, 1)[0];
+
+		SDL_Event newEvent;
+		SDL_zero(newEvent);
+		newEvent.type = v ? DX_RESIZABLE_WINDOW : DX_FIXED_SIZE_WINDOW;
+		newEvent.user.data1 = instance;
+
+		SDL_PushEvent(&newEvent);
+		}
+
+	return RETURN_DIRECT;
+	}
+
+INSTRUCTION_DEF op_set_fullscreen(INSTRUCTION_PARAM_LIST)
+	{
+	size_t hnd = 0;
+	memcpy(&hnd, getVariableContent(cframe, 0), sizeof(size_t));
+
+	if (hnd != 0)
+		{
+		WindowInstance *instance = (WindowInstance*) hnd;
+
+		unsigned char v = getVariableContent(cframe, 1)[0];
+
+		SDL_Event newEvent;
+		SDL_zero(newEvent);
+		newEvent.type = v ? DX_FULLSCREEN_WINDOW : DX_WINDOWED_WINDOW;
 		newEvent.user.data1 = instance;
 
 		SDL_PushEvent(&newEvent);
@@ -3539,6 +3291,8 @@ Interface* load(CoreAPI *capi)
 	setInterfaceFunction("setSize", op_set_size);
 	setInterfaceFunction("setPosition", op_set_position);
 	setInterfaceFunction("setVisible", op_set_visible);
+	setInterfaceFunction("setResizable", op_set_resizable);
+	setInterfaceFunction("setFullScreen", op_set_fullscreen);
 	setInterfaceFunction("setTitle", op_set_title);
 	setInterfaceFunction("commitBuffer", op_commit_buffer);
 	setInterfaceFunction("setBackgroundColor", op_set_background_colour);
@@ -3555,6 +3309,19 @@ Interface* load(CoreAPI *capi)
 	setInterfaceFunction("getTextBitmapWith", op_get_text_bitmap_with);
 	setInterfaceFunction("unloadFont", op_unload_font);
 	
+	SDL_version compiled;
+	SDL_version linked;
+	
+	SDL_VERSION(&compiled);
+	SDL_GetVersion(&linked);
+	
+	if (linked.major == 2 && linked.minor == 0 && linked.patch < 8)
+		{
+		printf("Warning: graphics library is designed for SDL 2.0.8 or later, you have version %u.%u.%u. Some functionality may be reduced.\n", linked.major, linked.minor, linked.patch);
+		resizeAvailable = false;
+		}
+
+	
 	primeFontDirectories();
 
 	initRendering();
@@ -3564,10 +3331,11 @@ Interface* load(CoreAPI *capi)
 
 void unload()
 	{
+	shutdown_event_loop = true;
 	SDL_Event quit_event;
 	quit_event.type=SDL_QUIT;
 	SDL_PushEvent(&quit_event);
-
+	
 	//wait for all close locks...
 	#ifdef WINDOWS
 	WaitForSingleObject(graphicsShutdownLock, INFINITE);
