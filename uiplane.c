@@ -1110,6 +1110,7 @@ static unsigned int DX_MAXIMISE_WINDOW = 0;
 static unsigned int DX_MINIMISE_WINDOW = 0;
 static unsigned int DX_SHOW_WINDOW = 0;
 static unsigned int DX_HIDE_WINDOW = 0;
+static unsigned int DX_SET_WINDOW_SIZE = 0;
 static unsigned int DX_RESIZABLE_WINDOW = 0;
 static unsigned int DX_FIXED_SIZE_WINDOW = 0;
 static unsigned int DX_FULLSCREEN_WINDOW = 0;
@@ -1154,6 +1155,7 @@ static void* render_thread(void *ptr)
 	DX_MINIMISE_WINDOW = SDL_RegisterEvents(1);
 	DX_SHOW_WINDOW = SDL_RegisterEvents(1);
 	DX_HIDE_WINDOW = SDL_RegisterEvents(1);
+	DX_SET_WINDOW_SIZE = SDL_RegisterEvents(1);
 	DX_RESIZABLE_WINDOW = SDL_RegisterEvents(1);
 	DX_FIXED_SIZE_WINDOW = SDL_RegisterEvents(1);
 	DX_FULLSCREEN_WINDOW = SDL_RegisterEvents(1);
@@ -1353,6 +1355,13 @@ static void* render_thread(void *ptr)
 				{
 				WindowInstance *wi = (WindowInstance*) e.user.data1;
 				SDL_HideWindow(wi -> win);
+				}
+				else if (e.type == DX_SET_WINDOW_SIZE)
+				{
+				WindowInstance *wi = (WindowInstance*) e.user.data1;
+				SDL_SetWindowSize(wi -> win, wi -> windowWidth, wi -> windowHeight);
+				
+				newFrame = true;
 				}
 				else if (e.type == DX_RESIZABLE_WINDOW)
 				{
@@ -1702,12 +1711,6 @@ static void* render_thread(void *ptr)
 			while (lw != NULL)
 				{
 				WindowInstance *wi = (WindowInstance*) lw -> data;
-
-				int cw, ch;
-				SDL_GetWindowSize(wi -> win, &cw, &ch);
-				if (cw != wi -> windowWidth || ch != wi -> windowHeight)
-					SDL_SetWindowSize(wi -> win, wi -> windowWidth, wi -> windowHeight);
-
 				DrawScene(wi);
 
 				lw = lw -> next;
@@ -2721,9 +2724,13 @@ INSTRUCTION_DEF op_set_size(INSTRUCTION_PARAM_LIST)
 
 		instance -> windowWidth = x;
 		instance -> windowHeight = y;
+		
+		SDL_Event newEvent;
+		SDL_zero(newEvent);
+		newEvent.type = DX_SET_WINDOW_SIZE;
+		newEvent.user.data1 = instance;
 
-		//now we assume that the rendering loop will at some point noticed that windowWidth or windowHeight don't match current
-		// - and it will do the update there
+		SDL_PushEvent(&newEvent);
 		}
 
 	return RETURN_DIRECT;
