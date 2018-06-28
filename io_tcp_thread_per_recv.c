@@ -479,6 +479,8 @@ INSTRUCTION_DEF op_tcp_accept(INSTRUCTION_PARAM_LIST)
 		#ifdef LINUX
 		api -> throwException(cframe, strerror(errno));
 		#endif
+		
+		socket = 0;
 		}
 	
 	xs = socket;

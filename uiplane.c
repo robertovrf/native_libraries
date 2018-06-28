@@ -1222,16 +1222,30 @@ static void* render_thread(void *ptr)
 					else if (e.window.event == SDL_WINDOWEVENT_CLOSE)
 					{
 					WindowInstance *myInstance = findWindow(e.window.windowID);
-					pushEvent(myInstance, 5);
+					pushEvent(myInstance, 6);
 					}
 					else if (e.window.event == SDL_WINDOWEVENT_RESIZED)
 					{
 					WindowInstance *myInstance = findWindow(e.window.windowID);
-					//pushEvent(myInstance, 4);
 					
 					if (myInstance != NULL)
 						{
 						pushMouseEvent(myInstance, 4, 0, e.window.data1, e.window.data2);
+						}
+					}
+					else if (e.window.event == SDL_WINDOWEVENT_MOVED)
+					{
+					WindowInstance *myInstance = findWindow(e.window.windowID);
+					
+					if (myInstance != NULL)
+						{
+						int x = e.window.data1;
+						int y = e.window.data2;
+						
+						if (x < 0) x = 0;
+						if (y < 0) y = 0;
+						
+						pushMouseEvent(myInstance, 5, 0, x, y);
 						}
 					}
 					//for active / inactive notifications (?):
@@ -1813,115 +1827,16 @@ INSTRUCTION_DEF op_make_window(INSTRUCTION_PARAM_LIST)
 
 INSTRUCTION_DEF op_start_poly(INSTRUCTION_PARAM_LIST)
 	{
-	//make a new poly for the back-buffer
-	/*
-	WindowInstance *instance = mainInstance;
-
-	UIPolygon *p = (UIPolygon*) malloc(sizeof(UIPolygon));
-	UIObject *uio = (UIObject*) malloc(sizeof(UIObject));
-	memset(uio, '\0', sizeof(UIObject));
-
-	if (instance -> backBufferEnd == NULL)
-		{
-		instance -> backBuffer = uio;
-		instance -> backBufferEnd = uio;
-		}
-		else
-		{
-		instance -> backBufferEnd -> next = uio;
-		instance -> backBufferEnd = uio;
-		}
-
-	uio -> type = UI_TYPE_POLYGON;
-	uio -> object = p;
-
-	p -> points = NULL;
-	p -> lastPoint = NULL;
-
-	instance -> lastPolygon = p;
-	*/
 	return RETURN_DIRECT;
 	}
 
 INSTRUCTION_DEF op_add_poly_point(INSTRUCTION_PARAM_LIST)
 	{
-	//WindowInstance *instance = mainInstance;
-
-	/*
-	size_t x = 0;
-	copyHostInteger((unsigned char*) &x, getVariableContent(cframe, 0), 4);
-
-	size_t y = 0;
-	copyHostInteger((unsigned char*) &y, getVariableContent(cframe, 1), 4);
-
-	size_t r = 0;
-	copyHostInteger((unsigned char*) &r, getVariableContent(cframe, 2), 1);
-
-	size_t g = 0;
-	copyHostInteger((unsigned char*) &g, getVariableContent(cframe, 3), 1);
-
-	size_t b = 0;
-	copyHostInteger((unsigned char*) &b, getVariableContent(cframe, 4), 1);
-
-	size_t a = 0;
-	copyHostInteger((unsigned char*) &a, getVariableContent(cframe, 5), 1);
-
-	UIPoint *p = (UIPoint*) malloc(sizeof(UIPoint));
-
-	p -> next = NULL;
-
-	if (instance -> lastPolygon -> lastPoint == NULL)
-		{
-		instance -> lastPolygon -> points = p;
-		instance -> lastPolygon -> lastPoint = p;
-		}
-		else
-		{
-		instance -> lastPolygon -> lastPoint -> next = p;
-		instance -> lastPolygon -> lastPoint = p;
-		}
-
-	//p -> x = -1.0f + (2.0f * windowPixelWidth / x);
-	p -> x = -1.0f + x / 100.0f;
-	p -> y = 1.0f - y / 100.0f;
-	p -> z = 0.0f;
-
-	//if (r == 0) r = 1;
-	//if (g == 0) g = 1;
-	//if (b == 0) b = 1;
-
-	//p -> r = r / 255.0f;
-	//p -> g = g / 255.0f;
-	//p -> b = b / 255.0f;
-	//p -> a = a / 255.0f;
-
-	p -> r = r;
-	p -> g = g;
-	p -> b = b;
-	p -> a = a;
-	*/
-
 	return RETURN_DIRECT;
 	}
 
 INSTRUCTION_DEF op_end_poly(INSTRUCTION_PARAM_LIST)
 	{
-	//WindowInstance *instance = mainInstance;
-
-	/*
-	//make a new poly for the back-buffer
-	UIPolygon *poly = instance -> lastPolygon;
-
-	unsigned int count = 0;
-
-	UIPoint *pw = poly -> points;
-	while (pw != NULL)
-		{
-		count ++;
-		pw = pw -> next;
-		}
-	*/
-
 	return RETURN_DIRECT;
 	}
 
