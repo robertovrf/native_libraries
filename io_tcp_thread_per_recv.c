@@ -340,6 +340,7 @@ INSTRUCTION_DEF op_tcp_unbind(INSTRUCTION_PARAM_LIST)
 	closesocket(xs);
 	#endif
 	#ifdef LINUX
+	shutdown(xs, SHUT_RDWR);
 	close(xs);
 	#endif
 	
@@ -477,8 +478,10 @@ INSTRUCTION_DEF op_tcp_accept(INSTRUCTION_PARAM_LIST)
 		api -> throwException(cframe, getSocketError(WSAGetLastError()));
 		#endif
 		#ifdef LINUX
-		api -> throwException(cframe, strerror(errno));
+		//api -> throwException(cframe, strerror(errno));
 		#endif
+		
+		socket = 0;
 		}
 	
 	xs = socket;
