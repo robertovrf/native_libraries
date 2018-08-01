@@ -12,7 +12,8 @@ PLATFORM=
 SDL_FLAGS=
 NET_FLAGS=
 MATH_FLAGS=
-ALL_RULES = calendar cmdln iofile iotcp ioudp dns sysinfo timer run math
+SQL_FLAGS=
+ALL_RULES = calendar cmdln iofile iotcp ioudp dns sysinfo timer run math mysql_lib
 
 ifeq ($(OS),Windows_NT)
     CCFLAGS += -DWINDOWS
@@ -28,17 +29,20 @@ ifeq ($(OS),Windows_NT)
 	CCFLAGS += -shared
 	NET_FLAGS = -lws2_32
 	ALL_RULES += uiplane
+	MYSQL_CONCPP_DIR= "C:/libs/MySQL Connector C 6.1"
+	MYSQL_INCLUDE = -I $(MYSQL_CONCPP_DIR)/include -L $(MYSQL_CONCPP_DIR)/lib
+	SQL_FLAGS = -lmysql
     ifeq ($(PROCESSOR_ARCHITECTURE),AMD64)
         CCFLAGS += -DMACHINE_64
 		CCFLAGS += -DLIB_CHIP_NAME=\"x64\"
 		CHIP = x64
-		SDL_FLAGS = -L"C:/SDL/SDL2-2.0.8/x86_64-w64-mingw32/lib" -L"C:/SDL/SDL2_ttf-2.0.14/x86_64-w64-mingw32/lib" -lSDL2main -lSDL2 -lSDL2_ttf -I "C:/SDL/SDL2-2.0.8/i686-w64-mingw32/include/SDL2" -I "C:/SDL/SDL2_ttf-2.0.14/i686-w64-mingw32/include/SDL2" -lmingw32 -mwindows -I . -I ../../compiler/ -static-libgcc"
+		SDL_FLAGS = -L"C:/libs/SDL/SDL2-2.0.8/x86_64-w64-mingw32/lib" -L"C:/libs/SDL/SDL2_ttf-2.0.14/x86_64-w64-mingw32/lib" -lSDL2main -lSDL2 -lSDL2_ttf -I "C:/libs/SDL/SDL2-2.0.8/i686-w64-mingw32/include/SDL2" -I "C:/libs/SDL/SDL2_ttf-2.0.14/i686-w64-mingw32/include/SDL2" -lmingw32 -mwindows -I . -I ../../compiler/ -static-libgcc"
     endif
     ifeq ($(PROCESSOR_ARCHITECTURE),x86)
         CCFLAGS += -DMACHINE_32
 		CCFLAGS += -DLIB_CHIP_NAME=\"x86\"
 		CHIP = x86
-		SDL_FLAGS = -L"C:/SDL/SDL2-2.0.8/i686-w64-mingw32/lib" -L"C:/SDL/SDL2_ttf-2.0.14/i686-w64-mingw32/lib" -lSDL2main -lSDL2 -lSDL2_ttf -I "C:/SDL/SDL2-2.0.8/i686-w64-mingw32/include/SDL2" -I "C:/SDL/SDL2_ttf-2.0.14/i686-w64-mingw32/include/SDL2" -lmingw32 -mwindows -I . -I ../../compiler/ -static-libgcc
+		SDL_FLAGS = -L"C:/libs/SDL/SDL2-2.0.8/i686-w64-mingw32/lib" -L"C:/libs/SDL/SDL2_ttf-2.0.14/i686-w64-mingw32/lib" -lSDL2main -lSDL2 -lSDL2_ttf -I "C:/libs/SDL/SDL2-2.0.8/i686-w64-mingw32/include/SDL2" -I "C:/libs/SDL/SDL2_ttf-2.0.14/i686-w64-mingw32/include/SDL2" -lmingw32 -mwindows -I . -I ../../compiler/ -static-libgcc
     endif
 else
     UNAME_S := $(shell uname -s)
@@ -51,6 +55,7 @@ else
 	PLATFORM = deb
 	CCFLAGS += -shared -fPIC
 	MATH_FLAGS = -lm
+	MYSQL_INCLUDE = `mysql_config --cflags --libs`
     ifeq ($(UNAME_S),Linux)
         CCFLAGS += -DLINUX
 		CCFLAGS += -DLIB_PLATFORM_NAME=\"deb\"
@@ -136,5 +141,9 @@ run:
 math:
 	$(CC) -Os -s MathLib_dni.c vmi_util.c alu.c int_util.c math.c -o math[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS) $(MATH_FLAGS)
 	$(CP_CMD) math[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
+
+mysql_lib:
+	$(CC) -Os -s MySQLLib_dni.c vmi_util.c mysqllib.c -o mysqllib[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(MYSQL_INCLUDE) $(CCFLAGS) $(SQL_FLAGS)
+	$(CP_CMD) mysqllib[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
 
 all: $(ALL_RULES)
