@@ -20,17 +20,27 @@ static const DanaTypeField function_Object_toString_fields[] = {
 {(DanaType*) &char_array_def, NULL, 0, 0, 0}};
 static const DanaTypeField function_Object_getID_fields[] = {
 {(DanaType*) &char_array_def, NULL, 0, 0, 0}};
-static const DanaType Object_spec[] = {
+static const DanaType Object_functions_spec[] = {
 {TYPE_FUNCTION, 0, 48, (DanaTypeField*) function_Object_clone_fields, 2},
 {TYPE_FUNCTION, 0, 48, (DanaTypeField*) function_Object_equals_fields, 2},
 {TYPE_FUNCTION, 0, 40, (DanaTypeField*) function_Object_toString_fields, 1},
 {TYPE_FUNCTION, 0, 40, (DanaTypeField*) function_Object_getID_fields, 1}};
+static const DanaTypeField Object_functions_spec_fields[] = {
+{(DanaType*) &Object_functions_spec[0], "clone", 5},
+{(DanaType*) &Object_functions_spec[1], "equals", 6},
+{(DanaType*) &Object_functions_spec[2], "toString", 8},
+{(DanaType*) &Object_functions_spec[3], "getID", 5}};
+static const DanaType Object_spec[] = {
+{TYPE_DATA, 0, 0, (DanaTypeField*) Object_functions_spec_fields, 4},
+{TYPE_DATA, 0, 0, NULL, 0},
+{TYPE_DATA, 0, 0, NULL, 0}
+};
 static const DanaTypeField Object_spec_fields[] = {
-{(DanaType*) &Object_spec[0], "clone", 5},
-{(DanaType*) &Object_spec[1], "equals", 6},
-{(DanaType*) &Object_spec[2], "toString", 8},
-{(DanaType*) &Object_spec[3], "getID", 5}};
-static const DanaType Object_def = {TYPE_OBJECT, 0, 0, (DanaTypeField*) Object_spec_fields, 4};
+{(DanaType*) &Object_spec[0], ".functions", 10},
+{(DanaType*) &Object_spec[1], ".events", 7},
+{(DanaType*) &Object_spec[2], ".state", 6},
+};
+static const DanaType Object_def = {TYPE_OBJECT, 0, 0, (DanaTypeField*) Object_spec_fields, 3};
 static const DanaType int_def = 
 {TYPE_LITERAL, 0, sizeof(size_t), NULL, 0};
 static const DanaType byte_def = 
@@ -118,7 +128,7 @@ static const DanaTypeField function_IIOFileLib_createDirectory_fields[] = {
 {(DanaType*) &bool_def, NULL, 0, 0, 0},{(DanaType*) &char_array_def, NULL, 0, 0, 8}};
 static const DanaTypeField function_IIOFileLib_deleteDirectory_fields[] = {
 {(DanaType*) &bool_def, NULL, 0, 0, 0},{(DanaType*) &char_array_def, NULL, 0, 0, 8}};
-static const DanaType object_IIOFileLib_spec[] = {
+static const DanaType object_IIOFileLib_functions_spec[] = {
 {TYPE_FUNCTION, 0, 48, (DanaTypeField*) &function_IIOFileLib_clone_fields, 2},
 {TYPE_FUNCTION, 0, 48, (DanaTypeField*) &function_IIOFileLib_equals_fields, 2},
 {TYPE_FUNCTION, 0, 40, (DanaTypeField*) &function_IIOFileLib_toString_fields, 1},
@@ -138,26 +148,36 @@ static const DanaType object_IIOFileLib_spec[] = {
 {TYPE_FUNCTION, 0, 89, (DanaTypeField*) &function_IIOFileLib_copy_fields, 4},
 {TYPE_FUNCTION, 0, 48, (DanaTypeField*) &function_IIOFileLib_createDirectory_fields, 2},
 {TYPE_FUNCTION, 0, 48, (DanaTypeField*) &function_IIOFileLib_deleteDirectory_fields, 2}};
+static const DanaTypeField intf_functions_def[] = {
+{(DanaType*) &object_IIOFileLib_functions_spec[0], "clone", 5},
+{(DanaType*) &object_IIOFileLib_functions_spec[1], "equals", 6},
+{(DanaType*) &object_IIOFileLib_functions_spec[2], "toString", 8},
+{(DanaType*) &object_IIOFileLib_functions_spec[3], "getID", 5},
+{(DanaType*) &object_IIOFileLib_functions_spec[4], "open", 4},
+{(DanaType*) &object_IIOFileLib_functions_spec[5], "write", 5},
+{(DanaType*) &object_IIOFileLib_functions_spec[6], "read", 4},
+{(DanaType*) &object_IIOFileLib_functions_spec[7], "setPos", 6},
+{(DanaType*) &object_IIOFileLib_functions_spec[8], "getSize", 7},
+{(DanaType*) &object_IIOFileLib_functions_spec[9], "eof", 3},
+{(DanaType*) &object_IIOFileLib_functions_spec[10], "close", 5},
+{(DanaType*) &object_IIOFileLib_functions_spec[11], "getDirectoryContents", 20},
+{(DanaType*) &object_IIOFileLib_functions_spec[12], "getInfo", 7},
+{(DanaType*) &object_IIOFileLib_functions_spec[13], "exists", 6},
+{(DanaType*) &object_IIOFileLib_functions_spec[14], "delete", 6},
+{(DanaType*) &object_IIOFileLib_functions_spec[15], "move", 4},
+{(DanaType*) &object_IIOFileLib_functions_spec[16], "copy", 4},
+{(DanaType*) &object_IIOFileLib_functions_spec[17], "createDirectory", 15},
+{(DanaType*) &object_IIOFileLib_functions_spec[18], "deleteDirectory", 15}};
+static const DanaType IIOFileLib_object_spec[] = {
+{TYPE_DATA, 0, 0, (DanaTypeField*) intf_functions_def, 19},
+{TYPE_DATA, 0, 0, NULL, 0},
+{TYPE_DATA, 0, 0, NULL, 0}
+};
 static const DanaTypeField intf_def[] = {
-{(DanaType*) &object_IIOFileLib_spec[0], "clone", 5},
-{(DanaType*) &object_IIOFileLib_spec[1], "equals", 6},
-{(DanaType*) &object_IIOFileLib_spec[2], "toString", 8},
-{(DanaType*) &object_IIOFileLib_spec[3], "getID", 5},
-{(DanaType*) &object_IIOFileLib_spec[4], "open", 4},
-{(DanaType*) &object_IIOFileLib_spec[5], "write", 5},
-{(DanaType*) &object_IIOFileLib_spec[6], "read", 4},
-{(DanaType*) &object_IIOFileLib_spec[7], "setPos", 6},
-{(DanaType*) &object_IIOFileLib_spec[8], "getSize", 7},
-{(DanaType*) &object_IIOFileLib_spec[9], "eof", 3},
-{(DanaType*) &object_IIOFileLib_spec[10], "close", 5},
-{(DanaType*) &object_IIOFileLib_spec[11], "getDirectoryContents", 20},
-{(DanaType*) &object_IIOFileLib_spec[12], "getInfo", 7},
-{(DanaType*) &object_IIOFileLib_spec[13], "exists", 6},
-{(DanaType*) &object_IIOFileLib_spec[14], "delete", 6},
-{(DanaType*) &object_IIOFileLib_spec[15], "move", 4},
-{(DanaType*) &object_IIOFileLib_spec[16], "copy", 4},
-{(DanaType*) &object_IIOFileLib_spec[17], "createDirectory", 15},
-{(DanaType*) &object_IIOFileLib_spec[18], "deleteDirectory", 15}};
+{(DanaType*) &IIOFileLib_object_spec[0], ".functions", 10},
+{(DanaType*) &IIOFileLib_object_spec[1], ".events", 7},
+{(DanaType*) &IIOFileLib_object_spec[2], ".state", 6},
+};
 static unsigned char op_clone_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
 static unsigned char op_equals_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
 static unsigned char op_toString_thread_spec[sizeof(VFrameHeader)+sizeof(VFrame)];
@@ -199,86 +219,86 @@ static size_t interfaceFunctions[] = {
 (size_t) op_copy_thread_spec,
 (size_t) op_createDirectory_thread_spec,
 (size_t) op_deleteDirectory_thread_spec};
-static DanaType libType = {TYPE_OBJECT, 0, 0, (DanaTypeField*) intf_def, 19};
+static DanaType libType = {TYPE_OBJECT, 0, 0, (DanaTypeField*) intf_def, 3};
 static InterfaceDetails ids[] = {{"IIOFileLib", 10, &libType}};
 static Interface objectInterfaces[] = {{&ids[0], {&self, NULL, NULL, interfaceFunctions, NULL, NULL}}		};
 static ObjectSpec objects[] = {{objectInterfaces, 1, 0, 0, 0, 0, (size_t) &emptyType}};
 Interface* getPublicInterface(){
 ((VFrameHeader*) op_clone_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + 48;
 ((VFrameHeader*) op_clone_thread_spec) -> formalParamsCount = 1;
-((VFrameHeader*) op_clone_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_spec[0];
+((VFrameHeader*) op_clone_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_functions_spec[0];
 ((VFrameHeader*) op_clone_thread_spec) -> functionName = "clone";
 ((VFrameHeader*) op_equals_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + 48;
 ((VFrameHeader*) op_equals_thread_spec) -> formalParamsCount = 1;
-((VFrameHeader*) op_equals_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_spec[1];
+((VFrameHeader*) op_equals_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_functions_spec[1];
 ((VFrameHeader*) op_equals_thread_spec) -> functionName = "equals";
 ((VFrameHeader*) op_toString_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + 40;
 ((VFrameHeader*) op_toString_thread_spec) -> formalParamsCount = 0;
-((VFrameHeader*) op_toString_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_spec[2];
+((VFrameHeader*) op_toString_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_functions_spec[2];
 ((VFrameHeader*) op_toString_thread_spec) -> functionName = "toString";
 ((VFrameHeader*) op_getID_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + 40;
 ((VFrameHeader*) op_getID_thread_spec) -> formalParamsCount = 0;
-((VFrameHeader*) op_getID_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_spec[3];
+((VFrameHeader*) op_getID_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_functions_spec[3];
 ((VFrameHeader*) op_getID_thread_spec) -> functionName = "getID";
 ((VFrameHeader*) op_open_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + 49;
 ((VFrameHeader*) op_open_thread_spec) -> formalParamsCount = 2;
-((VFrameHeader*) op_open_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_spec[4];
+((VFrameHeader*) op_open_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_functions_spec[4];
 ((VFrameHeader*) op_open_thread_spec) -> functionName = "open";
 ((VFrameHeader*) op_write_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + 56;
 ((VFrameHeader*) op_write_thread_spec) -> formalParamsCount = 2;
-((VFrameHeader*) op_write_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_spec[5];
+((VFrameHeader*) op_write_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_functions_spec[5];
 ((VFrameHeader*) op_write_thread_spec) -> functionName = "write";
 ((VFrameHeader*) op_read_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + 56;
 ((VFrameHeader*) op_read_thread_spec) -> formalParamsCount = 2;
-((VFrameHeader*) op_read_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_spec[6];
+((VFrameHeader*) op_read_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_functions_spec[6];
 ((VFrameHeader*) op_read_thread_spec) -> functionName = "read";
 ((VFrameHeader*) op_setPos_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + 17;
 ((VFrameHeader*) op_setPos_thread_spec) -> formalParamsCount = 2;
-((VFrameHeader*) op_setPos_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_spec[7];
+((VFrameHeader*) op_setPos_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_functions_spec[7];
 ((VFrameHeader*) op_setPos_thread_spec) -> functionName = "setPos";
 ((VFrameHeader*) op_getSize_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + 16;
 ((VFrameHeader*) op_getSize_thread_spec) -> formalParamsCount = 1;
-((VFrameHeader*) op_getSize_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_spec[8];
+((VFrameHeader*) op_getSize_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_functions_spec[8];
 ((VFrameHeader*) op_getSize_thread_spec) -> functionName = "getSize";
 ((VFrameHeader*) op_eof_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + 9;
 ((VFrameHeader*) op_eof_thread_spec) -> formalParamsCount = 1;
-((VFrameHeader*) op_eof_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_spec[9];
+((VFrameHeader*) op_eof_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_functions_spec[9];
 ((VFrameHeader*) op_eof_thread_spec) -> functionName = "eof";
 ((VFrameHeader*) op_close_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + 8;
 ((VFrameHeader*) op_close_thread_spec) -> formalParamsCount = 1;
-((VFrameHeader*) op_close_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_spec[10];
+((VFrameHeader*) op_close_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_functions_spec[10];
 ((VFrameHeader*) op_close_thread_spec) -> functionName = "close";
 ((VFrameHeader*) op_getDirectoryContents_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + 80;
 ((VFrameHeader*) op_getDirectoryContents_thread_spec) -> formalParamsCount = 2;
-((VFrameHeader*) op_getDirectoryContents_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_spec[11];
+((VFrameHeader*) op_getDirectoryContents_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_functions_spec[11];
 ((VFrameHeader*) op_getDirectoryContents_thread_spec) -> functionName = "getDirectoryContents";
 ((VFrameHeader*) op_getInfo_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + 80;
 ((VFrameHeader*) op_getInfo_thread_spec) -> formalParamsCount = 2;
-((VFrameHeader*) op_getInfo_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_spec[12];
+((VFrameHeader*) op_getInfo_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_functions_spec[12];
 ((VFrameHeader*) op_getInfo_thread_spec) -> functionName = "getInfo";
 ((VFrameHeader*) op_exists_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + 48;
 ((VFrameHeader*) op_exists_thread_spec) -> formalParamsCount = 1;
-((VFrameHeader*) op_exists_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_spec[13];
+((VFrameHeader*) op_exists_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_functions_spec[13];
 ((VFrameHeader*) op_exists_thread_spec) -> functionName = "exists";
 ((VFrameHeader*) op_delete_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + 48;
 ((VFrameHeader*) op_delete_thread_spec) -> formalParamsCount = 1;
-((VFrameHeader*) op_delete_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_spec[14];
+((VFrameHeader*) op_delete_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_functions_spec[14];
 ((VFrameHeader*) op_delete_thread_spec) -> functionName = "delete";
 ((VFrameHeader*) op_move_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + 88;
 ((VFrameHeader*) op_move_thread_spec) -> formalParamsCount = 2;
-((VFrameHeader*) op_move_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_spec[15];
+((VFrameHeader*) op_move_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_functions_spec[15];
 ((VFrameHeader*) op_move_thread_spec) -> functionName = "move";
 ((VFrameHeader*) op_copy_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + 89;
 ((VFrameHeader*) op_copy_thread_spec) -> formalParamsCount = 3;
-((VFrameHeader*) op_copy_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_spec[16];
+((VFrameHeader*) op_copy_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_functions_spec[16];
 ((VFrameHeader*) op_copy_thread_spec) -> functionName = "copy";
 ((VFrameHeader*) op_createDirectory_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + 48;
 ((VFrameHeader*) op_createDirectory_thread_spec) -> formalParamsCount = 1;
-((VFrameHeader*) op_createDirectory_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_spec[17];
+((VFrameHeader*) op_createDirectory_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_functions_spec[17];
 ((VFrameHeader*) op_createDirectory_thread_spec) -> functionName = "createDirectory";
 ((VFrameHeader*) op_deleteDirectory_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + 48;
 ((VFrameHeader*) op_deleteDirectory_thread_spec) -> formalParamsCount = 1;
-((VFrameHeader*) op_deleteDirectory_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_spec[18];
+((VFrameHeader*) op_deleteDirectory_thread_spec) -> localsDef = (size_t) &object_IIOFileLib_functions_spec[18];
 ((VFrameHeader*) op_deleteDirectory_thread_spec) -> functionName = "deleteDirectory";
 memset(&self, '\0', sizeof(self));
 self.objects = objects; self.header = &header; self.header -> objectsCount = sizeof(objects) / sizeof(ObjectSpec);
