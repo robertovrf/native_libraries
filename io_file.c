@@ -47,7 +47,8 @@ static void returnByteArray(VFrame *f, unsigned char *data, size_t len)
 
 INSTRUCTION_DEF op_file_open(VFrame *cframe)
 	{
-	size_t xs = getParam_int(cframe, 1);
+	size_t xs = 0;
+	copyHostInteger((unsigned char*) &xs, getVariableContent(cframe, 1), 1);
 	
 	char *path = getParam_char_array(cframe, 0);
 	
