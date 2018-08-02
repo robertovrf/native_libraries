@@ -80,7 +80,7 @@ static void returnDouble(VFrame *f, double d)
 	ptrh -> typeLink = array -> gtLink -> typeLink;
 	}
 
-INSTRUCTION_DEF op_sqrt_dec(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_sqrt_dec(VFrame *cframe)
 	{
 	double d = getDoubleInput(cframe, 0);
 	
@@ -88,10 +88,10 @@ INSTRUCTION_DEF op_sqrt_dec(INSTRUCTION_PARAM_LIST)
 	
 	returnDouble(cframe, d);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_power(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_power(VFrame *cframe)
 	{
 	double d = getDoubleInput(cframe, 0);
 	double p = getDoubleInput(cframe, 1);
@@ -100,10 +100,10 @@ INSTRUCTION_DEF op_power(INSTRUCTION_PARAM_LIST)
 	
 	returnDouble(cframe, d);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_root(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_root(VFrame *cframe)
 	{
 	double d = getDoubleInput(cframe, 0);
 	double p = getDoubleInput(cframe, 1);
@@ -112,10 +112,10 @@ INSTRUCTION_DEF op_root(INSTRUCTION_PARAM_LIST)
 	
 	returnDouble(cframe, d);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_log(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_log(VFrame *cframe)
 	{
 	double d = getDoubleInput(cframe, 0);
 	
@@ -123,10 +123,10 @@ INSTRUCTION_DEF op_log(INSTRUCTION_PARAM_LIST)
 	
 	returnDouble(cframe, d);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_natlog(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_natlog(VFrame *cframe)
 	{
 	double d = getDoubleInput(cframe, 0);
 	
@@ -134,10 +134,10 @@ INSTRUCTION_DEF op_natlog(INSTRUCTION_PARAM_LIST)
 	
 	returnDouble(cframe, d);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_natexp(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_natexp(VFrame *cframe)
 	{
 	double d = getDoubleInput(cframe, 0);
 	
@@ -145,10 +145,10 @@ INSTRUCTION_DEF op_natexp(INSTRUCTION_PARAM_LIST)
 	
 	returnDouble(cframe, d);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_cosine(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_cosine(VFrame *cframe)
 	{
 	double d = getDoubleInput(cframe, 0);
 	
@@ -156,10 +156,10 @@ INSTRUCTION_DEF op_cosine(INSTRUCTION_PARAM_LIST)
 	
 	returnDouble(cframe, d);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_sine(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_sine(VFrame *cframe)
 	{
 	double d = getDoubleInput(cframe, 0);
 	
@@ -167,10 +167,10 @@ INSTRUCTION_DEF op_sine(INSTRUCTION_PARAM_LIST)
 	
 	returnDouble(cframe, d);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_tangent(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_tangent(VFrame *cframe)
 	{
 	double d = getDoubleInput(cframe, 0);
 	
@@ -178,10 +178,10 @@ INSTRUCTION_DEF op_tangent(INSTRUCTION_PARAM_LIST)
 	
 	returnDouble(cframe, d);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_arc_cosine(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_arc_cosine(VFrame *cframe)
 	{
 	double d = getDoubleInput(cframe, 0);
 	
@@ -189,10 +189,10 @@ INSTRUCTION_DEF op_arc_cosine(INSTRUCTION_PARAM_LIST)
 	
 	returnDouble(cframe, d);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_arc_sine(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_arc_sine(VFrame *cframe)
 	{
 	double d = getDoubleInput(cframe, 0);
 	
@@ -200,10 +200,10 @@ INSTRUCTION_DEF op_arc_sine(INSTRUCTION_PARAM_LIST)
 	
 	returnDouble(cframe, d);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_arc_tangent(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_arc_tangent(VFrame *cframe)
 	{
 	double d = getDoubleInput(cframe, 0);
 	
@@ -211,10 +211,10 @@ INSTRUCTION_DEF op_arc_tangent(INSTRUCTION_PARAM_LIST)
 	
 	returnDouble(cframe, d);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_cosine_hyp(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_cosine_hyp(VFrame *cframe)
 	{
 	double d = getDoubleInput(cframe, 0);
 	
@@ -222,10 +222,10 @@ INSTRUCTION_DEF op_cosine_hyp(INSTRUCTION_PARAM_LIST)
 	
 	returnDouble(cframe, d);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_sine_hyp(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_sine_hyp(VFrame *cframe)
 	{
 	double d = getDoubleInput(cframe, 0);
 	
@@ -233,10 +233,10 @@ INSTRUCTION_DEF op_sine_hyp(INSTRUCTION_PARAM_LIST)
 	
 	returnDouble(cframe, d);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_tangent_hyp(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_tangent_hyp(VFrame *cframe)
 	{
 	double d = getDoubleInput(cframe, 0);
 	
@@ -244,10 +244,10 @@ INSTRUCTION_DEF op_tangent_hyp(INSTRUCTION_PARAM_LIST)
 	
 	returnDouble(cframe, d);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_arc_cosine_hyp(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_arc_cosine_hyp(VFrame *cframe)
 	{
 	double d = getDoubleInput(cframe, 0);
 	
@@ -255,10 +255,10 @@ INSTRUCTION_DEF op_arc_cosine_hyp(INSTRUCTION_PARAM_LIST)
 	
 	returnDouble(cframe, d);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_arc_sine_hyp(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_arc_sine_hyp(VFrame *cframe)
 	{
 	double d = getDoubleInput(cframe, 0);
 	
@@ -266,10 +266,10 @@ INSTRUCTION_DEF op_arc_sine_hyp(INSTRUCTION_PARAM_LIST)
 	
 	returnDouble(cframe, d);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_arc_tangent_hyp(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_arc_tangent_hyp(VFrame *cframe)
 	{
 	double d = getDoubleInput(cframe, 0);
 	
@@ -277,7 +277,7 @@ INSTRUCTION_DEF op_arc_tangent_hyp(INSTRUCTION_PARAM_LIST)
 	
 	returnDouble(cframe, d);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
 Interface* load(CoreAPI *capi)

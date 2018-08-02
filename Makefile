@@ -69,6 +69,8 @@ else
 		SDL_FLAGS = -framework SDL2 -framework SDL2_ttf
 		CCFLAGS += -DLIB_CHIP_NAME=\"x64\"
 		CHIP = x64
+		MYSQL_INCLUDE = -I /usr/local/mysql-8.0.12-macos10.13-x86_64/include/
+		SQL_FLAGS = -L/usr/local/mysql-8.0.12-macos10.13-x86_64/lib/ -lmysqlclient
     endif
     ifneq ($(UNAME_S),Darwin)
 		ALL_RULES += uiplane

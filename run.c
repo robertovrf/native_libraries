@@ -23,7 +23,7 @@
 
 static CoreAPI *api;
 
-INSTRUCTION_DEF op_execute(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_execute(VFrame *cframe)
 	{
 	LiveArray *array = (LiveArray*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content;
 	
@@ -59,7 +59,7 @@ INSTRUCTION_DEF op_execute(INSTRUCTION_PARAM_LIST)
 	
 	free(vn);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
 Interface* load(CoreAPI *capi)

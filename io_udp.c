@@ -107,7 +107,7 @@ static CoreAPI *api;
 static GlobalTypeLink *charArrayGT = NULL;
 
 #define MAX_ADDR 64
-INSTRUCTION_DEF op_udp_bind(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_udp_bind(VFrame *cframe)
 	{
 	LiveArray *array = (LiveArray*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content;
 	
@@ -263,10 +263,10 @@ INSTRUCTION_DEF op_udp_bind(INSTRUCTION_PARAM_LIST)
 	
 	free(addr);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_udp_unbind(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_udp_unbind(VFrame *cframe)
 	{
 	size_t xs;
 	memcpy(&xs, getVariableContent(cframe, 0), sizeof(size_t));
@@ -280,12 +280,12 @@ INSTRUCTION_DEF op_udp_unbind(INSTRUCTION_PARAM_LIST)
 	close(master);
 	#endif
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
 #define BUF_LEN 4096
 
-INSTRUCTION_DEF op_udp_recv(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_udp_recv(VFrame *cframe)
 	{
 	size_t xs = 0;
 	memcpy((unsigned char*) &xs, getVariableContent(cframe, 0), sizeof(size_t));
@@ -399,10 +399,10 @@ INSTRUCTION_DEF op_udp_recv(INSTRUCTION_PARAM_LIST)
 	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) cframe -> localsDef) -> fields[0].offset];
 	copyHostInteger((unsigned char*) result, (unsigned char*) &ok, sizeof(ok));
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_udp_send(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_udp_send(VFrame *cframe)
 	{
 	unsigned char ok = 0;
 	
@@ -484,7 +484,7 @@ INSTRUCTION_DEF op_udp_send(INSTRUCTION_PARAM_LIST)
 	
 	free(addr);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
 Interface* load(CoreAPI *capi)

@@ -52,7 +52,7 @@ static void returnInt(VFrame *cframe, size_t sz) {
 }
 
 //int connect(char host[], int port, char user[], char pass[], char dbName[])
-INSTRUCTION_DEF op_mysql_connect(INSTRUCTION_PARAM_LIST) {
+INSTRUCTION_DEF op_mysql_connect(VFrame *cframe) {
 	MYSQL *con = NULL;
 	char *host = getStringParam(cframe, 0);
 	char *user = getStringParam(cframe, 2);
@@ -69,13 +69,20 @@ INSTRUCTION_DEF op_mysql_connect(INSTRUCTION_PARAM_LIST) {
 	}
 	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) cframe -> localsDef) -> fields[0].offset];
 	memcpy(result, &con, sizeof(size_t));
-	return RETURN_DIRECT;
+	
+	free(host);
+	free(user);
+	free(pass);
+	free(db_name);
+	
+	return RETURN_OK;
 }
 
 //int executeQuery(int con, char query[])
-INSTRUCTION_DEF op_mysql_execute_query(INSTRUCTION_PARAM_LIST) {
+INSTRUCTION_DEF op_mysql_execute_query(VFrame *cframe) {
 	MYSQL *con;
 	memcpy(&con, getVariableContent(cframe, 0), sizeof(size_t));
+	
 	char *query = getStringParam(cframe, 1);
 	MYSQL_RES *res = NULL;
 	if (mysql_query(con, query)) {
@@ -83,54 +90,57 @@ INSTRUCTION_DEF op_mysql_execute_query(INSTRUCTION_PARAM_LIST) {
 	} else { res = mysql_store_result(con); }
 	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) cframe -> localsDef) -> fields[0].offset];
 	memcpy(result, &res, sizeof(size_t));
-	return RETURN_DIRECT;
+	
+	free(query);
+	
+	return RETURN_OK;
 }
 
 //int fetchRow(int result)
-INSTRUCTION_DEF op_mysql_fetch_row(INSTRUCTION_PARAM_LIST) {
+INSTRUCTION_DEF op_mysql_fetch_row(VFrame *cframe) {
 	MYSQL_RES *result;
 	memcpy(&result, getVariableContent(cframe, 0), sizeof(size_t));
 	MYSQL_ROW row = mysql_fetch_row(result);
 	size_t *res = (size_t*) &cframe -> localsData[((DanaType*) cframe -> localsDef) -> fields[0].offset];
 	memcpy(res, &row, sizeof(size_t));
-	return RETURN_DIRECT;
+	return RETURN_OK;
 }
 
 //int numFields(int result)
-INSTRUCTION_DEF op_mysql_num_fields(INSTRUCTION_PARAM_LIST) {
+INSTRUCTION_DEF op_mysql_num_fields(VFrame *cframe) {
 	MYSQL_RES *result;
 	memcpy(&result, getVariableContent(cframe, 0), sizeof(size_t));
 	returnInt(cframe, mysql_num_fields(result));
-	return RETURN_DIRECT;
+	return RETURN_OK;
 }
 
 //char[] getField(int row, int field)
-INSTRUCTION_DEF op_mysql_get_field(INSTRUCTION_PARAM_LIST) {
+INSTRUCTION_DEF op_mysql_get_field(VFrame *cframe) {
 	MYSQL_ROW row;
 	memcpy(&row, getVariableContent(cframe, 0), sizeof(size_t));
 	int index = getIntParam(cframe, 1);
 	returnString(cframe, row[index] ? row[index] : "NULL");
-	return RETURN_DIRECT;
+	return RETURN_OK;
 }
 
 //char[] getFieldName(int result)
-INSTRUCTION_DEF op_mysql_get_field_name(INSTRUCTION_PARAM_LIST) {
+INSTRUCTION_DEF op_mysql_get_field_name(VFrame *cframe) {
 	MYSQL_RES *result;
 	memcpy(&result, getVariableContent(cframe, 0), sizeof(size_t));
 	MYSQL_FIELD *field = mysql_fetch_field(result);
 	returnString(cframe, field->name);
-	return RETURN_DIRECT;
+	return RETURN_OK;
 }
 
 //void close(int con, int result)
-INSTRUCTION_DEF op_mysql_close(INSTRUCTION_PARAM_LIST) {
+INSTRUCTION_DEF op_mysql_close(VFrame *cframe) {
 	MYSQL *con;
 	MYSQL_RES *result;
 	memcpy(&con, getVariableContent(cframe, 0), sizeof(size_t));
 	memcpy(&result, getVariableContent(cframe, 1), sizeof(size_t));
 	mysql_free_result(result);
 	mysql_close(con);
-	return RETURN_DIRECT;
+	return RETURN_OK;
 }
 
 Interface* load(CoreAPI *capi) {

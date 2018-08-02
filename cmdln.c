@@ -17,30 +17,9 @@
 
 static CoreAPI *api;
 
-static GlobalTypeLink *charArrayGT = NULL;
-
 #define MAX_BUF 32
 
-static void returnByteArray(VFrame *f, unsigned char *data, size_t len)
-	{
-	LiveArray *array = malloc(sizeof(LiveArray));
-	memset(array, '\0', sizeof(LiveArray));
-	
-	array -> data = data;
-	array -> length = len;
-	
-	array -> gtLink = charArrayGT;
-	api -> incrementGTRefCount(array -> gtLink);
-	array -> owner = f -> blocking -> instance;
-	
-	array -> refCount ++;
-	
-	VVarLivePTR *ptrh = (VVarLivePTR*) &f -> localsData[((DanaType*) f -> localsDef) -> fields[0].offset];
-	ptrh -> content = (unsigned char*) array;
-	ptrh -> typeLink = array -> gtLink -> typeLink;
-	}
-
-INSTRUCTION_DEF op_get_line(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_get_line(VFrame *cframe)
 	{
 	char buf[MAX_BUF];
 	memset(buf, '\0', MAX_BUF);
@@ -68,23 +47,20 @@ INSTRUCTION_DEF op_get_line(INSTRUCTION_PARAM_LIST)
 			memcpy(fullText + length, p, strlen(p));
 			length += strlen(p);
 			
-			returnByteArray(cframe, (unsigned char*) fullText, length);
+			return_byte_array_direct(cframe, api, (unsigned char*) fullText, length);
 			}
 			else if (length != 0)
 			{
-			returnByteArray(cframe, (unsigned char*) fullText, length);
+			return_byte_array_direct(cframe, api, (unsigned char*) fullText, length);
 			}
 		}
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
 Interface* load(CoreAPI *capi)
 	{
 	api = capi;
-	
-	// grab global type mappings for anything that we generate here
-	charArrayGT = api -> resolveGlobalTypeMapping(getTypeDefinition("char[]"));
 	
 	setInterfaceFunction("getLine", op_get_line);
 	
@@ -93,5 +69,4 @@ Interface* load(CoreAPI *capi)
 
 void unload()
 	{
-	api -> decrementGTRefCount(charArrayGT);
 	}

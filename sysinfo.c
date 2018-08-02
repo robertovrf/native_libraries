@@ -23,30 +23,9 @@
 
 static CoreAPI *api;
 
-static GlobalTypeLink *charArrayGT = NULL;
-
 #define MAX_VAR_NAME 2048
 
-static void returnByteArray(VFrame *f, unsigned char *data, size_t len)
-	{
-	LiveArray *array = malloc(sizeof(LiveArray));
-	memset(array, '\0', sizeof(LiveArray));
-	
-	array -> data = data;
-	array -> length = len;
-	
-	array -> gtLink = charArrayGT;
-	api -> incrementGTRefCount(array -> gtLink);
-	array -> owner = f -> blocking -> instance;
-	
-	array -> refCount ++;
-	
-	VVarLivePTR *ptrh = (VVarLivePTR*) &f -> localsData[((DanaType*) f -> localsDef) -> fields[0].offset];
-	ptrh -> content = (unsigned char*) array;
-	ptrh -> typeLink = array -> gtLink -> typeLink;
-	}
-
-INSTRUCTION_DEF op_get_platform_name(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_get_platform_name(VFrame *cframe)
 	{
 	char *name = "Unknown";
 	
@@ -62,12 +41,12 @@ INSTRUCTION_DEF op_get_platform_name(INSTRUCTION_PARAM_LIST)
 		}
 	#endif
 	
-	returnByteArray(cframe, (unsigned char*) strdup(name), strlen(name));
+	return_char_array(cframe, api, name);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_get_platform_version(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_get_platform_version(VFrame *cframe)
 	{
 	char sres[MAX_VAR_NAME];
 	memset(sres, '\0', sizeof(sres));
@@ -111,19 +90,19 @@ INSTRUCTION_DEF op_get_platform_version(INSTRUCTION_PARAM_LIST)
 		}
 	#endif
 	
-	returnByteArray(cframe, (unsigned char*) strdup(sres), strlen(sres));
+	return_char_array(cframe, api, sres);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_get_chip_name(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_get_chip_name(VFrame *cframe)
 	{
-	returnByteArray(cframe, (unsigned char*) strdup(CHIP_NAME), strlen(CHIP_NAME));
+	return_char_array(cframe, api, CHIP_NAME);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_get_host_name(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_get_host_name(VFrame *cframe)
 	{
 	char sres[MAX_VAR_NAME];
 	memset(sres, 0, sizeof(sres));
@@ -137,41 +116,28 @@ INSTRUCTION_DEF op_get_host_name(INSTRUCTION_PARAM_LIST)
 	gethostname(sres, MAX_VAR_NAME);
 	#endif
 	
-	returnByteArray(cframe, (unsigned char*) strdup(sres), strlen(sres));
+	return_char_array(cframe, api, sres);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_get_variable(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_get_variable(VFrame *cframe)
 	{
-	LiveArray *array = (LiveArray*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content;
-	
-	char *vn = NULL;
-	
-	if (array != NULL)
-		{
-		vn = malloc(array -> length + 1);
-		memset(vn, '\0', array -> length + 1);
-		memcpy(vn, array -> data, array -> length);
-		}
-		else
-		{
-		vn = strdup("");
-		}
+	char *vn = getParam_char_array(cframe, 0);
 	
 	char *val = getenv(vn);
 	
 	if (val != NULL)
 		{
-		returnByteArray(cframe, (unsigned char*) strdup(val), strlen(val));
+		return_char_array(cframe, api, val);
     	}
     
 	free(vn);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_get_system_font(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_get_system_font(VFrame *cframe)
 	{
 	unsigned char monospaced = getVariableContent(cframe, 0)[0];
 	
@@ -199,21 +165,18 @@ INSTRUCTION_DEF op_get_system_font(INSTRUCTION_PARAM_LIST)
 		struct stat st;
 		if (stat(fontPath, &st) == 0)
 			{
-			returnByteArray(cframe, (unsigned char*) strdup(fontPath), strlen(fontPath));
+			return_char_array(cframe, api, fontPath);
 			}
 		
 		free(fontPath);
 		}
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
 Interface* load(CoreAPI *capi)
 	{
 	api = capi;
-	
-	// grab global type mappings for anything that we generate here
-	charArrayGT = api -> resolveGlobalTypeMapping(getTypeDefinition("char[]"));
 	
 	setInterfaceFunction("getPlatformName", op_get_platform_name);
 	setInterfaceFunction("getPlatformVersion", op_get_platform_version);
@@ -227,5 +190,4 @@ Interface* load(CoreAPI *capi)
 
 void unload()
 	{
-	api -> decrementGTRefCount(charArrayGT);
 	}
