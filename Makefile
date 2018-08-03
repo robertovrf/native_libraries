@@ -55,7 +55,7 @@ else
 	PLATFORM = deb
 	CCFLAGS += -shared -fPIC
 	MATH_FLAGS = -lm
-	MYSQL_INCLUDE = -I/usr/include/mysql `mysql_config --variable=pkglibdir`/libmysqlclient.a
+	MYSQL_INCLUDE = -I/usr/include/mysql `mysql_config --variable=pkglibdir`/libmysqlclient.a -lpthread -lz -lm -lrt -ldl -lstdc++
     ifeq ($(UNAME_S),Linux)
         CCFLAGS += -DLINUX
 		CCFLAGS += -DLIB_PLATFORM_NAME=\"deb\"
