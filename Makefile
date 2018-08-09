@@ -101,51 +101,51 @@ else
 endif
 
 calendar:
-	$(CC) -Os -s ICalLib_dni.c vmi_util.c calendar.c -o calendar[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS)
-	$(CP_CMD) calendar[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
+	$(CC) -Os -s CalendarLib_dni.c vmi_util.c CalendarLib.c -o CalendarLib[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS)
+	$(CP_CMD) CalendarLib[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
 
 cmdln:
-	$(CC) -Os -s ICmdLib_dni.c vmi_util.c cmdln.c -o cmdln[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS)
-	$(CP_CMD) cmdln[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
+	$(CC) -Os -s CmdLib_dni.c vmi_util.c CmdLib.c -o CmdLib[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS)
+	$(CP_CMD) CmdLib[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
 
 iofile:
-	$(CC) -Os -s IIOFileLib_dni.c vmi_util.c io_file.c -o io_file[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS)
-	$(CP_CMD) io_file[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
+	$(CC) -Os -s FileLib_dni.c vmi_util.c FileLib.c -o FileLib[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS)
+	$(CP_CMD) FileLib[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
 
 iotcp:
-	$(CC) -Os -s IOTCPLib_dni.c vmi_util.c io_tcp_thread_per_recv.c -o io_tcp[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS) $(NET_FLAGS)
-	$(CP_CMD) io_tcp[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
+	$(CC) -Os -s TCPLib_dni.c vmi_util.c TCPLib.c -o TCPLib[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS) $(NET_FLAGS)
+	$(CP_CMD) TCPLib[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
 
 ioudp:
-	$(CC) -Os -s IOUDPLib_dni.c vmi_util.c io_udp.c -o io_udp[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS) $(NET_FLAGS)
-	$(CP_CMD) io_udp[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
+	$(CC) -Os -s UDPLib_dni.c vmi_util.c UDPLib.c -o UDPLib[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS) $(NET_FLAGS)
+	$(CP_CMD) UDPLib[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
 
 dns:
-	$(CC) -Os -s DNSLib_dni.c vmi_util.c dns.c -o dns[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS) $(NET_FLAGS) -DCHIP_NAME=\"$(CHIP)\"
-	$(CP_CMD) dns[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
+	$(CC) -Os -s DNSLib_dni.c vmi_util.c DNSLib.c -o DNSLib[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS) $(NET_FLAGS) -DCHIP_NAME=\"$(CHIP)\"
+	$(CP_CMD) DNSLib[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
 
 sysinfo:
-	$(CC) -Os -s SystemLib_dni.c vmi_util.c sysinfo.c -o sysinfo[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS) -DCHIP_NAME=\"$(CHIP)\"
-	$(CP_CMD) sysinfo[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
+	$(CC) -Os -s SystemLib_dni.c vmi_util.c SystemLib.c -o SystemLib[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS) -DCHIP_NAME=\"$(CHIP)\"
+	$(CP_CMD) SystemLib[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
 
 timer:
-	$(CC) -Os -s Timer_dni.c vmi_util.c timer.c -o timer[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS)
-	$(CP_CMD) timer[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
+	$(CC) -Os -s Timer_dni.c vmi_util.c Timer.c -o Timer[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS)
+	$(CP_CMD) Timer[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
 
 uiplane:
-	$(CC) -Os -s UIPlaneLib_dni.c vmi_util.c $(API_PATH)/platform_utils.c uiplane.c -o uiplane[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS) $(SDL_FLAGS)
-	$(CP_CMD) uiplane[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
+	$(CC) -Os -s UIPlaneLib_dni.c vmi_util.c $(API_PATH)/platform_utils.c UIPlaneLib.c -o UIPlaneLib[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS) $(SDL_FLAGS)
+	$(CP_CMD) UIPlaneLib[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
 
 run:
-	$(CC) -Os -s RunLib_dni.c vmi_util.c run.c -o run[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS)
-	$(CP_CMD) run[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
+	$(CC) -Os -s RunLib_dni.c vmi_util.c RunLib.c -o RunLib[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS)
+	$(CP_CMD) RunLib[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
 
 math:
-	$(CC) -Os -s MathLib_dni.c vmi_util.c alu.c int_util.c math.c -o math[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS) $(MATH_FLAGS)
-	$(CP_CMD) math[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
+	$(CC) -Os -s MathLib_dni.c vmi_util.c alu.c int_util.c MathLib.c -o MathLib[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS) $(MATH_FLAGS)
+	$(CP_CMD) MathLib[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
 
 mysql_lib:
-	$(CC) -Os -s MySQLLib_dni.c vmi_util.c mysqllib.c -o mysqllib[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(MYSQL_INCLUDE) $(CCFLAGS) $(SQL_FLAGS)
-	$(CP_CMD) mysqllib[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
+	$(CC) -Os -s MySQLLib_dni.c vmi_util.c MySQLLib.c -o MySQLLib[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(MYSQL_INCLUDE) $(CCFLAGS) $(SQL_FLAGS)
+	$(CP_CMD) MySQLLib[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
 
 all: $(ALL_RULES)
