@@ -1764,7 +1764,7 @@ static void* render_thread(void *ptr)
 	#endif
 	}
 
-INSTRUCTION_DEF op_make_window(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_make_window(VFrame *cframe)
 	{
 	MakeWindowInfo *mwInfo = malloc(sizeof(MakeWindowInfo));
 	memset(mwInfo, '\0', sizeof(MakeWindowInfo));
@@ -1822,22 +1822,22 @@ INSTRUCTION_DEF op_make_window(INSTRUCTION_PARAM_LIST)
 	
 	free(mwInfo);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_start_poly(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_start_poly(VFrame *cframe)
 	{
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_add_poly_point(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_add_poly_point(VFrame *cframe)
 	{
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_end_poly(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_end_poly(VFrame *cframe)
 	{
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
 static void addUIObject(WindowInstance *instance, UIObject *o)
@@ -1864,7 +1864,7 @@ static void addUIObject(WindowInstance *instance, UIObject *o)
 		}
 	}
 
-INSTRUCTION_DEF op_add_rect(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_add_rect(VFrame *cframe)
 	{
 	size_t hnd = 0;
 	memcpy(&hnd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -1916,10 +1916,10 @@ INSTRUCTION_DEF op_add_rect(INSTRUCTION_PARAM_LIST)
 		poly -> a = a;
 		}
 
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_add_line(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_add_line(VFrame *cframe)
 	{
 	size_t hnd = 0;
 	memcpy(&hnd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -1975,10 +1975,10 @@ INSTRUCTION_DEF op_add_line(INSTRUCTION_PARAM_LIST)
 		poly -> a = a;
 		}
 
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_add_point(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_add_point(VFrame *cframe)
 	{
 	size_t hnd = 0;
 	memcpy(&hnd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -2025,10 +2025,10 @@ INSTRUCTION_DEF op_add_point(INSTRUCTION_PARAM_LIST)
 		poly -> a = a;
 		}
 
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_add_bitmap(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_add_bitmap(VFrame *cframe)
 	{
 	size_t hnd = 0;
 	memcpy(&hnd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -2107,13 +2107,13 @@ INSTRUCTION_DEF op_add_bitmap(INSTRUCTION_PARAM_LIST)
 		
 		free(gb);
 
-		return RETURN_DIRECT;
+		return RETURN_OK;
 		}
 
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_add_text(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_add_text(VFrame *cframe)
 	{
 	size_t hnd = 0;
 	memcpy(&hnd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -2174,10 +2174,10 @@ INSTRUCTION_DEF op_add_text(INSTRUCTION_PARAM_LIST)
 			}
 		}
 
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_add_text_with(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_add_text_with(VFrame *cframe)
 	{
 	size_t hnd = 0;
 	memcpy(&hnd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -2242,10 +2242,10 @@ INSTRUCTION_DEF op_add_text_with(INSTRUCTION_PARAM_LIST)
 			}
 		}
 
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_get_text_width_with(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_get_text_width_with(VFrame *cframe)
 	{
 	size_t font_hnd = 0;
 	memcpy(&font_hnd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -2314,16 +2314,16 @@ INSTRUCTION_DEF op_get_text_width_with(INSTRUCTION_PARAM_LIST)
 		
 		free(gwi);
 
-		return RETURN_DIRECT;
+		return RETURN_OK;
 		}
 
 	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) cframe -> localsDef) -> fields[0].offset];
 	copyHostInteger((unsigned char*) result, (unsigned char*) &width, sizeof(size_t));
 
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_push_surface(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_push_surface(VFrame *cframe)
 	{
 	size_t hnd = 0;
 	memcpy(&hnd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -2380,10 +2380,10 @@ INSTRUCTION_DEF op_push_surface(INSTRUCTION_PARAM_LIST)
 		newSurface -> yScroll = ys;
 		}
 
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_pop_surface(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_pop_surface(VFrame *cframe)
 	{
 	size_t hnd = 0;
 	memcpy(&hnd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -2402,10 +2402,10 @@ INSTRUCTION_DEF op_pop_surface(INSTRUCTION_PARAM_LIST)
 			}
 		}
 
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_get_font_metrics(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_get_font_metrics(VFrame *cframe)
 	{
 	size_t font_hnd = 0;
 	memcpy(&font_hnd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -2443,10 +2443,10 @@ INSTRUCTION_DEF op_get_font_metrics(INSTRUCTION_PARAM_LIST)
 	x = sdl_x;
 	copyHostInteger((unsigned char*) xs, (unsigned char*) &x, sizeof(size_t));
 
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_get_font_name(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_get_font_name(VFrame *cframe)
 	{
 	size_t font_hnd = 0;
 	memcpy(&font_hnd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -2461,10 +2461,10 @@ INSTRUCTION_DEF op_get_font_name(INSTRUCTION_PARAM_LIST)
 		returnByteArray(cframe, (unsigned char*) strdup(val), strlen(val));
     	}
 
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_is_font_fixed_width(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_is_font_fixed_width(VFrame *cframe)
 	{
 	size_t font_hnd = 0;
 	memcpy(&font_hnd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -2473,10 +2473,10 @@ INSTRUCTION_DEF op_is_font_fixed_width(INSTRUCTION_PARAM_LIST)
 	//TODO: don't use any TTF_ functions outside of the main rendering loop?
 	cframe -> localsData[((DanaType*) cframe -> localsDef) -> fields[0].offset] = TTF_FontFaceIsFixedWidth(font) == 0 ? 0 : 1;
 
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_get_text_bitmap_with(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_get_text_bitmap_with(VFrame *cframe)
 	{
 	size_t font_hnd = 0;
 	memcpy(&font_hnd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -2564,13 +2564,13 @@ INSTRUCTION_DEF op_get_text_bitmap_with(INSTRUCTION_PARAM_LIST)
 		
 		free(gb);
 
-		return RETURN_DIRECT;
+		return RETURN_OK;
 		}
 
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_commit_buffer(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_commit_buffer(VFrame *cframe)
 	{
 	size_t hnd = 0;
 	memcpy(&hnd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -2591,7 +2591,7 @@ INSTRUCTION_DEF op_commit_buffer(INSTRUCTION_PARAM_LIST)
 		SDL_PushEvent(&newEvent);
 		}
 
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
 static void pushMouseEvent(WindowInstance *w, size_t type, size_t button_id, size_t x, size_t y)
@@ -2622,7 +2622,7 @@ static void pushEvent(WindowInstance *w, size_t type)
 	api -> pushEvent(w -> eqObject, 0, type, NULL);
 	}
 
-INSTRUCTION_DEF op_set_size(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_set_size(VFrame *cframe)
 	{
 	size_t hnd = 0;
 	memcpy(&hnd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -2648,10 +2648,10 @@ INSTRUCTION_DEF op_set_size(INSTRUCTION_PARAM_LIST)
 		SDL_PushEvent(&newEvent);
 		}
 
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_set_position(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_set_position(VFrame *cframe)
 	{
 	size_t hnd = 0;
 	memcpy(&hnd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -2677,10 +2677,10 @@ INSTRUCTION_DEF op_set_position(INSTRUCTION_PARAM_LIST)
 		SDL_PushEvent(&newEvent);
 		}
 
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_set_visible(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_set_visible(VFrame *cframe)
 	{
 	size_t hnd = 0;
 	memcpy(&hnd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -2699,15 +2699,15 @@ INSTRUCTION_DEF op_set_visible(INSTRUCTION_PARAM_LIST)
 		SDL_PushEvent(&newEvent);
 		}
 
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_set_resizable(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_set_resizable(VFrame *cframe)
 	{
 	if (!resizeAvailable)
 		{
 		api -> throwException(cframe, "function unavailable on installed version of SDL");
-		return RETURN_DIRECT;
+		return RETURN_OK;
 		}
 	
 	size_t hnd = 0;
@@ -2727,10 +2727,10 @@ INSTRUCTION_DEF op_set_resizable(INSTRUCTION_PARAM_LIST)
 		SDL_PushEvent(&newEvent);
 		}
 
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_set_fullscreen(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_set_fullscreen(VFrame *cframe)
 	{
 	size_t hnd = 0;
 	memcpy(&hnd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -2749,10 +2749,10 @@ INSTRUCTION_DEF op_set_fullscreen(INSTRUCTION_PARAM_LIST)
 		SDL_PushEvent(&newEvent);
 		}
 
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_set_title(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_set_title(VFrame *cframe)
 	{
 	size_t hnd = 0;
 	memcpy(&hnd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -2785,10 +2785,10 @@ INSTRUCTION_DEF op_set_title(INSTRUCTION_PARAM_LIST)
 		SDL_PushEvent(&newEvent);
 		}
 
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_maximise_window(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_maximise_window(VFrame *cframe)
 	{
 	size_t hnd = 0;
 	memcpy(&hnd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -2805,10 +2805,10 @@ INSTRUCTION_DEF op_maximise_window(INSTRUCTION_PARAM_LIST)
 		SDL_PushEvent(&newEvent);
 		}
 
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_minimise_window(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_minimise_window(VFrame *cframe)
 	{
 	size_t hnd = 0;
 	memcpy(&hnd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -2825,10 +2825,10 @@ INSTRUCTION_DEF op_minimise_window(INSTRUCTION_PARAM_LIST)
 		SDL_PushEvent(&newEvent);
 		}
 
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_get_maximised_screen_rect(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_get_maximised_screen_rect(VFrame *cframe)
 	{
 	size_t hnd = 0;
 	memcpy(&hnd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -2864,10 +2864,10 @@ INSTRUCTION_DEF op_get_maximised_screen_rect(INSTRUCTION_PARAM_LIST)
 		#endif
 		}
 
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_close_window(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_close_window(VFrame *cframe)
 	{
 	size_t hnd = 0;
 	memcpy(&hnd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -2928,13 +2928,13 @@ INSTRUCTION_DEF op_close_window(INSTRUCTION_PARAM_LIST)
 		
 		free(mwInfo);
 		
-		return RETURN_DIRECT;
+		return RETURN_OK;
 		}
 
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_set_background_colour(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_set_background_colour(VFrame *cframe)
 	{
 	size_t hnd = 0;
 	memcpy(&hnd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -2960,10 +2960,10 @@ INSTRUCTION_DEF op_set_background_colour(INSTRUCTION_PARAM_LIST)
 		instance -> backgroundColour.b = b;
 		}
 
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_load_font(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_load_font(VFrame *cframe)
 	{
 	LiveArray *array = (LiveArray*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content;
 	size_t tlen = array != NULL ? array -> length : 0;
@@ -3038,15 +3038,15 @@ INSTRUCTION_DEF op_load_font(INSTRUCTION_PARAM_LIST)
 		
 		free(lfd);
 
-		return RETURN_DIRECT;
+		return RETURN_OK;
 		}
 
 	free(path);
 
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_unload_font(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_unload_font(VFrame *cframe)
 	{
 	size_t hnd = 0;
 	memcpy(&hnd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -3105,10 +3105,10 @@ INSTRUCTION_DEF op_unload_font(INSTRUCTION_PARAM_LIST)
 		
 		free(lfd);
 
-		return RETURN_DIRECT;
+		return RETURN_OK;
 		}
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
 static void initRendering()

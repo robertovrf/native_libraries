@@ -3,7 +3,7 @@
 
 #define LIB_API_VERSION 13
 
-#define RETURN_DIRECT	0
+#define RETURN_OK	0
 
 typedef struct _CoreAPI{
 	int (*pushEvent)(void *object, size_t event_sink_index, size_t event_type, LiveData *event_details);

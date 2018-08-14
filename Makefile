@@ -4,7 +4,6 @@ API_PATH = "dana_api_1.4"
 STD_INCLUDE = -I $(API_PATH)
 CCFLAGS = -Wall -fno-strict-aliasing
 OUTPUT_FILE=
-MYSQL_INCLUDE = `mysql_config --cflags --libs`
 
 INSTALL_PATH=
 CP_CMD=
@@ -13,7 +12,8 @@ PLATFORM=
 SDL_FLAGS=
 NET_FLAGS=
 MATH_FLAGS=
-ALL_RULES = calendar cmdln iofile iotcp ioudp dns sysinfo timer run math
+SQL_FLAGS=
+ALL_RULES = calendar cmdln iofile iotcp ioudp dns sysinfo timer run math mysql_lib
 
 ifeq ($(OS),Windows_NT)
     CCFLAGS += -DWINDOWS
@@ -29,17 +29,20 @@ ifeq ($(OS),Windows_NT)
 	CCFLAGS += -shared
 	NET_FLAGS = -lws2_32
 	ALL_RULES += uiplane
+	MYSQL_CONCPP_DIR= "C:/libs/MySQL Connector C 6.1"
+	MYSQL_INCLUDE = -I $(MYSQL_CONCPP_DIR)/include -L $(MYSQL_CONCPP_DIR)/lib
+	SQL_FLAGS = -lmysql
     ifeq ($(PROCESSOR_ARCHITECTURE),AMD64)
         CCFLAGS += -DMACHINE_64
 		CCFLAGS += -DLIB_CHIP_NAME=\"x64\"
 		CHIP = x64
-		SDL_FLAGS = -L"C:/SDL/x86_64-w64-mingw32/lib" -lSDL2main -lSDL2 -lSDL2_ttf -I "C:/SDL/i686-w64-mingw32/include" -lmingw32 -mwindows -I . -I ../../compiler/ -static-libgcc"
+		SDL_FLAGS = -L"C:/libs/SDL/SDL2-2.0.8/x86_64-w64-mingw32/lib" -L"C:/libs/SDL/SDL2_ttf-2.0.14/x86_64-w64-mingw32/lib" -lSDL2main -lSDL2 -lSDL2_ttf -I "C:/libs/SDL/SDL2-2.0.8/i686-w64-mingw32/include/SDL2" -I "C:/libs/SDL/SDL2_ttf-2.0.14/i686-w64-mingw32/include/SDL2" -lmingw32 -mwindows -I . -I ../../compiler/ -static-libgcc"
     endif
     ifeq ($(PROCESSOR_ARCHITECTURE),x86)
         CCFLAGS += -DMACHINE_32
 		CCFLAGS += -DLIB_CHIP_NAME=\"x86\"
 		CHIP = x86
-		SDL_FLAGS = -L"C:/SDL/i686-w64-mingw32/lib" -lSDL2main -lSDL2 -lSDL2_ttf -I "C:/SDL/i686-w64-mingw32/include" -lmingw32 -mwindows -I . -I ../../compiler/ -static-libgcc
+		SDL_FLAGS = -L"C:/libs/SDL/SDL2-2.0.8/i686-w64-mingw32/lib" -L"C:/libs/SDL/SDL2_ttf-2.0.14/i686-w64-mingw32/lib" -lSDL2main -lSDL2 -lSDL2_ttf -I "C:/libs/SDL/SDL2-2.0.8/i686-w64-mingw32/include/SDL2" -I "C:/libs/SDL/SDL2_ttf-2.0.14/i686-w64-mingw32/include/SDL2" -lmingw32 -mwindows -I . -I ../../compiler/ -static-libgcc
     endif
 else
     UNAME_S := $(shell uname -s)
@@ -52,6 +55,7 @@ else
 	PLATFORM = deb
 	CCFLAGS += -shared -fPIC
 	MATH_FLAGS = -lm
+	MYSQL_INCLUDE = -I/usr/include/mysql `mysql_config --variable=pkglibdir`/libmysqlclient.a -lpthread -lz -lm -lrt -ldl -lstdc++
     ifeq ($(UNAME_S),Linux)
         CCFLAGS += -DLINUX
 		CCFLAGS += -DLIB_PLATFORM_NAME=\"deb\"
@@ -62,11 +66,15 @@ else
         PLATFORM = osx
 		CCFLAGS += -DLIB_PLATFORM_NAME=\"osx\"
         CCFLAGS += -DMACHINE_64
-		SDL_FLAGS = -lSDL2main -lSDL2 -lSDL2_ttf
+		SDL_FLAGS = -framework SDL2 -framework SDL2_ttf
 		CCFLAGS += -DLIB_CHIP_NAME=\"x64\"
 		CHIP = x64
+		MYSQL_INCLUDE = -I /usr/local/mysql-8.0.12-macos10.13-x86_64/include/
+		SQL_FLAGS = -L/usr/local/mysql-8.0.12-macos10.13-x86_64/lib/ -lmysqlclient
     endif
     ifneq ($(UNAME_S),Darwin)
+		ALL_RULES += uiplane
+		
         UNAME_P := $(shell uname -p)
         ifeq ($(UNAME_P),x86_64)
             CCFLAGS += -DMACHINE_64
@@ -93,51 +101,51 @@ else
 endif
 
 calendar:
-	$(CC) -Os -s ICalLib_dni.c vmi_util.c calendar.c -o calendar[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS)
-	$(CP_CMD) calendar[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
+	$(CC) -Os -s CalendarLib_dni.c vmi_util.c CalendarLib.c -o CalendarLib[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS)
+	$(CP_CMD) CalendarLib[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
 
 cmdln:
-	$(CC) -Os -s ICmdLib_dni.c vmi_util.c cmdln.c -o cmdln[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS)
-	$(CP_CMD) cmdln[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
+	$(CC) -Os -s CmdLib_dni.c vmi_util.c CmdLib.c -o CmdLib[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS)
+	$(CP_CMD) CmdLib[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
 
 iofile:
-	$(CC) -Os -s IIOFileLib_dni.c vmi_util.c io_file.c -o io_file[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS)
-	$(CP_CMD) io_file[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
+	$(CC) -Os -s FileLib_dni.c vmi_util.c FileLib.c -o FileLib[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS)
+	$(CP_CMD) FileLib[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
 
 iotcp:
-	$(CC) -Os -s IOTCPLib_dni.c vmi_util.c io_tcp_thread_per_recv.c -o io_tcp[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS) $(NET_FLAGS)
-	$(CP_CMD) io_tcp[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
+	$(CC) -Os -s TCPLib_dni.c vmi_util.c TCPLib.c -o TCPLib[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS) $(NET_FLAGS)
+	$(CP_CMD) TCPLib[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
 
 ioudp:
-	$(CC) -Os -s IOUDPLib_dni.c vmi_util.c io_udp.c -o io_udp[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS) $(NET_FLAGS)
-	$(CP_CMD) io_udp[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
+	$(CC) -Os -s UDPLib_dni.c vmi_util.c UDPLib.c -o UDPLib[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS) $(NET_FLAGS)
+	$(CP_CMD) UDPLib[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
 
 dns:
-	$(CC) -Os -s DNSLib_dni.c vmi_util.c dns.c -o dns[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS) $(NET_FLAGS) -DCHIP_NAME=\"$(CHIP)\"
-	$(CP_CMD) dns[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
+	$(CC) -Os -s DNSLib_dni.c vmi_util.c DNSLib.c -o DNSLib[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS) $(NET_FLAGS) -DCHIP_NAME=\"$(CHIP)\"
+	$(CP_CMD) DNSLib[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
 
 sysinfo:
-	$(CC) -Os -s SystemLib_dni.c vmi_util.c sysinfo.c -o sysinfo[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS) -DCHIP_NAME=\"$(CHIP)\"
-	$(CP_CMD) sysinfo[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
+	$(CC) -Os -s SystemLib_dni.c vmi_util.c SystemLib.c -o SystemLib[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS) -DCHIP_NAME=\"$(CHIP)\"
+	$(CP_CMD) SystemLib[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
 
 timer:
-	$(CC) -Os -s Timer_dni.c vmi_util.c timer.c -o timer[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS)
-	$(CP_CMD) timer[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
+	$(CC) -Os -s Timer_dni.c vmi_util.c Timer.c -o Timer[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS)
+	$(CP_CMD) Timer[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
 
 uiplane:
-	$(CC) -Os -s UIPlaneLib_dni.c vmi_util.c $(API_PATH)/platform_utils.c uiplane.c -o uiplane[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS) $(SDL_FLAGS)
-	$(CP_CMD) uiplane[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
+	$(CC) -Os -s UIPlaneLib_dni.c vmi_util.c $(API_PATH)/platform_utils.c UIPlaneLib.c -o UIPlaneLib[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS) $(SDL_FLAGS)
+	$(CP_CMD) UIPlaneLib[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
 
 run:
-	$(CC) -Os -s RunLib_dni.c vmi_util.c run.c -o run[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS)
-	$(CP_CMD) run[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
+	$(CC) -Os -s RunLib_dni.c vmi_util.c RunLib.c -o RunLib[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS)
+	$(CP_CMD) RunLib[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
 
 math:
-	$(CC) -Os -s MathLib_dni.c vmi_util.c alu.c int_util.c math.c -o math[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS) $(MATH_FLAGS)
-	$(CP_CMD) math[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
+	$(CC) -Os -s MathLib_dni.c vmi_util.c alu.c int_util.c MathLib.c -o MathLib[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS) $(MATH_FLAGS)
+	$(CP_CMD) MathLib[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
 
 mysql_lib:
-	$(CC) -Os -s MySQLLib_dni.c vmi_util.c mysqllib.c -o mysqllib[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(MYSQL_INCLUDE) $(CCFLAGS)
-	$(CP_CMD) mysqllib[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
+	$(CC) -Os -s MySQLLib_dni.c vmi_util.c MySQLLib.c -o MySQLLib[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(MYSQL_INCLUDE) $(CCFLAGS) $(SQL_FLAGS)
+	$(CP_CMD) MySQLLib[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
 
 all: $(ALL_RULES)

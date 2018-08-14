@@ -159,7 +159,7 @@ static void returnByteArray(VFrame *f, unsigned char *data, size_t len)
 	}
 
 #define MAX_ADDR 64
-INSTRUCTION_DEF op_tcp_bind(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_tcp_bind(VFrame *cframe)
 	{
 	LiveArray *array = (LiveArray*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content;
 	
@@ -328,10 +328,10 @@ INSTRUCTION_DEF op_tcp_bind(INSTRUCTION_PARAM_LIST)
 	
 	free(addr);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_tcp_unbind(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_tcp_unbind(VFrame *cframe)
 	{
 	size_t xs;
 	memcpy(&xs, getVariableContent(cframe, 0), sizeof(size_t));
@@ -344,10 +344,10 @@ INSTRUCTION_DEF op_tcp_unbind(INSTRUCTION_PARAM_LIST)
 	close(xs);
 	#endif
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_tcp_connect(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_tcp_connect(VFrame *cframe)
 	{
 	LiveArray *array = (LiveArray*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content;
 	
@@ -433,10 +433,10 @@ INSTRUCTION_DEF op_tcp_connect(INSTRUCTION_PARAM_LIST)
 	
 	free(addr);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_tcp_disconnect(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_tcp_disconnect(VFrame *cframe)
 	{
 	size_t xs;
 	memcpy(&xs, getVariableContent(cframe, 0), sizeof(size_t));
@@ -460,10 +460,10 @@ INSTRUCTION_DEF op_tcp_disconnect(INSTRUCTION_PARAM_LIST)
 	close(xs);
 	#endif
     
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_tcp_accept(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_tcp_accept(VFrame *cframe)
 	{
 	size_t xs;
 	memcpy(&xs, getVariableContent(cframe, 0), sizeof(size_t));
@@ -490,12 +490,12 @@ INSTRUCTION_DEF op_tcp_accept(INSTRUCTION_PARAM_LIST)
 	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) cframe -> localsDef) -> fields[0].offset];
 	memcpy(result, &xs, sizeof(size_t));
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
 #define BUF_LEN 128
 
-INSTRUCTION_DEF op_tcp_recv(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_tcp_recv(VFrame *cframe)
 	{
 	size_t xs = 0;
 	memcpy(&xs, getVariableContent(cframe, 0), sizeof(size_t));
@@ -541,10 +541,10 @@ INSTRUCTION_DEF op_tcp_recv(INSTRUCTION_PARAM_LIST)
 		free(pbuf);
 		}
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_tcp_send(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_tcp_send(VFrame *cframe)
 	{
 	size_t xs = 0;
 	memcpy(&xs, getVariableContent(cframe, 0), sizeof(size_t));
@@ -562,10 +562,10 @@ INSTRUCTION_DEF op_tcp_send(INSTRUCTION_PARAM_LIST)
 	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) cframe -> localsDef) -> fields[0].offset];
 	copyHostInteger((unsigned char*) result, (unsigned char*) &totalAmt, sizeof(size_t));
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_tcp_get_local_address(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_tcp_get_local_address(VFrame *cframe)
 	{
 	size_t xs = 0;
 	memcpy(&xs, getVariableContent(cframe, 0), sizeof(size_t));
@@ -648,10 +648,10 @@ INSTRUCTION_DEF op_tcp_get_local_address(INSTRUCTION_PARAM_LIST)
 	unsigned int *pi = (unsigned int*) (((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 1)) -> content) -> data + sizeof(VVarLivePTR));
 	copyHostInteger((unsigned char*) pi, (unsigned char*) &xs, sizeof(xs));
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_tcp_get_remote_address(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_tcp_get_remote_address(VFrame *cframe)
 	{
 	size_t xs = 0;
 	memcpy(&xs, getVariableContent(cframe, 0), sizeof(size_t));
@@ -734,7 +734,7 @@ INSTRUCTION_DEF op_tcp_get_remote_address(INSTRUCTION_PARAM_LIST)
 	unsigned int *pi = (unsigned int*) (((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 1)) -> content) -> data + sizeof(VVarLivePTR));
 	copyHostInteger((unsigned char*) pi, (unsigned char*) &xs, sizeof(xs));
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
 Interface* load(CoreAPI *capi)

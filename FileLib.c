@@ -45,25 +45,12 @@ static void returnByteArray(VFrame *f, unsigned char *data, size_t len)
 	ptrh -> typeLink = array -> gtLink -> typeLink;
 	}
 
-INSTRUCTION_DEF op_file_open(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_file_open(VFrame *cframe)
 	{
 	size_t xs = 0;
 	copyHostInteger((unsigned char*) &xs, getVariableContent(cframe, 1), 1);
 	
-	LiveArray *array = (LiveArray*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content;
-	
-	char *path = NULL;
-	
-	if (array != NULL)
-		{
-		path = malloc(array -> length + 1);
-		memset(path, '\0', array -> length + 1);
-		memcpy(path, array -> data, array -> length);
-		}
-		else
-		{
-		path = strdup("");
-		}
+	char *path = getParam_char_array(cframe, 0);
 	
 	while (strchr(path, '\\') != NULL) memset(strchr(path, '\\'), '/', 1);
 	
@@ -105,11 +92,11 @@ INSTRUCTION_DEF op_file_open(INSTRUCTION_PARAM_LIST)
 	
 	free(path);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
 #define BUF_LEN 64
-INSTRUCTION_DEF op_file_write(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_file_write(VFrame *cframe)
 	{
 	FILE *fd;
 	memcpy(&fd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -129,10 +116,10 @@ INSTRUCTION_DEF op_file_write(INSTRUCTION_PARAM_LIST)
 	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) cframe -> localsDef) -> fields[0].offset];
 	copyHostInteger((unsigned char*) result, (unsigned char*) &amt, sizeof(size_t));
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_file_read(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_file_read(VFrame *cframe)
 	{
 	FILE *fd;
 	memcpy(&fd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -167,10 +154,10 @@ INSTRUCTION_DEF op_file_read(INSTRUCTION_PARAM_LIST)
 		free(pbuf);
 		}
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_file_seek(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_file_seek(VFrame *cframe)
 	{
 	FILE *fd;
 	memcpy(&fd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -195,10 +182,10 @@ INSTRUCTION_DEF op_file_seek(INSTRUCTION_PARAM_LIST)
 	unsigned char *result = (unsigned char*) &cframe -> localsData[((DanaType*) cframe -> localsDef) -> fields[0].offset];
 	memcpy(result, &res, sizeof(unsigned char));
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_file_size(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_file_size(VFrame *cframe)
 	{
 	FILE *fd;
 	memcpy(&fd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -211,14 +198,12 @@ INSTRUCTION_DEF op_file_size(INSTRUCTION_PARAM_LIST)
 	
 	fseek(fd, fpos, SEEK_SET);
 	
-	//the return value is written to local variable 0
-	size_t *result = (size_t*) &cframe -> localsData[((DanaType*) cframe -> localsDef) -> fields[0].offset];
-	copyHostInteger((unsigned char*) result, (unsigned char*) &sz, sizeof(size_t));
+	return_int(cframe, sz);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_file_eof(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_file_eof(VFrame *cframe)
 	{
 	FILE *fd;
 	memcpy(&fd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -234,10 +219,10 @@ INSTRUCTION_DEF op_file_eof(INSTRUCTION_PARAM_LIST)
 	unsigned char *result = (unsigned char*) &cframe -> localsData[((DanaType*) cframe -> localsDef) -> fields[0].offset];
 	memcpy(result, &res, sizeof(unsigned char));
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_file_close(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_file_close(VFrame *cframe)
 	{
 	FILE *fd;
 	memcpy(&fd, getVariableContent(cframe, 0), sizeof(size_t));
@@ -245,25 +230,12 @@ INSTRUCTION_DEF op_file_close(INSTRUCTION_PARAM_LIST)
 	if (fd != NULL)
 		fclose(fd);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_file_exists(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_file_exists(VFrame *cframe)
 	{
-	LiveArray *array = (LiveArray*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content;
-	
-	char *path = NULL;
-	
-	if (array != NULL)
-		{
-		path = malloc(array -> length + 1);
-		memset(path, '\0', array -> length + 1);
-		memcpy(path, array -> data, array -> length);
-		}
-		else
-		{
-		path = strdup("");
-		}
+	char *path = getParam_char_array(cframe, 0);
 	
 	while (strchr(path, '\\') != NULL) memset(strchr(path, '\\'), '/', 1);
 	
@@ -288,25 +260,12 @@ INSTRUCTION_DEF op_file_exists(INSTRUCTION_PARAM_LIST)
 	
 	free(path);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_file_delete(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_file_delete(VFrame *cframe)
 	{
-	LiveArray *array = (LiveArray*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content;
-	
-	char *path = NULL;
-	
-	if (array != NULL)
-		{
-		path = malloc(array -> length + 1);
-		memset(path, '\0', array -> length + 1);
-		memcpy(path, array -> data, array -> length);
-		}
-		else
-		{
-		path = strdup("");
-		}
+	char *path = getParam_char_array(cframe, 0);
 	
 	while (strchr(path, '\\') != NULL) memset(strchr(path, '\\'), '/', 1);
 	
@@ -320,42 +279,16 @@ INSTRUCTION_DEF op_file_delete(INSTRUCTION_PARAM_LIST)
 	
 	free(path);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_file_move(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_file_move(VFrame *cframe)
 	{
-	LiveArray *array = (LiveArray*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content;
-	
-	char *path = NULL;
-	
-	if (array != NULL)
-		{
-		path = malloc(array -> length + 1);
-		memset(path, '\0', array -> length + 1);
-		memcpy(path, array -> data, array -> length);
-		}
-		else
-		{
-		path = strdup("");
-		}
+	char *path = getParam_char_array(cframe, 0);
 	
 	while (strchr(path, '\\') != NULL) memset(strchr(path, '\\'), '/', 1);
 	
-	array = (LiveArray*) ((VVarLivePTR*) getVariableContent(cframe, 1)) -> content;
-	
-	char *newPath = NULL;
-	
-	if (array != NULL)
-		{
-		newPath = malloc(array -> length + 1);
-		memset(newPath, '\0', array -> length + 1);
-		memcpy(newPath, array -> data, array -> length);
-		}
-		else
-		{
-		newPath = strdup("");
-		}
+	char *newPath = getParam_char_array(cframe, 1);
 	
 	while (strchr(newPath, '\\') != NULL) memset(strchr(newPath, '\\'), '/', 1);
 	
@@ -376,7 +309,7 @@ INSTRUCTION_DEF op_file_move(INSTRUCTION_PARAM_LIST)
 	free(path);
 	free(newPath);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
 bool copyfile(char *from, char *to)
@@ -404,39 +337,13 @@ bool copyfile(char *from, char *to)
 	return true;
 	}
 
-INSTRUCTION_DEF op_file_copy(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_file_copy(VFrame *cframe)
 	{
-	LiveArray *array = (LiveArray*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content;
-	
-	char *path = NULL;
-	
-	if (array != NULL)
-		{
-		path = malloc(array -> length + 1);
-		memset(path, '\0', array -> length + 1);
-		memcpy(path, array -> data, array -> length);
-		}
-		else
-		{
-		path = strdup("");
-		}
+	char *path = getParam_char_array(cframe, 0);
 	
 	while (strchr(path, '\\') != NULL) memset(strchr(path, '\\'), '/', 1);
 	
-	array = (LiveArray*) ((VVarLivePTR*) getVariableContent(cframe, 1)) -> content;
-	
-	char *newPath = NULL;
-	
-	if (array != NULL)
-		{
-		newPath = malloc(array -> length + 1);
-		memset(newPath, '\0', array -> length + 1);
-		memcpy(newPath, array -> data, array -> length);
-		}
-		else
-		{
-		newPath = strdup("");
-		}
+	char *newPath = getParam_char_array(cframe, 1);
 	
 	while (strchr(newPath, '\\') != NULL) memset(strchr(newPath, '\\'), '/', 1);
 	
@@ -453,7 +360,7 @@ INSTRUCTION_DEF op_file_copy(INSTRUCTION_PARAM_LIST)
 	free(path);
 	free(newPath);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
 typedef struct _fii{
@@ -462,23 +369,9 @@ typedef struct _fii{
 	} FileInfoItem;
 
 // http://stackoverflow.com/questions/612097/how-can-i-get-a-list-of-files-in-a-directory-using-c-or-c
-INSTRUCTION_DEF op_get_dir_content(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_get_dir_content(VFrame *cframe)
 	{
-	LiveArray *array = (LiveArray*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content;
-	
-	char *path = NULL;
-	
-	if (array != NULL)
-		{
-		// "+3" is allowing space for appending "/" and "*" on windows
-		path = malloc(array -> length + 3);
-		memset(path, '\0', array -> length + 3);
-		memcpy(path, array -> data, array -> length);
-		}
-		else
-		{
-		path = strdup("");
-		}
+	char *path = getParam_char_array(cframe, 0);
 	
 	LiveData *data = (LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 1)) -> content;
 	
@@ -638,25 +531,12 @@ INSTRUCTION_DEF op_get_dir_content(INSTRUCTION_PARAM_LIST)
 	
 	free(path);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_make_dir(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_make_dir(VFrame *cframe)
 	{
-	LiveArray *array = (LiveArray*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content;
-	
-	char *path = NULL;
-	
-	if (array != NULL)
-		{
-		path = malloc(array -> length + 1);
-		memset(path, '\0', array -> length + 1);
-		memcpy(path, array -> data, array -> length);
-		}
-		else
-		{
-		path = strdup("");
-		}
+	char *path = getParam_char_array(cframe, 0);
 	
 	unsigned char ok = 1;
 	
@@ -674,10 +554,10 @@ INSTRUCTION_DEF op_make_dir(INSTRUCTION_PARAM_LIST)
 	
 	free(path);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_delete_dir(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_delete_dir(VFrame *cframe)
 	{
 	LiveArray *array = (LiveArray*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content;
 	
@@ -718,10 +598,10 @@ INSTRUCTION_DEF op_delete_dir(INSTRUCTION_PARAM_LIST)
 	
 	free(path);
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
-INSTRUCTION_DEF op_get_info(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_get_info(VFrame *cframe)
 	{
 	LiveArray *array = (LiveArray*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content;
 	
@@ -851,7 +731,7 @@ INSTRUCTION_DEF op_get_info(INSTRUCTION_PARAM_LIST)
 		free(path);
 		}
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
 Interface* load(CoreAPI *capi)

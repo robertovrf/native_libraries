@@ -8,4 +8,22 @@ void copyToDanaInteger(unsigned char *dst, unsigned char *src, size_t srcsz);
 
 unsigned char* getVariableContent(VFrame *t, unsigned int index);
 
+//get the n'th parameter as an integer, indexed from 0
+size_t getParam_int(VFrame *f, unsigned int pIndex);
+
+//get the n'th parameter as a character array, indexed from 0; the result is allocated on the heap and must be freed
+char* getParam_char_array(VFrame *f, int pIndex);
+
+//return an int
+void return_int(VFrame *f, size_t v);
+
+//return a character array; a new copy of the given str is made by this function
+void return_char_array(VFrame *f, CoreAPI *api, char *str);
+
+//return a byte array; a new copy of the given str is made by this function
+void return_byte_array(VFrame *f, CoreAPI *api, unsigned char *str, size_t len);
+
+//return a character array; the given str is used directly (not copied - so it must be on the heap)
+void return_byte_array_direct(VFrame *f, CoreAPI *api, unsigned char *str, size_t len);
+
 #endif

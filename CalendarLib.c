@@ -28,7 +28,7 @@
 
 static CoreAPI *api;
 
-INSTRUCTION_DEF op_get_local_time(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_get_local_time(VFrame *cframe)
 	{
 	unsigned char *cnt = ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content) -> data;
 	
@@ -121,11 +121,11 @@ INSTRUCTION_DEF op_get_local_time(INSTRUCTION_PARAM_LIST)
 	//*microsecond = ((uint16*) &cMicrosecond)[(sizeof(cMicrosecond)/2)-1];
 	#endif
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
 //NOTE: the below function isn't finished, but would return the time in milliseconds and microseconds
-INSTRUCTION_DEF op_get_time_hd(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_get_time_hd(VFrame *cframe)
 	{
 	unsigned char *cnt = ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content) -> data;
 	
@@ -220,7 +220,7 @@ INSTRUCTION_DEF op_get_time_hd(INSTRUCTION_PARAM_LIST)
 	*microsecond = ((uint16*) &cMicrosecond)[(sizeof(cMicrosecond)/2)-1];
 	#endif
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
 Interface* load(CoreAPI *capi)

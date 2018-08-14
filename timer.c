@@ -21,10 +21,9 @@ static CoreAPI *api;
 #include "nli_util.h"
 #include "vmi_util.h"
 
-INSTRUCTION_DEF op_timer_sleep(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_timer_sleep(VFrame *cframe)
 	{
-	size_t ms = 0;
-	copyHostInteger((unsigned char*) &ms, getVariableContent(cframe, 0), sizeof(size_t));
+	size_t ms = getParam_int(cframe, 0);
 	
 	#ifdef WINDOWS
 	Sleep(ms);
@@ -36,7 +35,7 @@ INSTRUCTION_DEF op_timer_sleep(INSTRUCTION_PARAM_LIST)
 	nanosleep(&ts, NULL);
 	#endif
 	
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
 Interface* load(CoreAPI *capi)

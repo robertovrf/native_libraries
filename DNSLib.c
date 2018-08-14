@@ -34,27 +34,6 @@
 
 static CoreAPI *api;
 
-static GlobalTypeLink *charArrayGT = NULL;
-
-static void returnByteArray(VFrame *f, unsigned char *data, size_t len)
-	{
-	LiveArray *array = malloc(sizeof(LiveArray));
-	memset(array, '\0', sizeof(LiveArray));
-	
-	array -> data = data;
-	array -> length = len;
-	
-	array -> gtLink = charArrayGT;
-	api -> incrementGTRefCount(array -> gtLink);
-	array -> owner = f -> blocking -> instance;
-	
-	array -> refCount ++;
-	
-	VVarLivePTR *ptrh = (VVarLivePTR*) &f -> localsData[((DanaType*) f -> localsDef) -> fields[0].offset];
-	ptrh -> content = (unsigned char*) array;
-	ptrh -> typeLink = array -> gtLink -> typeLink;
-	}
-
 #ifdef WINDOWS
 static int initialise(void)
 {
@@ -77,23 +56,10 @@ static void uninitialise (void)
 
 #define MAX_VAR_NAME 2048
 
-INSTRUCTION_DEF op_get_host_by_name(INSTRUCTION_PARAM_LIST)
+INSTRUCTION_DEF op_get_host_by_name(VFrame *cframe)
 	{
-	LiveArray *array = (LiveArray*) ((VVarLivePTR*) getVariableContent(cframe, 0)) -> content;
+	char *vn = getParam_char_array(cframe, 0);
 
-	char *vn = NULL;
-
-	if (array != NULL)
-		{
-		vn = malloc(array -> length + 1);
-		memset(vn, '\0', array -> length + 1);
-		memcpy(vn, array -> data, array -> length);
-		}
-		else
-		{
-		vn = strdup("");
-		}
-	
 	char ip[100];
 	
     struct addrinfo hints, *servinfo, *p;
@@ -110,7 +76,8 @@ INSTRUCTION_DEF op_get_host_by_name(INSTRUCTION_PARAM_LIST)
     if ((rv = getaddrinfo( vn , NULL , &hints , &servinfo)) != 0)
 		{
 		api -> throwException(cframe, gai_strerror(rv));
-        return RETURN_DIRECT;
+		free(vn);
+        return RETURN_OK;
 		}
 	
 	#ifdef WINDOWS
@@ -130,20 +97,17 @@ INSTRUCTION_DEF op_get_host_by_name(INSTRUCTION_PARAM_LIST)
 	
 	if (val != NULL)
 		{
-		returnByteArray(cframe, (unsigned char*) strdup(val), strlen(val));
+		return_char_array(cframe, api, val);
 		}
 
 	free(vn);
 
-	return RETURN_DIRECT;
+	return RETURN_OK;
 	}
 
 Interface* load(CoreAPI *capi)
 	{
 	api = capi;
-	
-	// grab global type mappings for anything that we generate here
-	charArrayGT = api -> resolveGlobalTypeMapping(getTypeDefinition("char[]"));
 	
 	setInterfaceFunction("getHostIP", op_get_host_by_name);
 	
@@ -152,5 +116,4 @@ Interface* load(CoreAPI *capi)
 
 void unload()
 	{
-	api -> decrementGTRefCount(charArrayGT);
 	}
