@@ -387,7 +387,13 @@ INSTRUCTION_DEF op_get_dir_content(VFrame *cframe)
 	
 	if (exists)
 		{
-		if (path[strlen(path)-1] != '/' && path[strlen(path)-1] != '\\') strcat(path, "/");
+		if (path[strlen(path)-1] != '/' && path[strlen(path)-1] != '\\')
+			{
+			path = realloc(path, strlen(path)+2);
+			strcat(path, "/");
+			}
+		
+		path = realloc(path, strlen(path)+2);
 		strcat(path, "*");
 		
 		WIN32_FIND_DATA fi;
@@ -405,12 +411,14 @@ INSTRUCTION_DEF op_get_dir_content(VFrame *cframe)
 					memset(newItem, '\0', sizeof(FileInfoItem));
 					
 					newItem -> data = malloc(sizeof(LiveData));
+					
 					memset(newItem -> data, '\0', sizeof(LiveData));
 					newItem -> data -> owner = dataOwner;
 					newItem -> data -> gtLink = fileEntryGT;
-					newItem -> data -> gtLink -> refCount ++;
+					api -> incrementGTRefCount(newItem -> data -> gtLink);
 					
 					newItem -> data -> data = malloc(sizeof(VVarLivePTR));
+					
 					memset(newItem -> data -> data, '\0', sizeof(VVarLivePTR));
 					VVarLivePTR *ptrh = (VVarLivePTR*) newItem -> data -> data;
 					
@@ -418,7 +426,7 @@ INSTRUCTION_DEF op_get_dir_content(VFrame *cframe)
 					memset(itemArray, '\0', sizeof(LiveArray));
 					itemArray -> owner = dataOwner;
 					itemArray -> gtLink = charArrayGT;
-					itemArray -> gtLink -> refCount ++;
+					api -> incrementGTRefCount(itemArray -> gtLink);
 					itemArray -> data = malloc(strlen(fi.cFileName));
 					memcpy(itemArray -> data, fi.cFileName, strlen(fi.cFileName));
 					itemArray -> length = strlen(fi.cFileName);
@@ -611,8 +619,6 @@ INSTRUCTION_DEF op_get_info(VFrame *cframe)
 		
 		path = malloc(array -> length + 1);
 		memset(path, '\0', array -> length + 1);
-		memcpy(path, array -> data, array -> length);
-		
 		memcpy(path, array -> data, array -> length);
 		
 		unsigned char *content = ((LiveData*) ((VVarLivePTR*) getVariableContent(cframe, 1)) -> content) -> data;
