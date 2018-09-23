@@ -187,6 +187,8 @@ typedef struct{
 	int y;
 	int width;
 	int height;
+	
+	int a; //alpha here is the alpha of the post-rendered surface, and all of its contents
 
 	int xScroll;
 	int yScroll;
@@ -695,9 +697,14 @@ SDL_Texture* renderSurface(UISurface *s, SDL_Renderer *myRenderer)
 
 	SDL_Texture *st = SDL_CreateTexture(myRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, s -> width, s -> height);
 	SDL_SetRenderTarget(myRenderer, st);
-
+	
+	//NOTE: when using transparency, if we blend the background colour here (at alpha zero) against the SAME colour of text (white for white text), we get nice text; if the background colour is opposite (white for black text) we get horrible text rendering
+	// - if we take the alpha channel away, blending is fine in all cases
+	// - see https://discourse.libsdl.org/t/bad-text-quality-on-transparent-texture/23098
+	// - a workaround is to require surfaces to have a solid background colour, and only offer to apply alpha to the whole surface (i.e., to the texture after all contents are rendered)
+	// - we currently push this responsibility to Dana components, which should always render a solid background on a surface before rendering any contents
 	SDL_SetTextureBlendMode(st, SDL_BLENDMODE_BLEND);
-	SDL_SetRenderDrawColor(myRenderer, 0, 0, 0, 0);
+	SDL_SetRenderDrawColor(myRenderer, 255, 255, 255, 0);
 	SDL_RenderClear(myRenderer);
 
 	int xScroll = s -> xScroll;
@@ -740,7 +747,7 @@ SDL_Texture* renderSurface(UISurface *s, SDL_Renderer *myRenderer)
 			color.r = poly -> r;
 			color.g = poly -> g;
 			color.b = poly -> b;
-
+			
 			SDL_Texture *image = renderText(poly -> text, poly -> font, color, myRenderer);
 			if (image != NULL)
 				{
@@ -774,7 +781,9 @@ SDL_Texture* renderSurface(UISurface *s, SDL_Renderer *myRenderer)
 
 		pw = pw -> next;
 		}
-
+	
+	SDL_SetTextureAlphaMod(st, s -> a);
+	
 	SDL_SetRenderTarget(myRenderer, baseTarget);
 
 	return st;
@@ -854,6 +863,8 @@ int DrawScene(WindowInstance *instance)
 				UISurface *poly = (UISurface*) pw -> object;
 
 				SDL_Texture *image = renderSurface(poly, instance -> renderer);
+				
+				SDL_SetRenderTarget(instance -> renderer, instance -> baseTexture);
 
 				if (image != NULL)
 					{
@@ -873,7 +884,7 @@ int DrawScene(WindowInstance *instance)
 
 			pw = pw -> next;
 			}
-
+			
 		#ifdef STATS
 		char statString[512];
 
@@ -2416,6 +2427,9 @@ INSTRUCTION_DEF op_push_surface(VFrame *cframe)
 
 		size_t ys = 0;
 		copyHostInteger((unsigned char*) &ys, getVariableContent(cframe, 6), sizeof(size_t));
+		
+		size_t a = 0;
+		copyHostInteger((unsigned char*) &a, getVariableContent(cframe, 7), 1);
 		// --
 
 		newObject -> type = UI_TYPE_SURFACE;
@@ -2424,6 +2438,8 @@ INSTRUCTION_DEF op_push_surface(VFrame *cframe)
 		newSurface -> y = y;
 		newSurface -> width = w;
 		newSurface -> height = h;
+		
+		newSurface -> a = a;
 
 		newSurface -> xScroll = xs;
 		newSurface -> yScroll = ys;

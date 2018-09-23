@@ -155,7 +155,8 @@ static const DanaTypeField function_UIPlaneLib_pushSurface_fields[] = {
 {(DanaType*) &int_def, NULL, 0, 0, 24},
 {(DanaType*) &int_def, NULL, 0, 0, 32},
 {(DanaType*) &int_def, NULL, 0, 0, 40},
-{(DanaType*) &int_def, NULL, 0, 0, 48}};
+{(DanaType*) &int_def, NULL, 0, 0, 48},
+{(DanaType*) &byte_def, NULL, 0, 0, 56}};
 static const DanaTypeField function_UIPlaneLib_popSurface_fields[] = {
 {(DanaType*) &void_def, NULL, 0, 0, 0},{(DanaType*) &int_def, NULL, 0, 0, 0}};
 static const DanaTypeField function_UIPlaneLib_setSize_fields[] = {
@@ -233,7 +234,7 @@ static const DanaType object_UIPlaneLib_functions_spec[] = {
 {TYPE_FUNCTION, 0, 64, (DanaTypeField*) &function_UIPlaneLib_addBitmap_fields, 5},
 {TYPE_FUNCTION, 0, 68, (DanaTypeField*) &function_UIPlaneLib_addText_fields, 9},
 {TYPE_FUNCTION, 0, 76, (DanaTypeField*) &function_UIPlaneLib_addTextWith_fields, 10},
-{TYPE_FUNCTION, 0, 56, (DanaTypeField*) &function_UIPlaneLib_pushSurface_fields, 8},
+{TYPE_FUNCTION, 0, 57, (DanaTypeField*) &function_UIPlaneLib_pushSurface_fields, 9},
 {TYPE_FUNCTION, 0, 8, (DanaTypeField*) &function_UIPlaneLib_popSurface_fields, 2},
 {TYPE_FUNCTION, 0, 24, (DanaTypeField*) &function_UIPlaneLib_setSize_fields, 4},
 {TYPE_FUNCTION, 0, 24, (DanaTypeField*) &function_UIPlaneLib_setPosition_fields, 4},
@@ -434,8 +435,8 @@ Interface* getPublicInterface(){
 ((VFrameHeader*) op_addTextWith_thread_spec) -> formalParamsCount = 9;
 ((VFrameHeader*) op_addTextWith_thread_spec) -> localsDef = (size_t) &object_UIPlaneLib_functions_spec[13];
 ((VFrameHeader*) op_addTextWith_thread_spec) -> functionName = "addTextWith";
-((VFrameHeader*) op_pushSurface_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + 56;
-((VFrameHeader*) op_pushSurface_thread_spec) -> formalParamsCount = 7;
+((VFrameHeader*) op_pushSurface_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + 57;
+((VFrameHeader*) op_pushSurface_thread_spec) -> formalParamsCount = 8;
 ((VFrameHeader*) op_pushSurface_thread_spec) -> localsDef = (size_t) &object_UIPlaneLib_functions_spec[14];
 ((VFrameHeader*) op_pushSurface_thread_spec) -> functionName = "pushSurface";
 ((VFrameHeader*) op_popSurface_thread_spec) -> frameSize = sizeof(VFrame) + sizeof(VVarR) + 8;
