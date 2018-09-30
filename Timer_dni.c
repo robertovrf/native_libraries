@@ -91,7 +91,7 @@ static size_t interfaceFunctions[] = {
 (size_t) op_getID_thread_spec,
 (size_t) op_sleep_thread_spec};
 static DanaType libType = {TYPE_OBJECT, 0, 0, (DanaTypeField*) intf_def, 3};
-static InterfaceDetails ids[] = {{"Timer", 5, &libType}};
+static InterfaceDetails ids[] = {{"time.Timer", 10, &libType}};
 static Interface objectInterfaces[] = {{&ids[0], {&self, NULL, NULL, interfaceFunctions, NULL, NULL}}		};
 static ObjectSpec objects[] = {{objectInterfaces, 1, 0, 0, 0, 0, (size_t) &emptyType}};
 Interface* getPublicInterface(){

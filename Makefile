@@ -80,13 +80,13 @@ else
             CCFLAGS += -DMACHINE_64
             CCFLAGS += -DLIB_CHIP_NAME=\"x64\"
             CHIP = x64
-			SDL_FLAGS = -lSDL2main -lSDL2 -lSDL2_ttf
+			SDL_FLAGS = /usr/local/lib/libSDL2main.a /usr/local/lib/libSDL2.a /usr/local/lib/libSDL2_ttf.a -lm -lfreetype
         endif
         ifneq ($(filter %86,$(UNAME_P)),)
             CCFLAGS += -DMACHINE_32
             CCFLAGS += -DLIB_CHIP_NAME=\"x86\"
             CHIP = x86
-			SDL_FLAGS = -lSDL2main -lSDL2 -lSDL2_ttf
+			SDL_FLAGS = /usr/local/lib/libSDL2main.a /usr/local/lib/libSDL2.a /usr/local/lib/libSDL2_ttf.a -lm -lfreetype
         endif
         ifneq ($(filter arm%,$(UNAME_P)),)
             CCFLAGS += -DARM
@@ -96,6 +96,7 @@ else
             CCFLAGS += -DMACHINE_32
             CCFLAGS += -DLIB_CHIP_NAME=\"armv6\"
             CHIP = armv6
+			SDL_FLAGS = /usr/local/lib/libSDL2main.a /usr/local/lib/libSDL2.a /usr/local/lib/libSDL2_ttf.a -lm -lfreetype -L/opt/vc/lib -lbcm_host
         endif
     endif
 endif
@@ -147,5 +148,8 @@ math:
 mysql_lib:
 	$(CC) -Os -s MySQLLib_dni.c vmi_util.c MySQLLib.c -o MySQLLib[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(MYSQL_INCLUDE) $(CCFLAGS) $(SQL_FLAGS)
 	$(CP_CMD) MySQLLib[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
+clipboard:
+	$(CC) -Os -s Clipboard_dni.c vmi_util.c Clipboard.c -o Clipboard[$(PLATFORM).$(CHIP)].dnl $(STD_INCLUDE) $(CCFLAGS)
+	$(CP_CMD) Clipboard[$(PLATFORM).$(CHIP)].dnl "$(DANA_HOME)/resources-ext"
 
 all: $(ALL_RULES)

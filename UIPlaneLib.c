@@ -1,7 +1,9 @@
 //Written by Barry Porter, 2016, last updated 2018
 
+//This is a graphics library using SDL2 for its rendering.
+
 //NOTE: this component does not work on Mac OS X due to a "non main thread" exception
-// - this is really hard to fix; the render/event loop can't be guaranteed to run in the main thread by the language
+// - this is hard to fix; the render/event loop can't be guaranteed to run in the main thread by the language
 // - we seem to have two options:
 //    1. We make Canvas such that it must be run from the main thread, and all render calls come directly from Canvas in that thread...except we need to run the event loop somewhere, and so Canvas would have to somehow integrate into that event loop in its main thread. This would probably work, but then Canvas itself would have to be documented as only being runnable from the main thread, and would cause an immediate uncatchable whole-system-crash if it was called from any other thread. In other words, the language itself cannot defend against this unless we had some sort of runtime dana.isMainThread() check for Canvas to call before proceeding.
 //   2. We require a special case in the Dana interpreter for a graphics library such that, if loaded at all, it has a special function that can take over the main interpreter thread. Only one library (the first to ask??) could do this from all those that are loaded. This works around the special documentation issue above, since any language-level thread could spawn windows without errors. However, presumably the interpreter would have to yield program flow control to the native library's special function.
@@ -9,18 +11,42 @@
 //   - this would leave us only with option (1), which has the undesirable side-effect of (assuming you want platform-independent code) forcing all platforms into this documentation-based corner for the sake of a peculiarity in OS X
 //   - a third option might be to mark libraries as main-thread-only, and actually launch them in their own process and then set up IPC channels to those libraries (or I suppose the library itself might be able to arrange this without needing interpreter support); this would need an IPC abstraction layer which makes all processes look the same from Dana-land
 //   - there's a good discussion of the OS X issues here: https://www.mikeash.com/pyblog/friday-qa-2009-01-09.html
+// - a compromise might be to directly expose the event loop from Canvas (or from e.g. a new component MediaLayer) to the App; so we just have a function like processEvent() which returns true if there's stuff to do, or false if we're quitting the application - then you can just do while(processEvent())
+//   - the issue here is that only one thread can do this, and all meta-composers would have to ensure that the app is run in their main thread with meta-duties in a background thread; meta-composers would also be unable to launch multiple apps
 
 /*
-SDL rendering plane for graphics
+NOTE: Since Dana v222 we need to statically link against the SDL libraries, to avoid additional dependency installs outside of Dana. On Linux, we need to download the SDL2 and SDL2ttf source code, and configure+make+make-install them. For SDL2 and SDL2ttf we need to update CFLAGS to include -fPIC because we're linking against a .so; for SDL itself we use --configure-sndio=no in configure to avoid linking against this extra library. We currently assume that lfreetype is installed on Linux as standard. We're aware that, in general, there are good reasons not to statically link SDL; we don't think these reasons apply here because the Dana runtime already dynamically links against this library, so it can be swapped out easily at the Dana level.
+*/
 
-// http://lazyfoo.net/tutorials/SDL/
+/*
+On Ubuntu, for the main SDL2 build we want these libraries to maximise device support:
 
-// http://wiki.libsdl.org/CategoryAPI
+sudo apt-get install libpulse-dev libaudio-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxi-dev libxinerama-dev libxxf86vm-dev libxss-dev libgl1-mesa-dev libesd0-dev 
 
-// http://www.willusher.io/pages/sdl2/
+And the procedure is:
 
- ----- ----- -----
+mkdir build
+cd build
+../configure --enable-sndio=no
+(add -fPIC to Makefile, if not done via configure)
+make
+make install
 
+For SDL2ttf we need:
+
+sudo apt-get install libfreetype6-dev
+
+And the procedure is:
+
+../configure
+make
+make install
+*/
+
+/*
+On Raspbian things are a bit sketchy; see https://forums.libsdl.org/viewtopic.php?p=39671
+
+We can either link with -L/opt/vc/lib -lbcm_host, or we can use ./configure --disable-video-x11 --disable-video-opengl
 */
 
 #include "dana_lib_defs.h"
@@ -161,6 +187,8 @@ typedef struct{
 	int y;
 	int width;
 	int height;
+	
+	int a; //alpha here is the alpha of the post-rendered surface, and all of its contents
 
 	int xScroll;
 	int yScroll;
@@ -561,8 +589,8 @@ SDL_Texture* renderText(char *msg, TTF_Font *font, SDL_Color color, SDL_Renderer
 	{
 	//first render to a surface as that's what TTF_RenderText returns, then load that surface into a texture
 
-	//SDL_Surface *surf = TTF_RenderText_Solid(font, msg, color); //looks crap sometimes in general (inconsistent baseline)
-	SDL_Surface *surf = TTF_RenderText_Blended(font, msg, color); //looks crap with complex fonts at "small" sizes (<= 12pt)
+	//SDL_Surface *surf = TTF_RenderText_Solid(font, msg, color); //looks bad sometimes in general (inconsistent baseline)
+	SDL_Surface *surf = TTF_RenderText_Blended(font, msg, color); //looks bad with complex fonts at "small" sizes (<= 12pt)
 	if (surf == NULL)
 		{
 		printf("SDL surface error from RT for '%s': %s\n", msg, SDL_GetError());
@@ -669,9 +697,14 @@ SDL_Texture* renderSurface(UISurface *s, SDL_Renderer *myRenderer)
 
 	SDL_Texture *st = SDL_CreateTexture(myRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, s -> width, s -> height);
 	SDL_SetRenderTarget(myRenderer, st);
-
+	
+	//NOTE: when using transparency, if we blend the background colour here (at alpha zero) against the SAME colour of text (white for white text), we get nice text; if the background colour is opposite (white for black text) we get horrible text rendering
+	// - if we take the alpha channel away, blending is fine in all cases
+	// - see https://discourse.libsdl.org/t/bad-text-quality-on-transparent-texture/23098
+	// - a workaround is to require surfaces to have a solid background colour, and only offer to apply alpha to the whole surface (i.e., to the texture after all contents are rendered)
+	// - we currently push this responsibility to Dana components, which should always render a solid background on a surface before rendering any contents
 	SDL_SetTextureBlendMode(st, SDL_BLENDMODE_BLEND);
-	SDL_SetRenderDrawColor(myRenderer, 0, 0, 0, 0);
+	SDL_SetRenderDrawColor(myRenderer, 255, 255, 255, 0);
 	SDL_RenderClear(myRenderer);
 
 	int xScroll = s -> xScroll;
@@ -714,7 +747,7 @@ SDL_Texture* renderSurface(UISurface *s, SDL_Renderer *myRenderer)
 			color.r = poly -> r;
 			color.g = poly -> g;
 			color.b = poly -> b;
-
+			
 			SDL_Texture *image = renderText(poly -> text, poly -> font, color, myRenderer);
 			if (image != NULL)
 				{
@@ -748,7 +781,9 @@ SDL_Texture* renderSurface(UISurface *s, SDL_Renderer *myRenderer)
 
 		pw = pw -> next;
 		}
-
+	
+	SDL_SetTextureAlphaMod(st, s -> a);
+	
 	SDL_SetRenderTarget(myRenderer, baseTarget);
 
 	return st;
@@ -828,6 +863,8 @@ int DrawScene(WindowInstance *instance)
 				UISurface *poly = (UISurface*) pw -> object;
 
 				SDL_Texture *image = renderSurface(poly, instance -> renderer);
+				
+				SDL_SetRenderTarget(instance -> renderer, instance -> baseTexture);
 
 				if (image != NULL)
 					{
@@ -847,7 +884,7 @@ int DrawScene(WindowInstance *instance)
 
 			pw = pw -> next;
 			}
-
+			
 		#ifdef STATS
 		char statString[512];
 
@@ -1136,7 +1173,8 @@ static void* render_thread(void *ptr)
 	pthread_detach(pthread_self());
 	#endif
 
-	if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
+	if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO|SDL_INIT_EVENTS|SDL_INIT_TIMER|SDL_INIT_JOYSTICK|SDL_INIT_GAMECONTROLLER|SDL_INIT_HAPTIC) != 0)
+	//if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
 		{
 		printf("SDL INIT FAILED");
 		//std::cout << "SDL_Init Error: " << SDL_GetError() << std::endl;
@@ -1300,6 +1338,28 @@ static void* render_thread(void *ptr)
 				if (myInstance != NULL)
 					{
 					pushMouseEvent(myInstance, 3, 0, screenX, screenY);
+					}
+				}
+				else if (e.type == SDL_KEYDOWN)
+				{
+				size_t keyID = e.key.keysym.scancode;
+				
+				WindowInstance *myInstance = findWindow(e.motion.windowID);
+				
+				if (myInstance != NULL)
+					{
+					pushMouseEvent(myInstance, 7, keyID, 0, 0);
+					}
+				}
+				else if (e.type == SDL_KEYUP)
+				{
+				size_t keyID = e.key.keysym.scancode;
+				
+				WindowInstance *myInstance = findWindow(e.motion.windowID);
+				
+				if (myInstance != NULL)
+					{
+					pushMouseEvent(myInstance, 8, keyID, 0, 0);
 					}
 				}
 				else if (e.type == DX_NEW_WINDOW_EVENT)
@@ -2367,6 +2427,9 @@ INSTRUCTION_DEF op_push_surface(VFrame *cframe)
 
 		size_t ys = 0;
 		copyHostInteger((unsigned char*) &ys, getVariableContent(cframe, 6), sizeof(size_t));
+		
+		size_t a = 0;
+		copyHostInteger((unsigned char*) &a, getVariableContent(cframe, 7), 1);
 		// --
 
 		newObject -> type = UI_TYPE_SURFACE;
@@ -2375,6 +2438,8 @@ INSTRUCTION_DEF op_push_surface(VFrame *cframe)
 		newSurface -> y = y;
 		newSurface -> width = w;
 		newSurface -> height = h;
+		
+		newSurface -> a = a;
 
 		newSurface -> xScroll = xs;
 		newSurface -> yScroll = ys;
